@@ -7,7 +7,7 @@ import { label } from "./ui";
 export function PrototypeBar() {
   const s = useStore();
   return (
-    <div className="flex flex-col gap-1 border-b-2 border-line bg-concrete px-4 py-2">
+    <div className="flex flex-col gap-1 border-b-2 border-line bg-concrete px-4 py-2 print:hidden">
       <p className={label}>Prototype · saved on this device only</p>
       {s && isStorageFull() ? (
         <p className="text-[15px] leading-[22px] font-bold">

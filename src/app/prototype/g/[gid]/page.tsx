@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { issueStatus, lastActivity } from "@/prototype/clocks";
 import { IssueCard, needsAttention } from "@/prototype/IssueCard";
 import { effectiveRole, findGroup, useStore, visibleIssues } from "@/prototype/store";
-import { ButtonLink, Loading } from "@/prototype/ui";
+import { ME } from "@/prototype/types";
+import { ButtonLink, Icon, Loading } from "@/prototype/ui";
 
 export default function Issues() {
   const { gid } = useParams<{ gid: string }>();
@@ -23,6 +25,7 @@ export default function Issues() {
     return att || lastActivity(b).localeCompare(lastActivity(a));
   });
   const ownOnly = effectiveRole(s, group) === "submitter" && group.visibility === "own";
+  const toFile = group.unsorted.filter((u) => effectiveRole(s, group) !== "submitter" || u.memberId === ME).length;
 
   return (
     <main className="flex flex-1 flex-col gap-5 px-4 pt-5 pb-8">
@@ -45,6 +48,19 @@ export default function Issues() {
           </button>
         ))}
       </div>
+
+      {toFile ? (
+        <Link
+          href={`/prototype/g/${group.id}/unsorted`}
+          className="flex min-h-14 items-center gap-3 rounded-lg border-2 border-line bg-paper px-4 py-3 font-bold no-underline"
+        >
+          <Icon name="letter" />
+          <span className="flex-1">
+            {toFile} {toFile === 1 ? "email" : "emails"} to file
+          </span>
+          <Icon name="arrow" />
+        </Link>
+      ) : null}
 
       {ownOnly ? (
         <p className="rounded-lg bg-concrete px-4 py-3 text-[15px] leading-[22px]">

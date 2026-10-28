@@ -28,6 +28,13 @@ const ICONS = {
   letter: "M4 6h16v12H4zM4 7l8 6 8-6",
   copy: "M8 8h12v12H8zM4 16V4h12",
   arrow: "M9 5l7 7-7 7",
+  phone: "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z",
+  gauge: "M12 3v10M9 13a3 3 0 1 0 6 0 3 3 0 0 0-6 0M10 3h4M10 6h2M10 9h2",
+  receipt: "M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3",
+  chat: "M4 5h16v11H9l-5 4zM8 9h8M8 12h5",
+  video: "M3 6h12v12H3zM15 10l6-3v10l-6-3",
+  shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM8.5 12l2.5 2.5 4.5-5",
+  folder: "M3 6h7l2 2h9v11H3z",
 } as const;
 
 export type IconName = keyof typeof ICONS;

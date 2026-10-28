@@ -3,6 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { effectiveRole, findGroup, resetPrototype, updateSettings, useStore } from "@/prototype/store";
+import { GroupAddress } from "@/prototype/GroupAddress";
 import { NATION_LABEL, TYPE_LABEL } from "@/prototype/types";
 import { Button, ButtonLink, Loading, PageTitle, Sheet, label } from "@/prototype/ui";
 
@@ -69,9 +70,15 @@ export default function More() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2 className="text-[20px] leading-7 font-bold">Capturing evidence by email</h2>
+        <GroupAddress group={group} />
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2 className="text-[20px] leading-7 font-bold">Coming in the full app</h2>
         <ul className="flex list-disc flex-col gap-1 pl-5 text-[17px] leading-[26px]">
-          <li>Export the record as a PDF for the council or a tribunal, with a fingerprint anyone can check</li>
+          <li>Each problem&rsquo;s case file as a PDF for an ombudsman, council or tribunal, with original emails attached and a fingerprint anyone can check</li>
+          <li>Sharing screenshots straight from WhatsApp into Clamour, on Android</li>
           <li>The group&rsquo;s audit log of who did what</li>
           <li>Reminders when a deadline is close or has passed</li>
           <li>Sign in with a code sent to your email, on any device</li>

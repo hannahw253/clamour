@@ -20,8 +20,8 @@ import {
   type State,
 } from "./types";
 
-const KEY = "clamour-prototype-v1";
-const EMPTY: State = { version: 1, myName: null, viewAs: null, groups: [] };
+const KEY = "clamour-prototype-v2";
+const EMPTY: State = { version: 2, myName: null, viewAs: null, groups: [] };
 
 let state: State | null = null;
 let storageFull = false;
@@ -32,7 +32,7 @@ function load(): State {
     const raw = window.localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as State;
-      if (parsed.version === 1) return parsed;
+      if (parsed.version === 2) return parsed;
     }
   } catch {
     // Private windows and blocked storage fall back to memory.
@@ -110,6 +110,22 @@ export function readToken(token: string): InvitePayload | null {
   }
 }
 
+/**
+ * The group's email address. The ".example" domain is deliberate: the prototype can't
+ * receive email, and a made-up real-looking domain could send people's evidence to a stranger.
+ */
+export function makeInbox(name: string) {
+  const slug =
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 24) || "group";
+  const bytes = crypto.getRandomValues(new Uint8Array(3));
+  const suffix = Array.from(bytes, (b) => (b % 36).toString(36)).join("") + (bytes[0] % 10);
+  return `${slug}-${suffix}@in.clamour.example`;
+}
+
 export function findGroup(s: State, id: string) {
   return s.groups.find((g) => g.id === id);
 }
@@ -165,6 +181,7 @@ export function loadSamples() {
     ...g,
     members: g.members.map((m) => (m.id === ME ? { ...m, name: myName } : m)),
     invites: { submitter: makeToken(g, "submitter"), admin: makeToken(g, "admin") },
+    inbox: makeInbox(g.name),
   }));
   const existing = new Set(s.groups.map((g) => g.id));
   set({
@@ -188,6 +205,8 @@ export function createGroup(input: { name: string; type: GroupType; nation: Nati
     createdAt: now,
     members: [{ id: ME, name: s.myName ?? "You", role: "owner", status: "active", joinedAt: now }],
     invites: { submitter: makeToken(input, "submitter"), admin: makeToken(input, "admin") },
+    inbox: makeInbox(input.name),
+    unsorted: [],
     issues: [],
   };
   set({ ...s, groups: [group, ...s.groups], viewAs: null });
@@ -264,6 +283,8 @@ export function joinFromInvite(token: string, name: string, flat: string): { gro
       submitter: payload.r === "submitter" ? token : makeToken(basics, "submitter"),
       admin: payload.r === "admin" ? token : makeToken(basics, "admin"),
     },
+    inbox: makeInbox(payload.g),
+    unsorted: [],
     issues: [],
   };
   set({ ...s, myName, viewAs: null, groups: [group, ...s.groups] });
@@ -272,8 +293,10 @@ export function joinFromInvite(token: string, name: string, flat: string): { gro
 
 export function addIssue(groupId: string, input: { title: string; category: Category; room?: string; entries: Entry[] }): string {
   const now = new Date().toISOString();
+  const group = findGroup(get(), groupId);
   const issue: Issue = {
     id: newId(),
+    ref: Math.max(0, ...(group?.issues.map((i) => i.ref) ?? [])) + 1,
     title: input.title.trim(),
     category: input.category,
     room: input.room?.trim() || undefined,
@@ -285,7 +308,7 @@ export function addIssue(groupId: string, input: { title: string; category: Cate
   return issue.id;
 }
 
-type NewEntry = Entry extends infer E ? (E extends Entry ? Omit<E, "id" | "recordedAt" | "by"> : never) : never;
+export type NewEntry = Entry extends infer E ? (E extends Entry ? Omit<E, "id" | "recordedAt" | "by"> : never) : never;
 
 export function addEntries(groupId: string, issueId: string, entries: NewEntry[]) {
   const recordedAt = new Date().toISOString();
@@ -298,4 +321,35 @@ export function addEntries(groupId: string, issueId: string, entries: NewEntry[]
 /** Build an entry for this device's user, ready for addIssue. */
 export function entry(e: NewEntry): Entry {
   return { ...e, id: newId(), recordedAt: new Date().toISOString(), by: ME } as Entry;
+}
+
+/** File an unsorted email under an issue, as an email entry. */
+export function fileUnsorted(groupId: string, unsortedId: string, issueId: string) {
+  updateGroup(groupId, (g) => {
+    const mail = g.unsorted.find((u) => u.id === unsortedId);
+    if (!mail) return g;
+    const filed: Entry = {
+      id: newId(),
+      kind: "email",
+      direction: mail.memberId ? "to_landlord" : "from_landlord",
+      at: mail.receivedAt,
+      recordedAt: mail.receivedAt,
+      by: mail.memberId ?? ME,
+      from: mail.from,
+      to: g.inbox,
+      subject: mail.subject,
+      text: mail.text,
+      via: mail.via,
+      auth: mail.auth,
+    };
+    return {
+      ...g,
+      unsorted: g.unsorted.filter((u) => u.id !== unsortedId),
+      issues: g.issues.map((i) => (i.id === issueId ? { ...i, entries: [...i.entries, filed] } : i)),
+    };
+  });
+}
+
+export function rejectUnsorted(groupId: string, unsortedId: string) {
+  updateGroup(groupId, (g) => ({ ...g, unsorted: g.unsorted.filter((u) => u.id !== unsortedId) }));
 }

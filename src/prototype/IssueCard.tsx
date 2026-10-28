@@ -32,7 +32,7 @@ export function StatusChips({ group, issue }: { group: Group; issue: Issue }) {
 
 export function needsAttention(group: Group, issue: Issue) {
   const step = nextStep(group, issue);
-  return step === "Tell your landlord" || step === "Send a reminder";
+  return step === "Tell your landlord" || step === "Send a reminder" || step === "Confirm the conversation in writing";
 }
 
 export function IssueCard({ group, issue }: { group: Group; issue: Issue }) {

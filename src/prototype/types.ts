@@ -15,7 +15,14 @@ export type Category =
   | "other";
 
 export type ReportMethod = "email" | "text" | "phone" | "letter" | "in_person" | "portal";
-export type LetterKey = "repair_request" | "reminder";
+export type LetterKey = "repair_request" | "reminder" | "confirm" | "complaint";
+
+/** A file kept only as a fingerprint in the prototype (videos and chat exports are too big for browser storage). */
+export type FileRef = { name: string; sha256: string; bytes: number };
+
+/** How an email reached the group's address, and what that means for its authenticity check. */
+export type EmailVia = "cc" | "bcc" | "forwarded" | "pasted";
+export type EmailAuth = "passed" | "lost" | "not_checked";
 
 export type Member = {
   id: string;
@@ -54,10 +61,49 @@ export type Entry =
   | (EntryBase & { kind: "visit" })
   | (EntryBase & { kind: "letter"; letter: LetterKey })
   | (EntryBase & { kind: "fixed" })
-  | (EntryBase & { kind: "reopened" });
+  | (EntryBase & { kind: "reopened" })
+  | (EntryBase & {
+      kind: "email";
+      direction: "to_landlord" | "from_landlord";
+      from: string;
+      to: string;
+      subject: string;
+      via: EmailVia;
+      auth: EmailAuth;
+    })
+  | (EntryBase & { kind: "messages"; photo: Photo; with: string })
+  | (EntryBase & {
+      kind: "chat_export";
+      file: FileRef;
+      participants: string[];
+      count: number;
+      first: string;
+      last: string;
+      preview: string[];
+    })
+  | (EntryBase & { kind: "call"; direction: "you_called" | "they_called" | "in_person"; with: string })
+  | (EntryBase & { kind: "post"; photo?: Photo; proof: boolean })
+  | (EntryBase & { kind: "reading"; measure: "humidity" | "temperature"; value: number; room?: string })
+  | (EntryBase & { kind: "receipt"; photo?: Photo; amount?: string })
+  | (EntryBase & { kind: "video"; file: FileRef });
+
+/** An email that reached the group's address without an issue reference, waiting to be filed. */
+export type UnsortedEmail = {
+  id: string;
+  receivedAt: string;
+  from: string;
+  /** The member it came from, if the address matches one. */
+  memberId?: string;
+  subject: string;
+  text: string;
+  via: EmailVia;
+  auth: EmailAuth;
+};
 
 export type Issue = {
   id: string;
+  /** Short reference for letter subjects, shown as CL-<ref>. */
+  ref: number;
   title: string;
   category: Category;
   room?: string;
@@ -76,11 +122,14 @@ export type Group = {
   createdAt: string;
   members: Member[];
   invites: { submitter: string; admin: string };
+  /** The group's email address for copying in or forwarding evidence. */
+  inbox: string;
+  unsorted: UnsortedEmail[];
   issues: Issue[];
 };
 
 export type State = {
-  version: 1;
+  version: 2;
   myName: string | null;
   /** Prototype only: see the app as another role. */
   viewAs: Role | null;
@@ -127,4 +176,22 @@ export const METHOD_LABEL: Record<ReportMethod, string> = {
   letter: "Letter",
   in_person: "In person",
   portal: "Landlord's website or app",
+};
+
+export const EMAIL_VIA_LABEL: Record<EmailVia, string> = {
+  cc: "Copied in (CC)",
+  bcc: "Copied in privately (BCC)",
+  forwarded: "Forwarded",
+  pasted: "Pasted in",
+};
+
+export function issueRef(issue: Pick<Issue, "ref">) {
+  return `CL-${issue.ref}`;
+}
+
+export const LETTER_LABEL: Record<LetterKey, string> = {
+  repair_request: "Repair request",
+  reminder: "Reminder",
+  confirm: "Confirming a conversation",
+  complaint: "Formal complaint",
 };

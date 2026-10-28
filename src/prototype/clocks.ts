@@ -56,8 +56,31 @@ function sorted(entries: Entry[]) {
   return [...entries].sort((a, b) => a.at.localeCompare(b.at));
 }
 
+/** Telling the landlord: a recorded report, an email to them, or a call. */
+function isReport(e: Entry) {
+  return e.kind === "reported" || (e.kind === "email" && e.direction === "to_landlord") || e.kind === "call";
+}
+
 export function firstReport(issue: Issue) {
-  return sorted(issue.entries).find((e) => e.kind === "reported");
+  return sorted(issue.entries).find(isReport);
+}
+
+/** A spoken conversation with the landlord that nothing written has followed yet. */
+export function unconfirmedCall(issue: Issue) {
+  const list = sorted(issue.entries);
+  const spokenAt = list.findLastIndex(
+    (e) => e.kind === "call" || (e.kind === "reported" && (e.method === "phone" || e.method === "in_person")),
+  );
+  if (spokenAt === -1) return undefined;
+  const writtenAfter = list
+    .slice(spokenAt + 1)
+    .some(
+      (e) =>
+        e.kind === "letter" ||
+        (e.kind === "email" && e.direction === "to_landlord") ||
+        (e.kind === "reported" && (e.method === "email" || e.method === "letter" || e.method === "text")),
+    );
+  return writtenAfter ? undefined : list[spokenAt];
 }
 
 export function firstVisit(issue: Issue) {
@@ -226,6 +249,7 @@ export function nextStep(group: Group, issue: Issue, now = new Date()): string |
   const status = issueStatus(issue);
   if (status === "fixed") return null;
   if (status === "open") return "Tell your landlord";
+  if (unconfirmedCall(issue)) return "Confirm the conversation in writing";
   const clock = issueClock(group, issue, now);
   if (clock.tone === "missed") return "Send a reminder";
   const report = firstReport(issue)!;

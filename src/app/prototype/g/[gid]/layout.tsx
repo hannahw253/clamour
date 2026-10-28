@@ -58,7 +58,7 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex flex-col gap-3 border-b-2 border-line-subtle px-4 pt-3 pb-3">
+      <header className="flex flex-col gap-3 border-b-2 border-line-subtle px-4 pt-3 pb-3 print:hidden">
         <div className="flex items-center justify-between gap-3">
           <Link href="/prototype" className="inline-flex min-h-11 items-center gap-1 font-bold" aria-label="Your groups">
             <Icon name="back" /> Groups
@@ -92,7 +92,7 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
 
       <div className="flex flex-1 flex-col">{children}</div>
 
-      <nav aria-label="Group" className="sticky bottom-0 z-10 border-t-2 border-line bg-paper pb-[env(safe-area-inset-bottom)]">
+      <nav aria-label="Group" className="sticky bottom-0 z-10 border-t-2 border-line bg-paper pb-[env(safe-area-inset-bottom)] print:hidden">
         <ul className="grid grid-cols-4">
           {tabs.map((t) => {
             const active = t.match(pathname);
