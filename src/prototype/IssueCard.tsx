@@ -13,7 +13,7 @@ export function StatusChips({ group, issue }: { group: Group; issue: Issue }) {
   return (
     <>
       {status === "fixed" ? (
-        <Chip tone="done" icon="tick">
+        <Chip tone="done" icon="fix">
           Fixed
         </Chip>
       ) : status === "reported" ? (
@@ -64,7 +64,7 @@ export function IssueCard({ group, issue }: { group: Group; issue: Issue }) {
         </span>
         <span className="font-mono text-[0.8125rem] leading-[1.125rem] text-ink-muted uppercase">Last entry {stamp(last)}</span>
       </span>
-      <Icon name="arrow" className="text-ink-muted" />
+      <Icon name="forward" className="text-ink-muted" />
     </Link>
   );
 }

@@ -21,7 +21,7 @@ export function GroupAddress({ group, issue }: { group: Group; issue?: Issue }) 
       <div className="flex items-center gap-2 rounded-lg bg-paper px-3 py-2">
         <span className="min-w-0 flex-1 truncate font-mono text-[0.9375rem] leading-[1.375rem]">{group.inbox}</span>
         <button type="button" onClick={copy} className="inline-flex min-h-11 items-center gap-1 px-2 font-bold">
-          <Icon name={copied ? "tick" : "copy"} size={18} />
+          <Icon name={copied ? "done" : "copy"} />
           {copied ? "Copied" : "Copy"}
         </button>
       </div>

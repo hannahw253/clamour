@@ -68,7 +68,7 @@ function Invites() {
     <main className="desk-flow flex flex-col gap-6 px-4 pt-5 pb-8">
       {isNew ? (
         <p role="status" className={`desk-span ${toastClass}`}>
-          <Icon name="tick" /> {group.name} is set up
+          <Icon name="done" /> {group.name} is set up
         </p>
       ) : null}
       <PageTitle sub="Share a link in your group chat. Anyone who opens it can ask to join with that role.">

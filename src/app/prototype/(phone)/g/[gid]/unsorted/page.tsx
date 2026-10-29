@@ -54,7 +54,7 @@ export default function Unsorted() {
                 <span className="flex flex-wrap gap-2">
                   <Chip>{EMAIL_VIA_LABEL[u.via]}</Chip>
                   {u.auth === "passed" ? (
-                    <Chip tone="done" icon="shield">
+                    <Chip tone="done" icon="verified">
                       Sender verified
                     </Chip>
                   ) : (

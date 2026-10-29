@@ -29,7 +29,7 @@ export default function More() {
           Your settings
           <span className="text-[0.9375rem] leading-[1.375rem] font-normal text-ink-muted">Notifications, appearance, message defaults, your data</span>
         </span>
-        <Icon name="arrow" />
+        <Icon name="forward" />
       </Link>
 
       {isAdmin ? (
@@ -39,7 +39,7 @@ export default function More() {
             One letter about several problems
             <span className="text-[0.9375rem] font-normal text-ink-muted">A group letter to the landlord, and asking everyone for updates first</span>
           </span>
-          <Icon name="arrow" />
+          <Icon name="forward" />
         </Link>
       ) : null}
 

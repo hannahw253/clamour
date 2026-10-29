@@ -136,7 +136,7 @@ function Desk() {
                   Settings
                 </Link>
                 <Link href={`/prototype/g/${group.id}/add`} className={buttonClass("secondary", "min-h-11 whitespace-nowrap")}>
-                  <Icon name="plus" /> Add a problem
+                  <Icon name="add" /> Add a problem
                 </Link>
               </nav>
             </div>
@@ -237,7 +237,7 @@ function Desk() {
                           Missed
                         </Chip>
                       ) : clock.tone === "met" ? (
-                        <Chip tone="done" icon="tick">
+                        <Chip tone="done" icon="fix">
                           Fixed
                         </Chip>
                       ) : null}
@@ -341,7 +341,7 @@ function BulkBar({ s, rows, onClear, onAsk }: { s: State; rows: Row[]; onClear: 
             {several ? <span className="min-w-40 flex-1 font-bold">{group.name} · {issues.length}</span> : <span className="flex-1" />}
             {can.askUpdates ? (
               <button type="button" onClick={() => onAsk(group, issues)} className="inline-flex min-h-10 items-center gap-2 rounded-md border-2 border-paper px-4 font-bold">
-                <Icon name="bell" /> Ask for updates
+                <Icon name="ask" /> Ask for updates
               </button>
             ) : null}
             <Link href={`/prototype/desk/compose?g=${group.id}&ids=${issues.map((i) => i.id).join(",")}`} className={buttonClass(several ? "secondary" : "primary", several ? "min-h-10 border-paper text-paper" : "min-h-10")}>
@@ -383,7 +383,7 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
           </p>
         </div>
         <button type="button" onClick={onClose} className="flex size-11 flex-none items-center justify-center" aria-label="Close">
-          <Icon name="back" className="rotate-180" />
+          <Icon name="close" />
         </button>
       </div>
 
@@ -405,19 +405,19 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
             <Icon name="letter" /> {next.button}
           </Link>
         ) : next.kind === "visit" ? (
-          <Button variant="primary" icon="door" onClick={() => setSheet("visit")}>
+          <Button variant="primary" icon="visit" onClick={() => setSheet("visit")}>
             {next.button}
           </Button>
         ) : next.kind === "case" ? (
           <Link href={`/prototype/case/${group.id}/${issue.id}?from=desk`} className={buttonClass("primary")}>
-            <Icon name="folder" /> {next.button}
+            <Icon name="caseFile" /> {next.button}
           </Link>
         ) : next.kind === "evidence" ? (
-          <Button variant="primary" icon="plus" onClick={() => setSheet("evidence")}>
+          <Button variant="primary" icon="add" onClick={() => setSheet("evidence")}>
             {next.button}
           </Button>
         ) : next.kind === "update" ? (
-          <Button variant="primary" icon="note" onClick={() => setSheet("update")}>
+          <Button variant="primary" icon="update" onClick={() => setSheet("update")}>
             {next.button}
           </Button>
         ) : null}
@@ -429,40 +429,40 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
           {can.askUpdates && status !== "fixed" ? (
             <li>
               <button type="button" className={action} onClick={() => setSheet("request")}>
-                <Icon name="bell" /> Ask the group for updates
+                <Icon name="ask" /> Ask the group for updates
               </button>
             </li>
           ) : null}
           <li>
             <button type="button" className={action} onClick={() => setSheet("update")}>
-              <Icon name="note" /> Add your household&rsquo;s update
+              <Icon name="update" /> Add your household&rsquo;s update
             </button>
           </li>
           {can.addEvidence ? (
             <li>
               <button type="button" className={action} onClick={() => setSheet("evidence")}>
-                <Icon name="plus" /> Add evidence
+                <Icon name="add" /> Add evidence
               </button>
             </li>
           ) : null}
           {can.addEvidence ? (
             <li>
               <button type="button" className={action} onClick={() => setSheet("report")}>
-                <Icon name="send" /> Log contact you&rsquo;ve already made
+                <Icon name="contact" /> Log contact you&rsquo;ve already made
               </button>
             </li>
           ) : null}
           {can.manage && status !== "fixed" ? (
             <li>
               <button type="button" className={action} onClick={() => setSheet("fixed")}>
-                <Icon name="tick" /> Mark as fixed
+                <Icon name="fix" /> Mark as fixed
               </button>
             </li>
           ) : null}
           {can.manage && status === "fixed" ? (
             <li>
               <button type="button" className={action} onClick={() => save([{ kind: "reopened", at: new Date().toISOString() }])}>
-                <Icon name="warning" /> It&rsquo;s gone wrong again: reopen
+                <Icon name="reopen" /> It&rsquo;s gone wrong again: reopen
               </button>
             </li>
           ) : null}
@@ -479,7 +479,7 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
             : null}
           <li>
             <Link href={`/prototype/case/${group.id}/${issue.id}?from=desk`} className={`${action} no-underline`}>
-              <Icon name="folder" /> Case file
+              <Icon name="caseFile" /> Case file
             </Link>
           </li>
         </ul>

@@ -50,9 +50,9 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
 
   const base = `/prototype/g/${group.id}`;
   const tabs: { href: string; title: string; icon: IconName; match: (p: string) => boolean }[] = [
-    { href: base, title: "Problems", icon: "list", match: (p) => p === base || p.startsWith(`${base}/i/`) },
-    { href: `${base}/add`, title: "Add", icon: "plus", match: (p) => p === `${base}/add` },
-    { href: `${base}/members`, title: "Members", icon: "people", match: (p) => p.startsWith(`${base}/members`) || p.startsWith(`${base}/invite`) },
+    { href: base, title: "Problems", icon: "problems", match: (p) => p === base || p.startsWith(`${base}/i/`) },
+    { href: `${base}/add`, title: "Add", icon: "add", match: (p) => p === `${base}/add` },
+    { href: `${base}/members`, title: "Members", icon: "members", match: (p) => p.startsWith(`${base}/members`) || p.startsWith(`${base}/invite`) },
     { href: `${base}/more`, title: "More", icon: "more", match: (p) => p.startsWith(`${base}/more`) },
   ];
 
@@ -130,7 +130,7 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
                 >
                   {isAdd ? (
                     <span className="flex size-11 items-center justify-center rounded-md bg-ink text-paper">
-                      <Icon name="plus" size={26} />
+                      <Icon name="add" size={24} />
                     </span>
                   ) : (
                     <Icon name={t.icon} size={24} />

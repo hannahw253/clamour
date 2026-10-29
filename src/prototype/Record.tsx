@@ -41,36 +41,36 @@ const CALL_TEXT = { you_called: "Called", they_called: "Got a call from", in_per
 export function entrySummary(e: Entry): { icon: IconName; text: string } {
   switch (e.kind) {
     case "logged":
-      return { icon: "plus", text: "Logged the problem" };
+      return { icon: "logged", text: "Logged the problem" };
     case "photo":
-      return { icon: "image", text: "Added a photo" };
+      return { icon: "camera", text: "Added a photo" };
     case "video":
       return { icon: "video", text: "Added a video" };
     case "note":
-      return { icon: "note", text: e.topic && topicLabel(e.topic) ? `Added an update: ${topicLabel(e.topic)!.toLowerCase()}` : "Added an update" };
+      return { icon: "update", text: e.topic && topicLabel(e.topic) ? `Added an update: ${topicLabel(e.topic)!.toLowerCase()}` : "Added an update" };
     case "reported":
-      return { icon: "send", text: `Told the landlord: ${METHOD_LABEL[e.method].toLowerCase()}` };
+      return { icon: "contact", text: `Told the landlord: ${METHOD_LABEL[e.method].toLowerCase()}` };
     case "visit":
-      return { icon: "door", text: "Landlord visited" };
+      return { icon: "visit", text: "Landlord visited" };
     case "letter":
       return { icon: "letter", text: `Prepared a letter: ${LETTER_LABEL[e.letter].toLowerCase()}` };
     case "fixed":
-      return { icon: "tick", text: "Marked as fixed" };
+      return { icon: "fix", text: "Marked as fixed" };
     case "reopened":
-      return { icon: "warning", text: "Reopened" };
+      return { icon: "reopen", text: "Reopened" };
     case "email":
-      return { icon: "letter", text: e.direction === "to_landlord" ? "Emailed the landlord" : "Landlord emailed" };
+      return { icon: "email", text: e.direction === "to_landlord" ? "Emailed the landlord" : "Landlord emailed" };
     case "messages":
-      return { icon: "image", text: `Added a screenshot of messages with ${e.with}` };
+      return { icon: "screenshot", text: `Added a screenshot of messages with ${e.with}` };
     case "chat_export":
-      return { icon: "chat", text: "Added a whole chat export" };
+      return { icon: "chatExport", text: "Added a whole chat export" };
     case "call":
-      return { icon: "phone", text: `${CALL_TEXT[e.direction]} ${e.with}` };
+      return { icon: "call", text: `${CALL_TEXT[e.direction]} ${e.with}` };
     case "post":
-      return { icon: "send", text: "Posted a letter" };
+      return { icon: "post", text: "Posted a letter" };
     case "reading":
       return {
-        icon: "gauge",
+        icon: "reading",
         text: `${e.measure === "humidity" ? "Humidity" : "Temperature"} ${e.value}${e.measure === "humidity" ? "%" : "°C"}${e.room ? ` in ${e.room.toLowerCase()}` : ""}`,
       };
     case "receipt":
@@ -83,7 +83,7 @@ export function EmailCheck({ e }: { e: Extract<Entry, { kind: "email" }> }) {
     <span className="flex flex-wrap gap-2">
       <Chip>{EMAIL_VIA_LABEL[e.via]}</Chip>
       {e.auth === "passed" ? (
-        <Chip tone="done" icon="shield">
+        <Chip tone="done" icon="verified">
           Sender verified
         </Chip>
       ) : e.auth === "lost" ? (
@@ -125,7 +125,7 @@ export function EntryBody({ e, issue }: { e: Entry; issue: Issue }) {
       {(e.kind === "post" || e.kind === "receipt") && e.photo ? <Img src={e.photo.src} alt={altFor(e.photo.alt)} /> : null}
       {e.kind === "post" && e.proof ? (
         <span>
-          <Chip icon="tick">Proof of postage</Chip>
+          <Chip icon="done">Proof of postage</Chip>
         </span>
       ) : null}
       {e.kind === "chat_export" ? (
@@ -180,8 +180,8 @@ export function Record({ group, issue, exhibits }: { group: Group; issue: Issue;
         return (
           <li key={e.id} className="flex gap-3 break-inside-avoid">
             <div className="flex flex-col items-center">
-              <span className="flex size-9 flex-none items-center justify-center rounded-full bg-concrete">
-                <Icon name={meta.icon} size={18} />
+              <span className="flex size-9 flex-none items-center justify-center rounded-md bg-concrete">
+                <Icon name={meta.icon} />
               </span>
               {i < entries.length - 1 ? <span className="w-0.5 flex-1 bg-line-subtle" /> : null}
             </div>
@@ -231,8 +231,8 @@ export function RecentActivity({ group, issue, limit }: { group: Group; issue: I
               onClick={() => setOpen(expanded ? null : e.id)}
               className="flex min-h-16 w-full items-center gap-3 py-3 text-left"
             >
-              <span className="flex size-9 flex-none items-center justify-center rounded-full bg-concrete">
-                <Icon name={meta.icon} size={18} />
+              <span className="flex size-9 flex-none items-center justify-center rounded-md bg-concrete">
+                <Icon name={meta.icon} />
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className={`text-[1rem] leading-[1.375rem] ${expanded ? "" : "line-clamp-2"}`}>
@@ -241,7 +241,7 @@ export function RecentActivity({ group, issue, limit }: { group: Group; issue: I
                 <span className="flex items-center gap-1.5 text-[0.8125rem] leading-[1.125rem] text-ink-muted">
                   {verified ? (
                     <>
-                      <Icon name="shield" size={14} /> Sender verified ·
+                      <Icon name="verified" size={16} /> Sender verified ·
                     </>
                   ) : null}
                   <span className="font-mono">{stamp(e.at)}</span>

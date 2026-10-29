@@ -88,7 +88,7 @@ export function DeskHeader() {
       <span className="rounded-sm border border-brand-paper/40 px-2 py-0.5 text-[0.8125rem] font-bold tracking-[0.08em] text-brand-paper/75 uppercase">Prototype</span>
       <span className="flex-1" />
       <Link href="/prototype/settings" className="inline-flex min-h-11 items-center gap-2 font-bold">
-        <Icon name="settings" size={18} /> Settings
+        <Icon name="settings" /> Settings
       </Link>
       <button
         type="button"
@@ -111,11 +111,13 @@ export function GroupsSidebar({ s, active }: { s: State; active: string }) {
     <nav aria-label="Groups" className="on-ink flex w-64 flex-none flex-col gap-1 border-t border-brand-paper/10 bg-brand-ink p-3 text-brand-paper print:hidden">
       <p className={`${label} px-3 pt-2 pb-1 text-brand-paper/75`}>Groups</p>
       <Link href="/prototype/desk" className={item(active === "all")}>
+        <Icon name="dashboard" />
         <span className="flex-1">All groups</span>
         <Count n={s.groups.reduce((n, g) => n + needs(g), 0)} />
       </Link>
       {s.groups.map((g) => (
         <Link key={g.id} href={`/prototype/desk?g=${g.id}`} className={item(active === g.id)}>
+          <Icon name="home" className="mt-0.5 self-start" />
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate">{g.name}</span>
             <span className="text-[0.8125rem] leading-[1.125rem] font-normal text-brand-paper/75">
@@ -126,7 +128,7 @@ export function GroupsSidebar({ s, active }: { s: State; active: string }) {
         </Link>
       ))}
       <Link href="/prototype/new" className="mt-2 flex min-h-11 items-center gap-2 px-3 font-bold">
-        <Icon name="plus" size={18} /> Start a group
+        <Icon name="add" /> Start a group
       </Link>
     </nav>
   );

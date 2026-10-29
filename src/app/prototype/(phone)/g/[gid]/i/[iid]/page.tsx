@@ -78,27 +78,27 @@ function IssueDetail() {
       </Link>
     ) : next.kind === "case" ? (
       <Link href={`/prototype/case/${group.id}/${issue.id}`} className={buttonClass("primary")}>
-        <Icon name="folder" />
+        <Icon name="caseFile" />
         {next.button}
       </Link>
     ) : next.kind === "visit" ? (
-      <Button variant="primary" icon="door" onClick={() => setSheet("visit")}>
+      <Button variant="primary" icon="visit" onClick={() => setSheet("visit")}>
         {next.button}
       </Button>
     ) : next.kind === "evidence" ? (
-      <Button variant="primary" icon="plus" onClick={() => setSheet("evidence")}>
+      <Button variant="primary" icon="add" onClick={() => setSheet("evidence")}>
         {next.button}
       </Button>
     ) : next.kind === "update" ? (
-      <Button variant="primary" icon="note" onClick={() => setSheet("update")}>
+      <Button variant="primary" icon="update" onClick={() => setSheet("update")}>
         {next.button}
       </Button>
     ) : null;
 
   // One row of secondary actions under the next step; everything else lives in More (calm screens).
   const quick: { text: string; icon: IconName; onClick: () => void }[] = [
-    ...(next.kind === "update" ? [] : [{ text: "Update", icon: "note" as IconName, onClick: () => setSheet("update") }]),
-    ...(can.addEvidence && next.kind !== "evidence" ? [{ text: "Evidence", icon: "plus" as IconName, onClick: () => setSheet("evidence") }] : []),
+    ...(next.kind === "update" ? [] : [{ text: "Update", icon: "update" as IconName, onClick: () => setSheet("update") }]),
+    ...(can.addEvidence && next.kind !== "evidence" ? [{ text: "Evidence", icon: "add" as IconName, onClick: () => setSheet("evidence") }] : []),
     { text: "More", icon: "more", onClick: () => setSheet("more") },
   ];
 
@@ -112,12 +112,12 @@ function IssueDetail() {
 
       {sent ? (
         <p role="status" className={toastClass}>
-          <Icon name="tick" className="mt-0.5" />
+          <Icon name="done" className="mt-0.5" />
           {sent === "email" ? "Sent. Your group’s copy is on the record, and the sender is verified." : "Added to the record. A screenshot of what you sent will make it stronger."}
         </p>
       ) : isNew ? (
         <p role="status" className={toastClass}>
-          <Icon name="tick" /> Saved to your group&rsquo;s record
+          <Icon name="done" /> Saved to your group&rsquo;s record
         </p>
       ) : null}
       {safety && status !== "fixed" ? <SafetyBanner kind={safety} /> : null}
@@ -136,7 +136,7 @@ function IssueDetail() {
                 </span>
                 <span className="flex flex-wrap items-center gap-2 text-[0.9375rem] leading-[1.375rem] text-ink-muted">
                   {r.state === "met" ? (
-                    <Chip tone="done" icon="tick">
+                    <Chip tone="done" icon="fix">
                       In time
                     </Chip>
                   ) : r.state === "missed" ? (
@@ -144,7 +144,7 @@ function IssueDetail() {
                       Missed
                     </Chip>
                   ) : (
-                    <Chip icon="clock">{longDate(r.due)}</Chip>
+                    <Chip icon="due">{longDate(r.due)}</Chip>
                   )}
                   {r.detail}
                 </span>
@@ -177,7 +177,7 @@ function IssueDetail() {
       <nav aria-label="More actions" className={`grid gap-2 ${quick.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
         {quick.map((q) => (
           <button key={q.text} type="button" onClick={q.onClick} className={buttonClass("secondary", "px-2 text-[0.9375rem]")}>
-            <Icon name={q.icon} size={18} />
+            <Icon name={q.icon} />
             {q.text}
           </button>
         ))}
@@ -221,22 +221,22 @@ function IssueDetail() {
       />
       <Sheet open={sheet === "more"} onClose={() => setSheet(null)} title="More">
         <ul className={panelList}>
-          {can.addEvidence ? <MoreRow icon="send" text="Log contact you've already made" onClick={() => setSheet("report")} /> : null}
+          {can.addEvidence ? <MoreRow icon="contact" text="Log contact you've already made" onClick={() => setSheet("report")} /> : null}
           {canAsk && status !== "fixed" && !openRequests(group, [issue.id]).some((r) => r.by === ME) ? (
-            <MoreRow icon="bell" text="Ask your group for updates first" onClick={() => setSheet("request")} />
+            <MoreRow icon="ask" text="Ask your group for updates first" onClick={() => setSheet("request")} />
           ) : null}
-          <MoreRow icon="note" text="Add your household's update" onClick={() => setSheet("update")} />
-          {can.addEvidence ? <MoreRow icon="plus" text="Add evidence" onClick={() => setSheet("evidence")} /> : null}
-          <MoreRow icon="folder" text="Case file" onClick={() => router.push(`/prototype/case/${group.id}/${issue.id}`)} />
-          {status !== "open" && can.addEvidence ? <MoreRow icon="door" text="Record a landlord visit" onClick={() => setSheet("visit")} /> : null}
+          <MoreRow icon="update" text="Add your household's update" onClick={() => setSheet("update")} />
+          {can.addEvidence ? <MoreRow icon="add" text="Add evidence" onClick={() => setSheet("evidence")} /> : null}
+          <MoreRow icon="caseFile" text="Case file" onClick={() => router.push(`/prototype/case/${group.id}/${issue.id}`)} />
+          {status !== "open" && can.addEvidence ? <MoreRow icon="visit" text="Record a landlord visit" onClick={() => setSheet("visit")} /> : null}
           {canManage
             ? (["repair_request", "reminder", "complaint"] as LetterKey[]).map((k) => (
                 <MoreRow key={k} icon="letter" text={MESSAGE_TITLE[k]} onClick={() => router.push(`${base}/send?letter=${k}`)} />
               ))
             : null}
-          {canManage && status !== "fixed" ? <MoreRow icon="tick" text="Mark as fixed" onClick={() => setSheet("fixed")} /> : null}
+          {canManage && status !== "fixed" ? <MoreRow icon="fix" text="Mark as fixed" onClick={() => setSheet("fixed")} /> : null}
           {canManage && status === "fixed" ? (
-            <MoreRow icon="warning" text="It's gone wrong again: reopen" onClick={() => save([{ kind: "reopened", at: new Date().toISOString() }])} />
+            <MoreRow icon="reopen" text="It's gone wrong again: reopen" onClick={() => save([{ kind: "reopened", at: new Date().toISOString() }])} />
           ) : null}
         </ul>
         {!canManage ? (
@@ -273,7 +273,7 @@ function MoreRow({ icon, text, onClick }: { icon: IconName; text: string; onClic
       <button type="button" onClick={onClick} className="flex min-h-14 w-full items-center gap-3 px-4 text-left text-[1.0625rem] leading-[1.625rem] font-bold">
         <Icon name={icon} />
         <span className="flex-1">{text}</span>
-        <Icon name="arrow" />
+        <Icon name="forward" />
       </button>
     </li>
   );

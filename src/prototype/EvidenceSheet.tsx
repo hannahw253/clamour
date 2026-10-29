@@ -21,14 +21,14 @@ type Kind = "photo" | "messages" | "email" | "call" | "post" | "reading" | "rece
 
 const KINDS: { kind: Kind; icon: IconName; title: string; short: string }[] = [
   { kind: "photo", icon: "camera", title: "Photo or video", short: "Photo or video" },
-  { kind: "messages", icon: "image", title: "Screenshot of messages", short: "Message screenshot" },
-  { kind: "email", icon: "letter", title: "Email", short: "Email" },
-  { kind: "call", icon: "phone", title: "Phone call or conversation", short: "Call or chat" },
-  { kind: "post", icon: "send", title: "Posted letter", short: "Posted letter" },
-  { kind: "reading", icon: "gauge", title: "Damp or temperature reading", short: "Reading" },
+  { kind: "messages", icon: "screenshot", title: "Screenshot of messages", short: "Message screenshot" },
+  { kind: "email", icon: "email", title: "Email", short: "Email" },
+  { kind: "call", icon: "call", title: "Phone call or conversation", short: "Call or chat" },
+  { kind: "post", icon: "post", title: "Posted letter", short: "Posted letter" },
+  { kind: "reading", icon: "reading", title: "Damp or temperature reading", short: "Reading" },
   { kind: "receipt", icon: "receipt", title: "Receipt", short: "Receipt" },
-  { kind: "chat", icon: "chat", title: "Whole chat export", short: "Chat export" },
-  { kind: "note", icon: "note", title: "Add an update", short: "Update in words" },
+  { kind: "chat", icon: "chatExport", title: "Whole chat export", short: "Chat export" },
+  { kind: "note", icon: "update", title: "Add an update", short: "Update in words" },
 ];
 
 const textareaClass = `${inputClass} min-h-24 py-3 leading-[1.625rem]`;
@@ -414,7 +414,7 @@ function ChatForm({ onSave }: { onSave: Save }) {
       <FilePick
         accept=".txt,.zip,text/plain,application/zip"
         text="Choose the exported chat"
-        icon="chat"
+        icon="chatExport"
         onFiles={async ([f]) => {
           if (!f) return;
           setError(null);

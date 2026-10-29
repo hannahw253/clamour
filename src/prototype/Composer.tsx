@@ -277,7 +277,7 @@ export function Composer({
     <>
       {myRequest ? (
         <p className="flex items-start gap-2 rounded-lg border-2 border-line px-4 py-3 text-[0.9375rem] leading-[1.375rem]">
-          <Icon name="bell" size={18} className="mt-0.5 flex-none" />
+          <Icon name="ask" className="mt-0.5" />
           <span>
             You asked for updates on {shortDate(londonParts(myRequest.at).ymd)}.{" "}
             {(() => {
@@ -380,7 +380,7 @@ export function Composer({
         </div>
         {written?.source === "ai" ? (
           <p role="status" className={`flex items-center gap-2 px-3 py-2 text-[0.9375rem] leading-[1.375rem] ${panel}`}>
-            <Icon name="spark" size={16} />
+            <Icon name="ai" size={16} />
             <span className="flex-1 font-bold">Written by AI from what you ticked. Check every fact before you send.</span>
             {aiPrev !== null ? (
               <button
@@ -442,7 +442,7 @@ export function Composer({
               setTimeout(() => setSheet("sent"), 400);
             }}
           >
-            <Icon name="letter" />
+            <Icon name="email" />
             Open in email
           </a>
           <button type="button" className="min-h-11 font-bold underline underline-offset-3" onClick={() => setSheet("other")}>
@@ -451,7 +451,7 @@ export function Composer({
         </>
       ) : (
         <>
-          <Button variant="primary" icon="spark" onClick={write} disabled={busy}>
+          <Button variant="primary" icon="ai" onClick={write} disabled={busy}>
             {busy ? "Writing…" : "Write it"}
           </Button>
           <p className="text-center text-[0.8125rem] leading-[1.125rem] text-ink-muted">You check it before anything is sent.</p>
@@ -514,7 +514,7 @@ export function Composer({
               setTimeout(() => setSheet("sent"), 400);
             }}
           >
-            <Icon name="chat" /> WhatsApp
+            <Icon name="whatsapp" /> WhatsApp
           </a>
           <a
             className={buttonClass("secondary")}
@@ -524,7 +524,7 @@ export function Composer({
               setTimeout(() => setSheet("sent"), 400);
             }}
           >
-            <Icon name="phone" /> Text message
+            <Icon name="text" /> Text message
           </a>
           <Button
             icon="copy"
@@ -620,7 +620,7 @@ function FactGroup({
       <div className="flex min-h-12 items-center gap-2 px-4">
         {facts.length ? (
           <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="flex min-h-12 flex-1 items-center gap-2 text-left">
-            <Icon name="arrow" size={18} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+            <Icon name="expand" className={`transition-transform ${open ? "rotate-180" : ""}`} />
             <span className="flex flex-col py-2">
               <span className="text-[1rem] leading-[1.375rem] font-bold">{title}</span>
               <span className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">{summary}</span>

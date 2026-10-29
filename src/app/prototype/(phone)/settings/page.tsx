@@ -187,9 +187,9 @@ export default function Settings() {
       </Section>
 
       <Section title="Your data">
-        <RowButton icon="copy" text="Download my entries" onClick={download} />
-        <RowButton icon="shield" text="Sign out everywhere" onClick={() => undefined} note="Prototype: there's no sign-in yet." />
-        <RowButton icon="warning" text="Delete my account" danger onClick={() => setConfirmDelete(true)} />
+        <RowButton icon="download" text="Download my entries" onClick={download} />
+        <RowButton icon="signOut" text="Sign out everywhere" onClick={() => undefined} note="Prototype: there's no sign-in yet." />
+        <RowButton icon="delete" text="Delete my account" danger onClick={() => setConfirmDelete(true)} />
       </Section>
 
       <Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete your account?">
@@ -292,7 +292,7 @@ function ToggleInline({ title, desc, on, onChange }: { title: string; desc?: str
   );
 }
 
-function RowButton({ icon, text, onClick, danger, note }: { icon: "copy" | "shield" | "warning"; text: string; onClick: () => void; danger?: boolean; note?: string }) {
+function RowButton({ icon, text, onClick, danger, note }: { icon: "download" | "signOut" | "delete"; text: string; onClick: () => void; danger?: boolean; note?: string }) {
   return (
     <button type="button" onClick={onClick} className={`flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left text-[1rem] font-bold ${danger ? "text-alarm" : ""}`}>
       <Icon name={icon} />
@@ -300,7 +300,7 @@ function RowButton({ icon, text, onClick, danger, note }: { icon: "copy" | "shie
         {text}
         {note ? <span className="text-[0.8125rem] leading-[1.125rem] font-normal text-ink-muted">{note}</span> : null}
       </span>
-      <Icon name="arrow" />
+      <Icon name="forward" />
     </button>
   );
 }

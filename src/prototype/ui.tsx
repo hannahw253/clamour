@@ -3,36 +3,7 @@
 /** Prototype building blocks, matching the Clamour brand kit's components. */
 
 import Link from "next/link";
-import {
-  Bell,
-  Camera,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Clock as ClockIcon,
-  Copy,
-  DoorOpen,
-  Ellipsis,
-  Folder,
-  Gauge,
-  Image as ImageIcon,
-  List,
-  Mail,
-  MessageSquare,
-  NotebookPen,
-  Phone,
-  Plus,
-  Receipt,
-  Send,
-  Settings,
-  Share,
-  ShieldCheck,
-  Sparkles,
-  TriangleAlert,
-  Users,
-  Video,
-  type LucideIcon,
-} from "lucide-react";
+import { Icon, type IconName } from "@/components/brand/Icon";
 import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
 import type { ClockView } from "./clocks";
 
@@ -59,44 +30,9 @@ export const toastClass = "flex items-start gap-2 rounded-lg border border-line-
 export const label = "text-[0.8125rem] leading-[1.125rem] font-bold tracking-[0.08em] uppercase";
 
 // ---- Icons --------------------------------------------------------------------
-// Lucide outline icons at a 2px stroke, as the brand kit specifies until Clamour has its own set.
+// The set, its names and its drawing rules live in the brand components (brand kit: Iconography).
 
-const ICONS = {
-  plus: Plus,
-  camera: Camera,
-  image: ImageIcon,
-  share: Share,
-  back: ChevronLeft,
-  list: List,
-  people: Users,
-  more: Ellipsis,
-  clock: ClockIcon,
-  tick: Check,
-  warning: TriangleAlert,
-  note: NotebookPen,
-  send: Send,
-  door: DoorOpen,
-  letter: Mail,
-  copy: Copy,
-  arrow: ChevronRight,
-  spark: Sparkles,
-  settings: Settings,
-  phone: Phone,
-  gauge: Gauge,
-  receipt: Receipt,
-  chat: MessageSquare,
-  video: Video,
-  shield: ShieldCheck,
-  folder: Folder,
-  bell: Bell,
-} satisfies Record<string, LucideIcon>;
-
-export type IconName = keyof typeof ICONS;
-
-export function Icon({ name, size = 20, className }: { name: IconName; size?: number; className?: string }) {
-  const Glyph = ICONS[name];
-  return <Glyph size={size} strokeWidth={2} aria-hidden="true" className={`flex-none ${className ?? ""}`} />;
-}
+export { Icon, type IconName };
 
 // ---- Button -------------------------------------------------------------------
 
@@ -161,7 +97,7 @@ export function Chip({ tone = "neutral", icon, children }: { tone?: ChipTone; ic
     <span
       className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[0.8125rem] leading-[1.125rem] font-bold whitespace-nowrap ${CHIP_TONE[tone]}`}
     >
-      {icon ? <Icon name={icon} size={14} /> : null}
+      {icon ? <Icon name={icon} size={16} /> : null}
       {children}
     </span>
   );
@@ -229,7 +165,7 @@ export function Field({
       ) : null}
       {error ? (
         <p className="flex items-center gap-1 text-[0.9375rem] leading-[1.375rem] font-bold text-alarm" role="alert">
-          <Icon name="warning" size={18} />
+          <Icon name="warning" />
           {error}
         </p>
       ) : null}

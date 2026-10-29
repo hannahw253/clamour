@@ -60,7 +60,7 @@ export default function Issues() {
           <span className="flex-1">
             {toFile} {toFile === 1 ? "email" : "emails"} to file
           </span>
-          <Icon name="arrow" />
+          <Icon name="forward" />
         </Link>
       ) : null}
 

@@ -40,7 +40,7 @@ export default function PrototypeHome() {
               "Write to your landlord with the facts filled in",
             ].map((t) => (
               <li key={t} className="flex gap-2">
-                <Icon name="tick" className="mt-[3px]" />
+                <Icon name="done" className="mt-[3px]" />
                 {t}
               </li>
             ))}
@@ -83,6 +83,7 @@ export default function PrototypeHome() {
                 href={`/prototype/g/${g.id}`}
                 className={`flex items-center gap-3 p-4 no-underline ${panel}`}
               >
+                <Icon name="home" size={24} className="self-start" />
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className={`${label} text-ink-muted`}>
                     {TYPE_LABEL[g.type]} · {NATION_LABEL[g.nation]}
@@ -101,14 +102,14 @@ export default function PrototypeHome() {
                     )}
                   </span>
                 </span>
-                <Icon name="arrow" />
+                <Icon name="forward" />
               </Link>
             </li>
           );
         })}
       </ul>
       <div className="flex flex-col gap-3">
-        <ButtonLink href="/prototype/new" variant="primary" icon="plus">
+        <ButtonLink href="/prototype/new" variant="primary" icon="add">
           Start a group
         </ButtonLink>
         {!s.groups.some((g) => g.id.startsWith("sample-")) ? (
@@ -121,12 +122,12 @@ export default function PrototypeHome() {
           onClick={() => setPrefs({ layout: "auto" })}
           className={`flex items-center gap-3 px-4 py-3 no-underline ${panel}`}
         >
-          <Icon name="list" />
+          <Icon name="dashboard" />
           <span className="flex flex-1 flex-col">
             <span className="font-bold">Open the dashboard</span>
             <span className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Every problem at once, for a computer</span>
           </span>
-          <Icon name="arrow" />
+          <Icon name="forward" />
         </Link>
       ) : (
         <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">On a computer, this opens as a dashboard with every problem at once.</p>

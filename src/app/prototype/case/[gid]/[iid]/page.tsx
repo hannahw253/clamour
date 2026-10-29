@@ -80,7 +80,7 @@ function CaseFile() {
             Write a formal complaint
           </Link>
         ) : null}
-        <Button variant="primary" icon="send" className="min-h-10" onClick={() => window.print()}>
+        <Button variant="primary" icon="print" className="min-h-10" onClick={() => window.print()}>
           Print or save as PDF
         </Button>
       </nav>

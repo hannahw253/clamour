@@ -51,7 +51,7 @@ function RequestNote({ group, request, onAdd }: { group: Group; request: UpdateR
   return (
     <section aria-label="Request for updates" className="rounded-lg bg-signal-soft">
       <div className="flex items-center gap-3 px-4 py-2">
-        <Icon name="bell" className="flex-none" />
+        <Icon name="ask" />
         <p className="flex-1 py-1.5 text-[0.9375rem] leading-[1.375rem]">
           {mine ? (
             <>
@@ -79,7 +79,7 @@ function RequestNote({ group, request, onAdd }: { group: Group; request: UpdateR
       {hasDetails ? (
         <details className="group border-t border-ink/15 px-4">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1 text-[0.9375rem] font-bold [&::-webkit-details-marker]:hidden">
-            <Icon name="arrow" size={16} className="transition-transform group-open:rotate-90" />
+            <Icon name="expand" size={16} className="transition-transform group-open:rotate-180" />
             {listInside ? "Add your update" : mine ? "Details" : "What they asked"}
           </summary>
           <div className="flex flex-col gap-2 pb-3">
@@ -158,7 +158,7 @@ export function UpdateForm({ group, issue, onDone }: { group: Group; issue: Issu
     <div className="flex flex-col gap-5">
       {request ? (
         <p className="flex items-start gap-2 rounded-lg bg-signal-soft px-3 py-2 text-[0.9375rem] leading-[1.375rem]">
-          <Icon name="bell" size={18} className="mt-0.5 flex-none" />
+          <Icon name="ask" className="mt-0.5" />
           <span>
             {memberName(group, request.by)} is writing to the landlord on {shortDate(request.writeOn)}. Anything you add now can go in.
           </span>
@@ -190,7 +190,7 @@ export function UpdateForm({ group, issue, onDone }: { group: Group; issue: Issu
                 onClick={() => toggle(k)}
                 className={toggleClass(on)}
               >
-                <Icon name={on ? "tick" : "plus"} size={16} />
+                <Icon name={on ? "done" : "add"} size={16} />
                 {AFFECTED[k].tick}
               </button>
             );
@@ -281,12 +281,12 @@ function RequestForm({ group, issues, onDone }: { group: Group; issues: Issue[];
     return (
       <div className="flex flex-col gap-4">
         <p role="status" className={toastClass}>
-          <Icon name="tick" className="mt-0.5" />
+          <Icon name="done" className="mt-0.5" />
           Asked {others} {others === 1 ? "member" : "members"}. They&rsquo;ll get a notification, and see it on the problem.
         </p>
         <p className="text-[1rem] leading-[1.25rem] ">Most groups also talk in a chat. Share it there too, so nobody misses it.</p>
         <a className={buttonClass("secondary")} href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noreferrer">
-          <Icon name="chat" /> Share in WhatsApp
+          <Icon name="whatsapp" /> Share in WhatsApp
         </a>
         <Button
           icon="copy"
@@ -351,7 +351,7 @@ function RequestForm({ group, issues, onDone }: { group: Group; issues: Issue[];
       </div>
       <Button
         variant="primary"
-        icon="bell"
+        icon="ask"
         onClick={() => {
           requestUpdates(group.id, { issueIds: issues.map((i) => i.id), writeOn, note });
           setSent(true);

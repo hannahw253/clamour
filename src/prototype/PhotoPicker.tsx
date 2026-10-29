@@ -44,7 +44,7 @@ export function PhotoPicker({ photos, onChange }: { photos: Photo[]; onChange: (
           />
         </label>
         <label htmlFor={`${id}-gallery`} className={buttonClass("secondary", "cursor-pointer has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-focus")}>
-          <Icon name="image" />
+          <Icon name="photos" />
           From gallery
           <input
             id={`${id}-gallery`}

@@ -104,7 +104,7 @@ export function AiHelp({
   return (
     <section aria-label="Adjust it" className="flex flex-col gap-3 rounded-lg border border-line-subtle p-4">
       <div className="flex items-center gap-2">
-        <Icon name="spark" size={18} />
+        <Icon name="ai" />
         <h2 className={label}>Adjust it</h2>
       </div>
       {off ? (

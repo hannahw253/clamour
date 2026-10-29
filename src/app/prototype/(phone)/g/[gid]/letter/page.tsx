@@ -80,7 +80,7 @@ function GroupLetter() {
           {picked.length ? `Write one letter about ${picked.length} ${picked.length === 1 ? "problem" : "problems"}` : "Choose problems first"}
         </Button>
         {can.askUpdates ? (
-          <Button variant="ghost" icon="bell" disabled={!picked.length} onClick={() => setAsking(true)}>
+          <Button variant="ghost" icon="ask" disabled={!picked.length} onClick={() => setAsking(true)}>
             Ask for updates first
           </Button>
         ) : null}
