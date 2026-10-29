@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { myEntries, prefsOf, resetPrototype, setMyName, setPrefs, useStore } from "@/prototype/store";
+import { LANGUAGES } from "@/prototype/AiHelp";
 import type { Prefs } from "@/prototype/types";
 import { Button, Icon, Loading, PageTitle, Sheet, inputClass, label } from "@/prototype/ui";
 
@@ -145,6 +146,23 @@ export default function Settings() {
           help="Added to messages so landlords can arrange access."
         />
         <TextRow id="signoff" title="Sign off as" value={p.signoff} onChange={(v) => update({ signoff: v })} placeholder={s.myName ?? "Your name"} help="Your full name, if you'd rather landlords saw it." />
+      </Section>
+
+      <Section title="AI help">
+        <Toggle title="Offer AI help with messages" desc="Firmer, friendlier, shorter, simpler, in your own words" on={p.ai} onChange={(v) => update({ ai: v })} />
+        <div className="flex flex-col gap-1.5 px-4 py-3">
+          <label htmlFor="language" className="text-[15px] font-bold">
+            Your language
+          </label>
+          <select id="language" className={`${inputClass} min-h-11 border bg-paper`} value={p.language} onChange={(e) => update({ language: e.target.value })}>
+            <option value="">English only</option>
+            {LANGUAGES.map((l) => (
+              <option key={l}>{l}</option>
+            ))}
+          </select>
+          <p className="text-[13px] leading-[18px] text-ink-muted">We can show messages in your language so you understand them. What&rsquo;s sent stays in English.</p>
+        </div>
+        <p className="px-4 pb-3 text-[13px] text-ink-muted">AI runs in London and only sees the message and the basic facts of the problem, never your photos or notes.</p>
       </Section>
 
       <Section title="Your data">

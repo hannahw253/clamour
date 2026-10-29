@@ -7,7 +7,8 @@
 import { addWorkingDays, firstReport, issueClock, unconfirmedCall } from "./clocks";
 import { addDays, daysBetween, letterDate, londonParts, todayYmd } from "./dates";
 import { entrySummary, sortedEntries } from "./Record";
-import { issueRef, type Group, type Issue, type LetterKey } from "./types";
+import type { AiFacts } from "@/lib/ai/rules";
+import { CATEGORY_LABEL, LETTER_LABEL, NATION_LABEL, issueRef, type Group, type Issue, type LetterKey } from "./types";
 
 export type Answers = { health: boolean; vulnerable: boolean; access: string };
 
@@ -186,5 +187,33 @@ ${myName}
 On behalf of ${group.name}
 
 This message was prepared with Clamour. It is not legal advice.`,
+  };
+}
+
+/**
+ * The facts sent with an AI request: only what the message needs (north star, document 5: AI, least data).
+ * Members' free-text notes aren't sent; anything personal reaches the AI only if it's already in the draft.
+ */
+export function aiFacts(key: LetterKey, group: Group, issues: Issue[]): AiFacts {
+  return {
+    letter: LETTER_LABEL[key],
+    group: group.name,
+    nation: NATION_LABEL[group.nation],
+    problems: issues.map((i) => {
+      const r = firstReport(i);
+      return {
+        ref: issueRef(i),
+        title: i.title,
+        room: i.room,
+        category: CATEGORY_LABEL[i.category],
+        firstReported: r ? letterDate(londonParts(r.at).ymd) : undefined,
+        standing: issueClock(group, i).words,
+      };
+    }),
+    record: issues
+      .flatMap((i) => sortedEntries(i).map((e) => ({ at: e.at, line: `${letterDate(londonParts(e.at).ymd)}: ${entrySummary(e).text}` })))
+      .sort((a, b) => a.at.localeCompare(b.at))
+      .slice(-14)
+      .map((x) => x.line),
   };
 }

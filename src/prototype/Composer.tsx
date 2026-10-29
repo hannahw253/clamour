@@ -8,7 +8,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { MESSAGE_TITLE, NO_ANSWERS, buildGroupMessage, buildMessage, type Answers } from "./messages";
+import { AiHelp } from "./AiHelp";
+import { MESSAGE_TITLE, NO_ANSWERS, aiFacts, buildGroupMessage, buildMessage, type Answers } from "./messages";
 import { addEntries, myMember, prefsOf, setLandlord, useStore } from "./store";
 import { LETTER_LABEL, type Group, type Issue, type LetterKey } from "./types";
 import { Button, Icon, Sheet, buttonClass, inputClass, label } from "./ui";
@@ -44,6 +45,7 @@ export function Composer({
   const [copyIn, setCopyIn] = useState<CopyIn>(() => prefsOf(s).copyIn);
   const [edited, setEdited] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [aiPrev, setAiPrev] = useState<string | null>(null);
   const [toDraft, setToDraft] = useState<{ name: string; email: string } | null>(null);
   const [sheet, setSheet] = useState<"copy" | "other" | "sent" | null>(null);
   const [channel, setChannel] = useState<"email" | "whatsapp" | "text" | "copy">("email");
@@ -162,12 +164,41 @@ export function Composer({
             {editing ? "Done" : "Edit"}
           </button>
         </div>
+        {aiPrev !== null ? (
+          <p role="status" className="flex items-center gap-2 rounded-lg bg-signal-soft px-3 py-2 text-[15px] leading-[22px]">
+            <Icon name="spark" size={16} />
+            <span className="flex-1 font-bold">AI suggestion. Check every fact before you send.</span>
+            <button
+              type="button"
+              className="min-h-11 px-1 font-bold underline underline-offset-3"
+              onClick={() => {
+                setEdited(aiPrev === message.body ? null : aiPrev);
+                setAiPrev(null);
+              }}
+            >
+              Undo
+            </button>
+          </p>
+        ) : null}
         {editing ? (
           <textarea aria-label="Message" className={`${inputClass} min-h-[380px] py-3 text-[16px] leading-[25px]`} value={body} onChange={(e) => setEdited(e.target.value)} />
         ) : (
           <p className="rounded-xl border border-line-subtle px-4 py-4 text-[16px] leading-[25px] whitespace-pre-wrap">{body}</p>
         )}
       </section>
+
+      {prefsOf(s).ai ? (
+        <AiHelp
+          draft={body}
+          facts={aiFacts(key, group, issues)}
+          language={prefsOf(s).language}
+          onApply={(text) => {
+            setAiPrev(body);
+            setEdited(text);
+            setEditing(false);
+          }}
+        />
+      ) : null}
 
       {!edited ? (
         <section className="flex flex-col gap-3">

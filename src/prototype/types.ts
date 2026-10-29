@@ -153,6 +153,10 @@ export type Prefs = {
   showAs: "name" | "initial";
   /** Groups you've muted notifications for. */
   muted: string[];
+  /** Offer AI help with messages (north star, decision D-024). */
+  ai: boolean;
+  /** Language to show messages in, for understanding; what's sent stays in English. */
+  language: string;
 };
 
 export const DEFAULT_PREFS: Prefs = {
@@ -167,6 +171,8 @@ export const DEFAULT_PREFS: Prefs = {
   signoff: "",
   showAs: "name",
   muted: [],
+  ai: true,
+  language: "",
 };
 
 export type State = {
