@@ -132,9 +132,47 @@ export type Group = {
   issues: Issue[];
 };
 
+/** Your own settings (north star, document 8: Account). Kept per person, not per group. */
+export type Prefs = {
+  email: string;
+  phone: string;
+  notify: {
+    channel: "email" | "app" | "both" | "none";
+    when: "instant" | "daily" | "weekly";
+    replies: boolean;
+    deadlines: boolean;
+    problems: boolean;
+    joins: boolean;
+  };
+  theme: "system" | "light" | "dark";
+  largeText: boolean;
+  reduceMotion: boolean;
+  copyIn: "bcc" | "cc" | "none";
+  access: string;
+  signoff: string;
+  showAs: "name" | "initial";
+  /** Groups you've muted notifications for. */
+  muted: string[];
+};
+
+export const DEFAULT_PREFS: Prefs = {
+  email: "",
+  phone: "",
+  notify: { channel: "email", when: "instant", replies: true, deadlines: true, problems: true, joins: true },
+  theme: "system",
+  largeText: false,
+  reduceMotion: false,
+  copyIn: "bcc",
+  access: "",
+  signoff: "",
+  showAs: "name",
+  muted: [],
+};
+
 export type State = {
   version: 3;
   myName: string | null;
+  prefs?: Prefs;
   /** Prototype only: see the app as another role. */
   viewAs: Role | null;
   groups: Group[];

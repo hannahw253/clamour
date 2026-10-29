@@ -13,6 +13,9 @@ export default function DeskLayout({ children }: Readonly<{ children: React.Reac
         <span className="text-[15px] font-semibold text-ink-muted">Dashboard</span>
         <span className="rounded-full bg-concrete px-2.5 py-0.5 text-[12px] font-bold tracking-[0.08em] uppercase">Prototype</span>
         <span className="flex-1" />
+        <Link href="/prototype/settings" className="inline-flex min-h-11 items-center gap-2 font-bold">
+          Settings
+        </Link>
         <Link href="/prototype" className="inline-flex min-h-11 items-center gap-2 font-bold">
           Phone view
         </Link>

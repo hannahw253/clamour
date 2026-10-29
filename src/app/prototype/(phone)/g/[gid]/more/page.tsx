@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { effectiveRole, findGroup, resetPrototype, updateSettings, useStore } from "@/prototype/store";
 import { GroupAddress } from "@/prototype/GroupAddress";
 import { NATION_LABEL, TYPE_LABEL } from "@/prototype/types";
-import { Button, ButtonLink, Loading, PageTitle, Sheet, label } from "@/prototype/ui";
+import { Button, ButtonLink, Icon, Loading, PageTitle, Sheet, label } from "@/prototype/ui";
 
 export default function More() {
   const { gid } = useParams<{ gid: string }>();
@@ -21,6 +22,15 @@ export default function More() {
   return (
     <main className="flex flex-col gap-7 px-4 pt-5 pb-8">
       <PageTitle>More</PageTitle>
+
+      <Link href="/prototype/settings" className="flex min-h-14 items-center gap-3 rounded-xl bg-concrete px-4 py-3 font-bold no-underline">
+        <Icon name="settings" />
+        <span className="flex flex-1 flex-col">
+          Your settings
+          <span className="text-[14px] font-normal text-ink-muted">Notifications, appearance, message defaults, your data</span>
+        </span>
+        <Icon name="arrow" />
+      </Link>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-[20px] leading-7 font-bold">Group settings</h2>

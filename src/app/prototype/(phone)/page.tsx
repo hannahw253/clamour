@@ -59,7 +59,12 @@ export default function PrototypeHome() {
 
   return (
     <main className="flex flex-1 flex-col gap-6 px-4 pt-6 pb-12">
-      <Lockup size={28} ground="paper" tagline={false} />
+      <div className="flex items-center justify-between">
+        <Lockup size={28} ground="paper" tagline={false} />
+        <Link href="/prototype/settings" className="flex size-11 items-center justify-center" aria-label="Settings">
+          <Icon name="settings" size={24} />
+        </Link>
+      </div>
       <PageTitle>Your groups</PageTitle>
       <ul className="flex flex-col gap-3">
         {s.groups.map((g) => {

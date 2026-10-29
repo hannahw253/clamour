@@ -75,7 +75,7 @@ function IssueDetail() {
         {next.button}
       </Link>
     ) : next.kind === "case" ? (
-      <Link href={`${base}/case`} className={buttonClass("primary")}>
+      <Link href={`/prototype/case/${group.id}/${issue.id}`} className={buttonClass("primary")}>
         <Icon name="folder" />
         {next.button}
       </Link>
@@ -93,7 +93,7 @@ function IssueDetail() {
     next.kind === "evidence"
       ? { text: "Log contact", icon: "send", onClick: () => setSheet("report") }
       : { text: "Add evidence", icon: "plus", onClick: () => setSheet("evidence") },
-    { text: "Case file", icon: "folder", href: `${base}/case` },
+    { text: "Case file", icon: "folder", href: `/prototype/case/${group.id}/${issue.id}` },
     { text: "More", icon: "more", onClick: () => setSheet("more") },
   ];
 

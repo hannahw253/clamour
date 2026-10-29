@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { MESSAGE_TITLE, NO_ANSWERS, buildGroupMessage, buildMessage, type Answers } from "./messages";
-import { addEntries, myMember, setLandlord, useStore } from "./store";
+import { addEntries, myMember, prefsOf, setLandlord, useStore } from "./store";
 import { LETTER_LABEL, type Group, type Issue, type LetterKey } from "./types";
 import { Button, Icon, Sheet, buttonClass, inputClass, label } from "./ui";
 
@@ -40,8 +40,8 @@ export function Composer({
 }) {
   const s = useStore();
   const router = useRouter();
-  const [answers, setAnswers] = useState<Answers>(NO_ANSWERS);
-  const [copyIn, setCopyIn] = useState<CopyIn>("bcc");
+  const [answers, setAnswers] = useState<Answers>(() => ({ ...NO_ANSWERS, access: prefsOf(s).access }));
+  const [copyIn, setCopyIn] = useState<CopyIn>(() => prefsOf(s).copyIn);
   const [edited, setEdited] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [toDraft, setToDraft] = useState<{ name: string; email: string } | null>(null);
@@ -52,7 +52,7 @@ export function Composer({
   const key: LetterKey = issues.length > 1 ? "group" : letterKey;
   const landlord = toDraft ?? { name: group.landlord?.name ?? "", email: group.landlord?.email ?? "" };
   const askForLandlord = !group.landlord?.email || toDraft !== null;
-  const myName = myMember(group)?.name ?? s.myName ?? "Your name";
+  const myName = prefsOf(s).signoff.trim() || myMember(group)?.name || s.myName || "Your name";
   const message =
     key === "group"
       ? buildGroupMessage({ group, issues, myName, landlordName: landlord.name }, answers)

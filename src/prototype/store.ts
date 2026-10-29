@@ -17,7 +17,9 @@ import {
   type Member,
   type Nation,
   type Role,
+  type Prefs,
   type State,
+  DEFAULT_PREFS,
 } from "./types";
 
 const KEY = "clamour-prototype-v3";
@@ -356,4 +358,29 @@ export function rejectUnsorted(groupId: string, unsortedId: string) {
 
 export function setLandlord(groupId: string, landlord: { name?: string; email?: string }) {
   updateGroup(groupId, (g) => ({ ...g, landlord: { ...g.landlord, ...landlord } }));
+}
+
+export function prefsOf(s: State | null): Prefs {
+  const p = s?.prefs;
+  return { ...DEFAULT_PREFS, ...p, notify: { ...DEFAULT_PREFS.notify, ...p?.notify } };
+}
+
+export function setPrefs(patch: Partial<Prefs>) {
+  const s = get();
+  set({ ...s, prefs: { ...prefsOf(s), ...patch } });
+}
+
+/** Your own entries across every group, for "Download my entries". */
+export function myEntries(s: State) {
+  return s.groups.flatMap((g) =>
+    g.issues.flatMap((i) =>
+      i.entries
+        .filter((e) => e.by === ME)
+        .map((e) => ({ group: g.name, problem: `${issueRefOf(i)} ${i.title}`, ...e })),
+    ),
+  );
+}
+
+function issueRefOf(i: Issue) {
+  return `CL-${i.ref}`;
 }

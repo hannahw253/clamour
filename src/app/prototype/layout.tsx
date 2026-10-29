@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PrefsApplier } from "@/prototype/PrefsApplier";
 
 export const metadata: Metadata = {
   title: "Clamour prototype",
@@ -8,5 +9,10 @@ export const metadata: Metadata = {
 
 /** The prototype has two layouts: the phone column, (phone), and the desktop dashboard, /prototype/desk. */
 export default function PrototypeRoot({ children }: Readonly<{ children: React.ReactNode }>) {
-  return children;
+  return (
+    <>
+      <PrefsApplier />
+      {children}
+    </>
+  );
 }

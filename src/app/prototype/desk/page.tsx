@@ -391,7 +391,7 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
             {next.button}
           </Button>
         ) : next.kind === "case" ? (
-          <Link href={`${phone}/case`} className={buttonClass("primary")}>
+          <Link href={`/prototype/case/${group.id}/${issue.id}?from=desk`} className={buttonClass("primary")}>
             <Icon name="folder" /> {next.button}
           </Link>
         ) : next.kind === "evidence" ? (
@@ -403,7 +403,7 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
           <Button icon="plus" onClick={() => setSheet("evidence")}>
             Add evidence
           </Button>
-          <Link href={`${phone}/case`} className={buttonClass("secondary")}>
+          <Link href={`/prototype/case/${group.id}/${issue.id}?from=desk`} className={buttonClass("secondary")}>
             <Icon name="folder" /> Case file
           </Link>
         </div>
