@@ -15,7 +15,7 @@ export type Category =
   | "other";
 
 export type ReportMethod = "email" | "text" | "phone" | "letter" | "in_person" | "portal";
-export type LetterKey = "repair_request" | "reminder" | "confirm" | "complaint";
+export type LetterKey = "repair_request" | "reminder" | "confirm" | "complaint" | "group";
 
 /** A file kept only as a fingerprint in the prototype (videos and chat exports are too big for browser storage). */
 export type FileRef = { name: string; sha256: string; bytes: number };
@@ -198,4 +198,5 @@ export const LETTER_LABEL: Record<LetterKey, string> = {
   reminder: "Reminder",
   confirm: "Confirming a conversation",
   complaint: "Formal complaint",
+  group: "Group letter",
 };

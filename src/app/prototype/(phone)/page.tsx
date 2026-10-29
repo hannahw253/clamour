@@ -104,6 +104,14 @@ export default function PrototypeHome() {
           <Button onClick={trySample}>Add the sample groups</Button>
         ) : null}
       </div>
+      <Link href="/prototype/desk" className="flex items-center gap-3 rounded-xl bg-concrete px-4 py-3 no-underline">
+        <Icon name="list" />
+        <span className="flex flex-1 flex-col">
+          <span className="font-bold">Open the dashboard</span>
+          <span className="text-[15px] text-ink-muted">Every problem at once, for a computer</span>
+        </span>
+        <Icon name="arrow" />
+      </Link>
     </main>
   );
 }

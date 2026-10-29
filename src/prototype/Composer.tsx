@@ -1,13 +1,17 @@
 "use client";
 
+/**
+ * The prepared email (north star, documents 6 and 8: "Do it for them"). Used full-screen on the
+ * phone and beside the record on the desktop dashboard. With several issues it writes one group letter.
+ */
+
 import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
-import { nextAction } from "@/prototype/actions";
-import { MESSAGE_TITLE, NO_ANSWERS, buildMessage, type Answers } from "@/prototype/messages";
-import { addEntries, findGroup, myMember, setLandlord, useStore } from "@/prototype/store";
-import { LETTER_LABEL, type LetterKey } from "@/prototype/types";
-import { Button, Icon, Loading, Sheet, buttonClass, inputClass, label } from "@/prototype/ui";
+import { useRouter } from "next/navigation";
+import { useState, type ReactNode } from "react";
+import { MESSAGE_TITLE, NO_ANSWERS, buildGroupMessage, buildMessage, type Answers } from "./messages";
+import { addEntries, myMember, setLandlord, useStore } from "./store";
+import { LETTER_LABEL, type Group, type Issue, type LetterKey } from "./types";
+import { Button, Icon, Sheet, buttonClass, inputClass, label } from "./ui";
 
 type CopyIn = "bcc" | "cc" | "none";
 
@@ -17,20 +21,25 @@ const COPY_TEXT: Record<CopyIn, { short: string; long: string }> = {
   none: { short: "Not copied", long: "Nothing is saved automatically. You’ll need to forward it to your group." },
 };
 
-export default function SendPage() {
-  return (
-    <Suspense fallback={<Loading />}>
-      <Send />
-    </Suspense>
-  );
-}
-
-/** The prepared email (north star, documents 6 and 8: "Do it for them"). */
-function Send() {
-  const { gid, iid } = useParams<{ gid: string; iid: string }>();
-  const asked = useSearchParams().get("letter");
-  const router = useRouter();
+export function Composer({
+  group,
+  issues,
+  letterKey,
+  back,
+  afterSent,
+  aside,
+}: {
+  group: Group;
+  issues: Issue[];
+  letterKey: LetterKey;
+  back: string;
+  /** Where to go once it's sent; gets "email" or "other". */
+  afterSent: (how: "email" | "other") => string;
+  /** On the desktop, the record shown beside the composer. */
+  aside?: ReactNode;
+}) {
   const s = useStore();
+  const router = useRouter();
   const [answers, setAnswers] = useState<Answers>(NO_ANSWERS);
   const [copyIn, setCopyIn] = useState<CopyIn>("bcc");
   const [edited, setEdited] = useState<string | null>(null);
@@ -38,26 +47,24 @@ function Send() {
   const [toDraft, setToDraft] = useState<{ name: string; email: string } | null>(null);
   const [sheet, setSheet] = useState<"copy" | "other" | "sent" | null>(null);
   const [channel, setChannel] = useState<"email" | "whatsapp" | "text" | "copy">("email");
-  if (!s) return <Loading />;
-  const group = findGroup(s, gid);
-  const issue = group?.issues.find((i) => i.id === iid);
-  if (!group || !issue) return null;
+  if (!s) return null;
 
-  const next = nextAction(group, issue);
-  const key: LetterKey =
-    asked && asked in LETTER_LABEL ? (asked as LetterKey) : next.kind === "send" ? next.letter : "repair_request";
+  const key: LetterKey = issues.length > 1 ? "group" : letterKey;
   const landlord = toDraft ?? { name: group.landlord?.name ?? "", email: group.landlord?.email ?? "" };
   const askForLandlord = !group.landlord?.email || toDraft !== null;
   const myName = myMember(group)?.name ?? s.myName ?? "Your name";
-  const message = buildMessage(key, { group, issue, myName, landlordName: landlord.name }, answers);
+  const message =
+    key === "group"
+      ? buildGroupMessage({ group, issues, myName, landlordName: landlord.name }, answers)
+      : buildMessage(key, { group, issue: issues[0], myName, landlordName: landlord.name }, answers);
   const body = edited ?? message.body;
-  const back = `/prototype/g/${group.id}/i/${issue.id}`;
 
   const params = new URLSearchParams();
   params.set("subject", message.subject);
   params.set("body", body);
   if (copyIn !== "none") params.set(copyIn, group.inbox);
   const mailto = `mailto:${encodeURIComponent(landlord.email.trim())}?${params.toString().replace(/\+/g, "%20")}`;
+  const shareText = `${message.subject}\n\n${body}`;
 
   const saveLandlord = () => {
     if (landlord.email.trim() || landlord.name.trim()) setLandlord(group.id, { name: landlord.name.trim(), email: landlord.email.trim() });
@@ -66,58 +73,49 @@ function Send() {
 
   const confirmSent = () => {
     const at = new Date().toISOString();
-    if (channel === "email" && copyIn !== "none") {
-      addEntries(group.id, issue.id, [
-        {
-          kind: "email",
-          direction: "to_landlord",
-          at,
-          from: `${myName} (you)`,
-          to: landlord.email.trim() || "your landlord",
-          subject: message.subject,
-          text: body,
-          via: copyIn,
-          auth: "passed",
-          letter: key,
-        },
-      ]);
-    } else {
-      addEntries(group.id, issue.id, [
-        {
-          kind: "reported",
-          method: channel === "whatsapp" || channel === "text" ? "text" : "email",
-          at,
-          text:
-            channel === "email"
-              ? `${LETTER_LABEL[key]} sent by email without copying the group in.`
-              : `${LETTER_LABEL[key]} sent by ${channel === "whatsapp" ? "WhatsApp" : channel === "text" ? "text" : "you"}. Add a screenshot so the record shows it.`,
-        },
-        { kind: "letter", letter: key, at, text: "Prepared in Clamour." },
-      ]);
+    const viaEmail = channel === "email" && copyIn !== "none";
+    for (const issue of issues) {
+      if (viaEmail) {
+        addEntries(group.id, issue.id, [
+          {
+            kind: "email",
+            direction: "to_landlord",
+            at,
+            from: `${myName} (you)`,
+            to: landlord.email.trim() || "your landlord",
+            subject: message.subject,
+            text: body,
+            via: copyIn as "cc" | "bcc",
+            auth: "passed",
+            letter: key,
+          },
+        ]);
+      } else {
+        addEntries(group.id, issue.id, [
+          {
+            kind: "reported",
+            method: channel === "whatsapp" || channel === "text" ? "text" : "email",
+            at,
+            text:
+              channel === "email"
+                ? `${LETTER_LABEL[key]} sent by email without copying the group in.`
+                : `${LETTER_LABEL[key]} sent by ${channel === "whatsapp" ? "WhatsApp" : channel === "text" ? "text" : "you"}. Add a screenshot so the record shows it.`,
+          },
+          { kind: "letter", letter: key, at, text: "Prepared in Clamour." },
+        ]);
+      }
     }
-    router.push(`${back}?sent=${channel === "email" && copyIn !== "none" ? "email" : "other"}`);
+    router.push(afterSent(viaEmail ? "email" : "other"));
   };
 
-  const shareText = `${message.subject}\n\n${body}`;
-
-  return (
-    <main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-6">
-      <Link href={back} className="inline-flex min-h-11 items-center gap-1 self-start font-bold">
-        <Icon name="back" /> Back
-      </Link>
-      <h1 className="font-display text-[32px] leading-[1.05] tracking-[0.01em] uppercase">{MESSAGE_TITLE[key]}</h1>
-
+  const composer = (
+    <div className="flex flex-col gap-6">
       {askForLandlord ? (
         <section className="flex flex-col gap-3 rounded-xl bg-concrete p-4">
           <p className="text-[17px] leading-6 font-bold">Who do you email about repairs?</p>
           <label className="flex flex-col gap-1">
             <span className="text-[15px] text-ink-muted">Name (landlord, agent or factor)</span>
-            <input
-              className={inputClass}
-              value={landlord.name}
-              onChange={(e) => setToDraft({ ...landlord, name: e.target.value })}
-              placeholder="Dan at the letting agent"
-            />
+            <input className={inputClass} value={landlord.name} onChange={(e) => setToDraft({ ...landlord, name: e.target.value })} placeholder="Dan at the letting agent" />
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-[15px] text-ink-muted">Email</span>
@@ -165,12 +163,7 @@ function Send() {
           </button>
         </div>
         {editing ? (
-          <textarea
-            aria-label="Message"
-            className={`${inputClass} min-h-[380px] py-3 text-[16px] leading-[25px]`}
-            value={body}
-            onChange={(e) => setEdited(e.target.value)}
-          />
+          <textarea aria-label="Message" className={`${inputClass} min-h-[380px] py-3 text-[16px] leading-[25px]`} value={body} onChange={(e) => setEdited(e.target.value)} />
         ) : (
           <p className="rounded-xl border border-line-subtle px-4 py-4 text-[16px] leading-[25px] whitespace-pre-wrap">{body}</p>
         )}
@@ -181,7 +174,7 @@ function Send() {
           <h2 className={label}>Add to the message (optional)</h2>
           <div className="flex flex-wrap gap-2">
             <Toggle on={answers.health} onClick={() => setAnswers({ ...answers, health: !answers.health })}>
-              It&rsquo;s affecting our health
+              It&rsquo;s affecting {key === "group" ? "people’s" : "our"} health
             </Toggle>
             <Toggle on={answers.vulnerable} onClick={() => setAnswers({ ...answers, vulnerable: !answers.vulnerable })}>
               Children or someone vulnerable lives here
@@ -197,7 +190,7 @@ function Send() {
         </section>
       ) : null}
 
-      <div className="sticky bottom-0 -mx-4 flex flex-col gap-2 border-t border-line-subtle bg-paper px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
+      <div className={`sticky bottom-0 flex flex-col gap-2 border-t border-line-subtle bg-paper pt-3 pb-[max(12px,env(safe-area-inset-bottom))] ${aside ? "" : "-mx-4 px-4"}`}>
         <a
           className={buttonClass("primary")}
           href={mailto}
@@ -214,6 +207,23 @@ function Send() {
           Send another way
         </button>
       </div>
+    </div>
+  );
+
+  return (
+    <main className={`flex flex-1 flex-col gap-6 ${aside ? "px-8 pt-6 pb-6" : "px-4 pt-4 pb-6"}`}>
+      <Link href={back} className="-ml-1 inline-flex min-h-11 items-center gap-1 self-start font-bold">
+        <Icon name="back" /> Back
+      </Link>
+      <h1 className="font-display text-[32px] leading-[1.05] tracking-[0.01em] uppercase">{MESSAGE_TITLE[key]}</h1>
+      {aside ? (
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-8">
+          {composer}
+          <aside className="sticky top-6 flex max-h-[calc(100dvh-48px)] flex-col gap-3 overflow-y-auto rounded-xl border border-line-subtle p-5">{aside}</aside>
+        </div>
+      ) : (
+        composer
+      )}
 
       <Sheet open={sheet === "copy"} onClose={() => setSheet(null)} title="Copy your group in?">
         <div className="flex flex-col gap-2">
@@ -274,9 +284,7 @@ function Send() {
             Copy the message
           </Button>
         </div>
-        <p className="text-[15px] leading-[22px] text-ink-muted">
-          Sending a letter by post? Copy it, print it, and keep the proof of postage. Add a photo of both afterwards.
-        </p>
+        <p className="text-[15px] leading-[22px] text-ink-muted">Sending a letter by post? Copy it, print it, and keep the proof of postage. Add a photo of both afterwards.</p>
       </Sheet>
 
       <Sheet open={sheet === "sent"} onClose={() => setSheet(null)} title="Did you send it?">
@@ -286,9 +294,7 @@ function Send() {
             : "Tell us once it’s sent and we’ll add it to the record."}
         </p>
         {channel === "email" && copyIn !== "none" ? (
-          <p className="text-[15px] leading-[22px] text-ink-muted">
-            Prototype: the full app does this by itself when your copy arrives, so there&rsquo;s no need to ask.
-          </p>
+          <p className="text-[15px] leading-[22px] text-ink-muted">Prototype: the full app does this by itself when your copy arrives, so there&rsquo;s no need to ask.</p>
         ) : null}
         <Button variant="primary" onClick={confirmSent}>
           Yes, I sent it
@@ -301,7 +307,7 @@ function Send() {
   );
 }
 
-function Row({ title, children }: { title: string; children: React.ReactNode }) {
+function Row({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="flex min-h-14 items-center gap-3 px-4 py-2">
       <dt className="w-16 flex-none text-[15px] text-ink-muted">{title}</dt>
@@ -310,15 +316,13 @@ function Row({ title, children }: { title: string; children: React.ReactNode }) 
   );
 }
 
-function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className={`inline-flex min-h-11 items-center gap-2 rounded-full border-2 px-4 text-[15px] font-bold ${
-        on ? "border-line bg-ink text-paper" : "border-line-subtle bg-paper text-ink"
-      }`}
+      className={`inline-flex min-h-11 items-center gap-2 rounded-full border-2 px-4 text-[15px] font-bold ${on ? "border-line bg-ink text-paper" : "border-line-subtle bg-paper text-ink"}`}
     >
       {on ? <Icon name="tick" size={16} /> : <Icon name="plus" size={16} />}
       {children}

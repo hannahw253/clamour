@@ -18,6 +18,7 @@ export const MESSAGE_TITLE: Record<LetterKey, string> = {
   reminder: "Send a reminder",
   confirm: "Confirm what was said",
   complaint: "Make a formal complaint",
+  group: "Send a group letter",
 };
 
 const time = (iso: string) => {
@@ -139,5 +140,51 @@ Please let me know by ${replyBy} when the work will be done.
 ${sign}
 
 ${footer}`,
+  };
+}
+
+/** One letter about several problems in the same group: the "group letter of demands" in document 6. */
+export function buildGroupMessage(
+  ctx: { group: Group; issues: Issue[]; myName: string; landlordName?: string },
+  answers: Answers,
+): { subject: string; body: string } {
+  const { group, issues, myName } = ctx;
+  const today = todayYmd();
+  const replyBy = letterDate(addDays(today, 7));
+  const households = new Set(issues.map((i) => i.createdBy)).size;
+  const lines = issues
+    .map((issue) => {
+      const report = firstReport(issue);
+      const clock = issueClock(group, issue);
+      const first = report
+        ? `First reported ${letterDate(londonParts(report.at).ymd)}, ${daysBetween(londonParts(report.at).ymd, today)} days ago.`
+        : "Not reported before this letter.";
+      const missed = clock.tone === "missed" ? ` Legal deadline missed: ${clock.value}.` : "";
+      return `- [${issueRef(issue)}] ${issue.title}${issue.room ? ` (${issue.room})` : ""}. ${first}${missed}`;
+    })
+    .join("\n");
+  const extras = [
+    answers.vulnerable ? "Children or vulnerable people live in some of these homes, so please treat them as urgent." : "",
+    answers.health ? "We are worried these problems are affecting our health." : "",
+    answers.access.trim() ? `To arrange access, we are available ${answers.access.trim().replace(/\.$/, "")}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return {
+    subject: `Repairs needed at ${group.name} [${issues.map(issueRef).join(", ")}]`,
+    body: `Dear ${ctx.landlordName?.trim() || "landlord"},
+
+I am writing on behalf of ${households} ${households === 1 ? "household" : "households"} at ${group.name} about ${issues.length} repairs that have not been fixed.
+
+${lines}${extras ? `\n\n${extras}` : ""}
+
+Please reply by ${replyBy} with a date for each repair.
+
+Yours sincerely,
+
+${myName}
+On behalf of ${group.name}
+
+This message was prepared with Clamour. It is not legal advice.`,
   };
 }

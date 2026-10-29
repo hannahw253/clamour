@@ -13,8 +13,10 @@ export type NextAction =
   | { kind: "done"; headline: string; why: string };
 
 function sentLetters(issue: Issue, key: LetterKey): Entry[] {
+  // A group letter about several problems counts as a reminder for each of them.
+  const keys: LetterKey[] = key === "reminder" ? ["reminder", "group"] : [key];
   return issue.entries
-    .filter((e) => (e.kind === "letter" && e.letter === key) || (e.kind === "email" && e.letter === key))
+    .filter((e) => (e.kind === "letter" && keys.includes(e.letter)) || (e.kind === "email" && !!e.letter && keys.includes(e.letter)))
     .sort((a, b) => a.at.localeCompare(b.at));
 }
 
