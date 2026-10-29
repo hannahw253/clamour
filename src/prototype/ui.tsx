@@ -338,7 +338,7 @@ export function Sheet({
 
 export function PageTitle({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="desk-span flex flex-col gap-2">
       <h1 className="font-display text-[34px] leading-[1.05] tracking-[0.01em] uppercase">{children}</h1>
       {sub ? <p className="text-[17px] leading-[26px] text-ink-muted">{sub}</p> : null}
     </div>

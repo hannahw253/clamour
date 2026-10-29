@@ -12,6 +12,7 @@ import { RecentActivity } from "@/prototype/Record";
 import { RequestBanner, RequestSheet, UpdateSheet, UpdatesCard } from "@/prototype/Updates";
 import { addEntries, findGroup, memberName, permissions, useStore } from "@/prototype/store";
 import { nextFor } from "@/prototype/nextFor";
+import { useDesktop } from "@/prototype/Frame";
 import { CATEGORY_LABEL, ME, issueRef, type LetterKey } from "@/prototype/types";
 import { Button, Chip, Icon, Loading, SafetyBanner, Sheet, buttonClass, label, safetyKind, type IconName } from "@/prototype/ui";
 
@@ -42,6 +43,7 @@ function IssueDetail() {
   const [sheet, setSheet] = useState<SheetKind>(() => (search.get("update") === "1" ? "update" : null));
   const [allDeadlines, setAllDeadlines] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const desktop = useDesktop();
   if (!s) return <Loading />;
   const group = findGroup(s, gid);
   const issue = group?.issues.find((i) => i.id === iid);
@@ -104,7 +106,7 @@ function IssueDetail() {
   ];
 
   return (
-    <main className="flex flex-1 flex-col gap-6 px-4 pt-3 pb-10">
+    <main className="desk-issue flex flex-1 flex-col gap-6 px-4 pt-3 pb-10">
       <Link href={`/prototype/g/${group.id}`} className="-ml-1 inline-flex min-h-11 items-center gap-1 self-start font-bold">
         <Icon name="back" /> Problems
       </Link>
@@ -203,16 +205,16 @@ function IssueDetail() {
         )}
       </nav>
 
-      <section className="flex flex-col gap-1">
+      <section className="desk-side flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <h2 className="text-[20px] leading-7 font-bold">{showAll ? "Everything on the record" : "Latest"}</h2>
-          {issue.entries.length > 3 ? (
+          <h2 className="text-[20px] leading-7 font-bold">{showAll || desktop ? "Everything on the record" : "Latest"}</h2>
+          {issue.entries.length > 3 && !desktop ? (
             <button type="button" className="min-h-11 px-1 font-bold underline underline-offset-3" onClick={() => setShowAll(!showAll)}>
               {showAll ? "Show less" : `See all ${issue.entries.length}`}
             </button>
           ) : null}
         </div>
-        <RecentActivity group={group} issue={issue} limit={showAll ? undefined : 3} />
+        <RecentActivity group={group} issue={issue} limit={showAll || desktop ? undefined : 3} />
       </section>
 
       <UpdateSheet open={sheet === "update"} onClose={() => setSheet(null)} group={group} issue={issue} />

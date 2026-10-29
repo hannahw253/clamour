@@ -24,7 +24,7 @@ export default function Join() {
 
   if (!invite) {
     return (
-      <main className="flex flex-col gap-6 px-4 pt-10 pb-12">
+      <main className="desk-narrow flex flex-col gap-6 px-4 pt-10 pb-12">
         <PageTitle sub="It may have been reset by an admin, or copied only in part. Ask whoever sent it for a new one.">
           This link doesn&rsquo;t work
         </PageTitle>
@@ -55,7 +55,7 @@ export default function Join() {
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-8 px-4 pt-8 pb-12">
+    <main className="desk-narrow flex flex-1 flex-col gap-8 px-4 pt-8 pb-12">
       <Lockup size={32} ground="paper" tagline={false} />
       <div className="flex flex-col gap-3">
         <p className={`${label} text-ink-muted`}>

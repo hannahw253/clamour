@@ -125,3 +125,49 @@ body {
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+/*
+ * Phone screens inside the desktop frame (north star, document 8; decision D-027) use the whole width:
+ * "desk-flow" pages flow their sections into two columns, and "desk-issue" puts the record beside the problem.
+ */
+[data-layout="desk"] main {
+  padding-inline: 32px;
+  padding-top: 24px;
+}
+[data-layout="desk"] .desk-flow {
+  display: block;
+  columns: 2;
+  column-gap: 40px;
+}
+[data-layout="desk"] .desk-flow > * {
+  break-inside: avoid;
+  margin-bottom: 28px;
+}
+[data-layout="desk"] .desk-flow > .desk-span {
+  column-span: all;
+}
+[data-layout="desk"] main.desk-issue {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+  column-gap: 40px;
+  row-gap: 24px;
+  align-items: start;
+}
+[data-layout="desk"] main.desk-issue > * {
+  grid-column: 1;
+}
+[data-layout="desk"] main.desk-issue > .desk-side {
+  grid-column: 2;
+  grid-row: 1 / span 30;
+  position: sticky;
+  top: 24px;
+}
+[data-layout="desk"] main.desk-narrow {
+  max-width: 760px;
+}
+[data-layout="desk"] .desk-flow > button.desk-span,
+[data-layout="desk"] .desk-flow > a.desk-span {
+  display: flex;
+  width: fit-content;
+  min-width: 240px;
+}

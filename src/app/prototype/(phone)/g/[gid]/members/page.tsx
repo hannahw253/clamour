@@ -22,7 +22,7 @@ export default function Members() {
     .sort((a, b) => ["owner", "admin", "submitter"].indexOf(a.role) - ["owner", "admin", "submitter"].indexOf(b.role));
 
   return (
-    <main className="flex flex-col gap-6 px-4 pt-5 pb-8">
+    <main className="desk-flow flex flex-col gap-6 px-4 pt-5 pb-8">
       <PageTitle>Members</PageTitle>
 
       {isAdmin && pending.length ? (

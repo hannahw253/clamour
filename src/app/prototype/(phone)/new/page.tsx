@@ -41,7 +41,7 @@ export default function NewGroup() {
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-12">
+    <main className="desk-narrow flex flex-1 flex-col gap-6 px-4 pt-4 pb-12">
       <Link href="/prototype" className="inline-flex min-h-11 items-center gap-1 self-start font-bold">
         <Icon name="back" /> Your groups
       </Link>

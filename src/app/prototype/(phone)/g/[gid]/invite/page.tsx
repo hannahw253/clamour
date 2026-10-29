@@ -65,9 +65,9 @@ function Invites() {
   };
 
   return (
-    <main className="flex flex-col gap-6 px-4 pt-5 pb-8">
+    <main className="desk-flow flex flex-col gap-6 px-4 pt-5 pb-8">
       {isNew ? (
-        <p role="status" className="flex items-center gap-2 rounded-lg bg-concrete px-4 py-3 text-[17px] font-bold">
+        <p role="status" className="desk-span flex items-center gap-2 rounded-lg bg-concrete px-4 py-3 text-[17px] font-bold">
           <Icon name="tick" /> {group.name} is set up
         </p>
       ) : null}
@@ -120,7 +120,7 @@ function Invites() {
           Go to your group
         </ButtonLink>
       ) : (
-        <Link href={`${base}/members`} className="inline-flex min-h-11 items-center gap-1 self-start font-bold">
+        <Link href={`${base}/members`} className="desk-span inline-flex min-h-11 items-center gap-1 self-start font-bold">
           <Icon name="back" /> Members
         </Link>
       )}

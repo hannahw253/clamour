@@ -37,8 +37,8 @@ export default function Settings() {
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-7 px-4 pt-3 pb-12">
-      <div className="flex items-center justify-between">
+    <main className="desk-flow flex flex-1 flex-col gap-7 px-4 pt-3 pb-12">
+      <div className="desk-span flex items-center justify-between">
         <Link href="/prototype" className="-ml-1 inline-flex min-h-11 items-center gap-1 font-bold">
           <Icon name="back" /> Your groups
         </Link>

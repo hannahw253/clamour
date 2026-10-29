@@ -44,7 +44,7 @@ export default function AddIssue() {
       {safety ? <SafetyBanner kind={safety} /> : null}
       <PageTitle sub="A photo and one line is enough. You can add more later.">Log a problem</PageTitle>
 
-      <form onSubmit={submit} noValidate className="flex flex-col gap-7">
+      <form onSubmit={submit} noValidate className="desk-flow flex flex-col gap-7">
         <div className="flex flex-col gap-2">
           <p className={label}>Photos</p>
           <PhotoPicker photos={photos} onChange={setPhotos} />
@@ -99,7 +99,7 @@ export default function AddIssue() {
           />
         </Field>
 
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" className="desk-span">
           Save problem
         </Button>
       </form>

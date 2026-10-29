@@ -141,15 +141,15 @@ function Count({ n }: { n: number }) {
   );
 }
 
-/** The desktop frame around a screen that also exists on the phone: header, groups, and a readable column. */
+/** The desktop frame around a screen that also exists on the phone: header, groups, and the full width for the screen (globals.css lays it out). */
 export function DeskFrame({ s, active, children }: { s: State; active: string; children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-1 flex-col bg-paper">
       <DeskHeader />
       <div className="flex min-h-0 flex-1">
         <GroupsSidebar s={s} active={active} />
-        <div className="flex min-w-0 flex-1 justify-center bg-concrete/40">
-          <div className="flex w-full max-w-[760px] flex-col border-x border-line-subtle bg-paper">{children}</div>
+        <div data-layout="desk" className="flex min-w-0 flex-1 flex-col bg-paper">
+          {children}
         </div>
       </div>
     </div>

@@ -20,7 +20,7 @@ export default function More() {
   const isAdmin = role !== "submitter";
 
   return (
-    <main className="flex flex-col gap-7 px-4 pt-5 pb-8">
+    <main className="desk-flow flex flex-col gap-7 px-4 pt-5 pb-8">
       <PageTitle>More</PageTitle>
 
       <Link href="/prototype/settings" className="flex min-h-14 items-center gap-3 rounded-xl bg-concrete px-4 py-3 font-bold no-underline">
