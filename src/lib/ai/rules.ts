@@ -14,6 +14,8 @@ export type AiFacts = {
   problems: { ref: string; title: string; room?: string; category: string; firstReported?: string; standing: string }[];
   /** Short dated summaries of the record, newest last. */
   record: string[];
+  /** Details the member chose to include, in their words or from the record. Already in the draft. */
+  included?: string[];
 };
 
 export type AiRequest = {
@@ -51,6 +53,7 @@ export function buildPrompt(req: AiRequest): { system: string; user: string } {
     ),
     "Record:",
     ...req.facts.record.map((r) => `- ${r}`),
+    ...(req.facts.included?.length ? ["Details the member chose to include (keep their meaning; you may reword them):", ...req.facts.included.map((r) => `- ${r}`)] : []),
   ].join("\n");
 
   if (req.mode === "translate") {

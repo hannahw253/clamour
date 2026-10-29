@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { myEntries, prefsOf, resetPrototype, setMyName, setPrefs, useStore } from "@/prototype/store";
 import { LANGUAGES } from "@/prototype/AiHelp";
+import { ACCESS_SLOTS, accessText } from "@/prototype/context";
 import type { Prefs } from "@/prototype/types";
 import { Button, Icon, Loading, PageTitle, Sheet, inputClass, label } from "@/prototype/ui";
 
@@ -137,14 +138,30 @@ export default function Settings() {
           ]}
           onChange={(v) => update({ copyIn: v as Prefs["copyIn"] })}
         />
-        <TextRow
-          id="access"
-          title="When you're usually in"
-          value={p.access}
-          onChange={(v) => update({ access: v })}
-          placeholder="weekdays after 5pm"
-          help="Added to messages so landlords can arrange access."
-        />
+        <div className="flex flex-col gap-2 px-4 py-3">
+          <p className="text-[15px] font-bold">When you&rsquo;re usually in</p>
+          <div className="flex flex-wrap gap-2">
+            {ACCESS_SLOTS.map((slot) => {
+              const onSlot = p.accessSlots.includes(slot);
+              return (
+                <button
+                  key={slot}
+                  type="button"
+                  aria-pressed={onSlot}
+                  onClick={() => update({ accessSlots: onSlot ? p.accessSlots.filter((x) => x !== slot) : [...p.accessSlots, slot] })}
+                  className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 px-3.5 text-[14px] font-bold ${onSlot ? "border-line bg-ink text-paper" : "border-line-subtle bg-paper"}`}
+                >
+                  {slot.charAt(0).toUpperCase() + slot.slice(1)}
+                </button>
+              );
+            })}
+          </div>
+          <label htmlFor="access" className="sr-only">
+            Anything else about access
+          </label>
+          <input id="access" className={`${inputClass} min-h-11 border bg-paper`} value={p.access} placeholder="Anything else? e.g. spare key with number 12" onChange={(e) => update({ access: e.target.value })} />
+          <p className="text-[13px] leading-[18px] text-ink-muted">{accessText(p) || "Added to messages so landlords can arrange access."}</p>
+        </div>
         <TextRow id="signoff" title="Sign off as" value={p.signoff} onChange={(v) => update({ signoff: v })} placeholder={s.myName ?? "Your name"} help="Your full name, if you'd rather landlords saw it." />
       </Section>
 

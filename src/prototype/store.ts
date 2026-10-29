@@ -17,6 +17,7 @@ import {
   type Member,
   type Nation,
   type Role,
+  type IssueContext,
   type Prefs,
   type State,
   DEFAULT_PREFS,
@@ -383,4 +384,16 @@ export function myEntries(s: State) {
 
 function issueRefOf(i: Issue) {
   return `CL-${i.ref}`;
+}
+
+export function updateIssueContext(groupId: string, issueId: string, patch: Partial<IssueContext>) {
+  updateIssue(groupId, issueId, (i) => ({ ...i, context: { ...i.context, ...patch } }));
+}
+
+export function setGroupAddress(groupId: string, address: { line: string; postcode: string }) {
+  updateGroup(groupId, (g) => ({ ...g, address }));
+}
+
+export function setMyFlat(groupId: string, flat: string) {
+  updateGroup(groupId, (g) => ({ ...g, members: g.members.map((m) => (m.id === ME ? { ...m, flat: flat.trim() || undefined } : m)) }));
 }

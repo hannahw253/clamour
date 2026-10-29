@@ -8,11 +8,11 @@ import { addWorkingDays, firstReport, issueClock, unconfirmedCall } from "./cloc
 import { addDays, daysBetween, letterDate, londonParts, todayYmd } from "./dates";
 import { entrySummary, sortedEntries } from "./Record";
 import type { AiFacts } from "@/lib/ai/rules";
+import { addressLine, sentence, type Fact } from "./context";
 import { CATEGORY_LABEL, LETTER_LABEL, NATION_LABEL, issueRef, type Group, type Issue, type LetterKey } from "./types";
 
-export type Answers = { health: boolean; vulnerable: boolean; access: string };
-
-export const NO_ANSWERS: Answers = { health: false, vulnerable: false, access: "" };
+/** What the member chose for this message: the facts ticked, this letter's prompt, and access times. */
+export type Answers = { prompt: string; selected: Fact[]; access: string };
 
 export const MESSAGE_TITLE: Record<LetterKey, string> = {
   repair_request: "Report the problem",
@@ -21,6 +21,8 @@ export const MESSAGE_TITLE: Record<LetterKey, string> = {
   complaint: "Make a formal complaint",
   group: "Send a group letter",
 };
+
+const FOOTER = "This message was prepared with Clamour. It is not legal advice.";
 
 const time = (iso: string) => {
   const p = londonParts(iso);
@@ -35,124 +37,96 @@ export function buildMessage(
   const { group, issue, myName } = ctx;
   const report = firstReport(issue);
   const today = todayYmd();
-  const where = issue.room ? ` (${issue.room})` : "";
+  const address = addressLine(group, issue.createdBy);
+  const myAddress = addressLine(group);
   const firstDate = report ? letterDate(londonParts(report.at).ymd) : null;
   const days = report ? daysBetween(londonParts(report.at).ymd, today) : 0;
   const replyBy = letterDate(addDays(today, 7));
   const ref = ` [${issueRef(issue)}]`;
-  const greeting = `Dear ${ctx.landlordName?.trim() || "landlord"},`;
-  const formal = key === "complaint";
-  const sign = `${formal ? "Yours sincerely" : "Thank you"},\n\n${myName}\n${group.name}`;
-  const footer = "This message was prepared with Clamour. It is not legal advice.";
-
-  const extras = [
-    answers.vulnerable ? "Children or someone vulnerable lives here, so please treat this as urgent." : "",
-    answers.health ? "I am worried this is affecting our health." : "",
-    answers.access.trim() ? `To arrange access, I am available ${answers.access.trim().replace(/\.$/, "")}.` : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-  const extraPara = extras ? `\n\n${extras}` : "";
-
+  const short = group.address?.line?.trim() || group.name;
   const scotlandDamp =
     group.nation === "scotland" && issue.category === "damp_mould" && report && issueClock(group, issue).tone !== "informal";
   const law = scotlandDamp
-    ? `\n\nUnder Awaab's Law in Scotland, landlords must investigate reports of damp or mould within 10 working days. That date was ${letterDate(addWorkingDays(report!.at, 10))}.`
+    ? ` Under Awaab's Law in Scotland, landlords must investigate reports of damp or mould within 10 working days. That date was ${letterDate(addWorkingDays(report!.at, 10))}.`
     : "";
-  const problem = `${issue.title}${where}.`;
+
+  const picked = (source: Fact["source"]) => answers.selected.filter((f) => f.source === source);
+  const fix = answers.selected.find((f) => f.id === "fix");
+  const wordFacts = picked("words").filter((f) => f.id !== "fix");
+  const words = [
+    ...wordFacts.filter((f) => f.id === "started").map((f) => f.text),
+    key === "confirm" ? "" : sentence(answers.prompt),
+    ...wordFacts.filter((f) => f.id !== "started").map((f) => f.text),
+  ].filter(Boolean);
+  const record = picked("record").filter((f) => !(key === "complaint" && f.id === "contacts"));
+
+  const paras: string[] = [`Dear ${ctx.landlordName?.trim() || "landlord"},`];
+  let subject = "";
+  let request = "";
 
   if (key === "repair_request") {
-    return {
-      subject: `Repair needed at ${group.name}${ref}`,
-      body: `${greeting}
-
-I am writing to report a repair needed at ${group.name}.
-
-${problem}${extraPara}
-
-Please let me know when someone can come to look at it.
-
-${sign}
-
-${footer}`,
-    };
-  }
-
-  if (key === "confirm") {
+    subject = `Repair needed at ${short}${ref}`;
+    paras.push(`I am writing to report a repair needed at ${address}.`, `${issue.title}${issue.room ? ` (${issue.room})` : ""}.`);
+    request = "Please let me know when someone can come to look at it.";
+  } else if (key === "confirm") {
     const call = unconfirmedCall(issue);
     const how =
       call?.kind === "call" ? (call.direction === "in_person" ? "conversation" : "phone call") : call?.kind === "reported" && call.method === "in_person" ? "conversation" : "phone call";
-    const when = call ? ` on ${letterDate(londonParts(call.at).ymd)} at ${time(call.at)}` : "";
-    const said = call?.text ? `\n\nMy note of what was said: ${call.text}` : "";
-    return {
-      subject: `Confirming our ${how}${ref}`,
-      body: `${greeting}
-
-I am writing to confirm our ${how}${when} about a repair at ${group.name}.
-
-${problem}${said}${extraPara}
-
-If I have misunderstood anything, please reply by ${replyBy}.
-
-${sign}
-
-${footer}`,
-    };
+    subject = `Confirming our ${how}${ref}`;
+    paras.push(
+      `I am writing to confirm our ${how}${call ? ` on ${letterDate(londonParts(call.at).ymd)} at ${time(call.at)}` : ""} about a repair at ${address}.`,
+      `${issue.title}${issue.room ? ` (${issue.room})` : ""}.`,
+    );
+    const said = [call?.text ? `My note of what was said: ${call.text.trim().replace(/\.?$/, ".")}` : "", answers.prompt.trim() ? `You also said: ${sentence(answers.prompt)}` : ""].filter(Boolean);
+    if (said.length) paras.push(said.join(" "));
+    request = `If I have misunderstood anything, please reply by ${replyBy}.`;
+  } else if (key === "complaint") {
+    subject = `Formal complaint: repairs at ${short}${ref}`;
+    paras.push(
+      `I am making a formal complaint about how a repair at ${address} has been handled.`,
+      `${issue.title}${issue.room ? ` (${issue.room})` : ""}.`,
+      `${firstDate ? `This was first reported on ${firstDate}, ${days} days ago, and it has not been fixed.` : "It has not been fixed."}${law}`,
+    );
+    request = `Please treat this as a formal complaint under your complaints procedure. Please tell me in writing by ${replyBy} what you will do and when, and how I can take the complaint further if it is not resolved.`;
+  } else {
+    subject = `Reminder: repair still needed at ${short}${ref}`;
+    paras.push(
+      `I am writing again about a repair at ${address}.`,
+      `${issue.title}${issue.room ? ` (${issue.room})` : ""}.`,
+      `${firstDate ? `This was first reported on ${firstDate}, ${days} days ago, and it has not been fixed.` : "It has not been fixed."}${law}`,
+    );
+    request = `Please let me know by ${replyBy} when the work will be done.`;
   }
 
+  if (words.length) paras.push(words.join(" "));
+  const affected = picked("affected").map((f) => f.text);
+  if (affected.length) paras.push(`${affected.join(" ")}${key === "confirm" ? "" : " Please treat this as urgent."}`);
+  if (record.length) paras.push(`${key === "repair_request" ? "" : "Since it was first reported:\n"}${record.map((f) => (key === "repair_request" ? f.text : `- ${f.text}`)).join(key === "repair_request" ? " " : "\n")}`);
   if (key === "complaint") {
     const steps = sortedEntries(issue)
       .filter((e) => e.kind === "reported" || e.kind === "letter" || e.kind === "call" || e.kind === "visit" || e.kind === "email")
       .map((e) => `- ${letterDate(londonParts(e.at).ymd)}: ${entrySummary(e).text.replace(/^Prepared a letter/, "Letter")}`)
       .join("\n");
-    return {
-      subject: `Formal complaint: repairs at ${group.name}${ref}`,
-      body: `${greeting}
-
-I am making a formal complaint about how a repair at ${group.name} has been handled.
-
-${problem}
-
-${firstDate ? `I first reported this on ${firstDate}, ${days} days ago, and it has not been fixed.` : "It has not been fixed."}${law}${extraPara}
-
-What has happened so far:
-${steps || "- No contact recorded yet"}
-
-Please treat this as a formal complaint under your complaints procedure. Please tell me in writing by ${replyBy} what you will do and when, and how I can take the complaint further if it is not resolved.
-
-${sign}
-
-${footer}`,
-    };
+    paras.push(`What has happened so far:\n${steps || "- No contact recorded yet"}`);
   }
+  if (fix) paras.push(fix.text);
+  paras.push(request);
+  if (answers.access) paras.push(answers.access);
+  paras.push(`${key === "complaint" ? "Yours sincerely" : "Thank you"},\n\n${myName}\n${myAddress}`, FOOTER);
 
-  return {
-    subject: `Reminder: repair still needed at ${group.name}${ref}`,
-    body: `${greeting}
-
-I am writing again about a repair at ${group.name}.
-
-${problem}
-
-${firstDate ? `I first reported this on ${firstDate}, ${days} days ago, and it has not been fixed.` : "It has not been fixed."}${law}${extraPara}
-
-Please let me know by ${replyBy} when the work will be done.
-
-${sign}
-
-${footer}`,
-  };
+  return { subject, body: paras.join("\n\n") };
 }
 
 /** One letter about several problems in the same group: the "group letter of demands" in document 6. */
 export function buildGroupMessage(
   ctx: { group: Group; issues: Issue[]; myName: string; landlordName?: string },
-  answers: Answers,
+  answers: Pick<Answers, "access">,
 ): { subject: string; body: string } {
   const { group, issues, myName } = ctx;
   const today = todayYmd();
   const replyBy = letterDate(addDays(today, 7));
   const households = new Set(issues.map((i) => i.createdBy)).size;
+  const place = group.address?.line?.trim() || group.name;
   const lines = issues
     .map((issue) => {
       const report = firstReport(issue);
@@ -161,32 +135,23 @@ export function buildGroupMessage(
         ? `First reported ${letterDate(londonParts(report.at).ymd)}, ${daysBetween(londonParts(report.at).ymd, today)} days ago.`
         : "Not reported before this letter.";
       const missed = clock.tone === "missed" ? ` Legal deadline missed: ${clock.value}.` : "";
-      return `- [${issueRef(issue)}] ${issue.title}${issue.room ? ` (${issue.room})` : ""}. ${first}${missed}`;
+      const impact = issue.context?.impact ? ` ${sentence(issue.context.impact)}` : "";
+      return `- [${issueRef(issue)}] ${issue.title}${issue.room ? ` (${issue.room})` : ""}. ${first}${missed}${impact}`;
     })
     .join("\n");
-  const extras = [
-    answers.vulnerable ? "Children or vulnerable people live in some of these homes, so please treat them as urgent." : "",
-    answers.health ? "We are worried these problems are affecting our health." : "",
-    answers.access.trim() ? `To arrange access, we are available ${answers.access.trim().replace(/\.$/, "")}.` : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
   return {
-    subject: `Repairs needed at ${group.name} [${issues.map(issueRef).join(", ")}]`,
-    body: `Dear ${ctx.landlordName?.trim() || "landlord"},
-
-I am writing on behalf of ${households} ${households === 1 ? "household" : "households"} at ${group.name} about ${issues.length} repairs that have not been fixed.
-
-${lines}${extras ? `\n\n${extras}` : ""}
-
-Please reply by ${replyBy} with a date for each repair.
-
-Yours sincerely,
-
-${myName}
-On behalf of ${group.name}
-
-This message was prepared with Clamour. It is not legal advice.`,
+    subject: `Repairs needed at ${place} [${issues.map(issueRef).join(", ")}]`,
+    body: [
+      `Dear ${ctx.landlordName?.trim() || "landlord"},`,
+      `I am writing on behalf of ${households} ${households === 1 ? "household" : "households"} at ${place}${group.address?.postcode ? `, ${group.address.postcode}` : ""} about ${issues.length} repairs that have not been fixed.`,
+      lines,
+      `Please reply by ${replyBy} with a date for each repair.`,
+      answers.access,
+      `Yours sincerely,\n\n${myName}\nOn behalf of ${group.name}`,
+      FOOTER,
+    ]
+      .filter(Boolean)
+      .join("\n\n"),
   };
 }
 
@@ -194,8 +159,9 @@ This message was prepared with Clamour. It is not legal advice.`,
  * The facts sent with an AI request: only what the message needs (north star, document 5: AI, least data).
  * Members' free-text notes aren't sent; anything personal reaches the AI only if it's already in the draft.
  */
-export function aiFacts(key: LetterKey, group: Group, issues: Issue[]): AiFacts {
+export function aiFacts(key: LetterKey, group: Group, issues: Issue[], included: string[] = []): AiFacts {
   return {
+    included,
     letter: LETTER_LABEL[key],
     group: group.name,
     nation: NATION_LABEL[group.nation],

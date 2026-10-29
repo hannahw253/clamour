@@ -6,6 +6,7 @@ import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { SpannerC } from "@/components/brand/SpannerC";
 import { SCOTLAND_PACK, firstReport, issueClock, issueStatus, ruleLines } from "@/prototype/clocks";
 import { daysBetween, letterDate, londonParts, longDate, stamp, todayYmd } from "@/prototype/dates";
+import { AFFECTED, CATEGORY_QUESTIONS, sentence } from "@/prototype/context";
 import { fileSize } from "@/prototype/photos";
 import { entrySummary, exhibitNumbers, sortedEntries } from "@/prototype/Record";
 import { findGroup, memberName, myMember, useStore } from "@/prototype/store";
@@ -146,6 +147,15 @@ function Document({ group, issue, preparedBy }: { group: Group; issue: Issue; pr
     ["Formal complaint", complaint ? `Made on ${longDate(londonParts(complaint.at).ymd)}` : "Not made yet"],
     ["Evidence", `${entries.length} entries, ${exhibits.size} exhibits`],
   ];
+  const ctx = issue.context ?? {};
+  const words: [string, string][] = [
+    ...(ctx.started ? [["When it started", ctx.started] as [string, string]] : []),
+    ...(ctx.impact ? [["What it stops us doing", ctx.impact] as [string, string]] : []),
+    ...CATEGORY_QUESTIONS[issue.category].filter((q) => ctx.answers?.[q.key]?.trim()).map((q) => [q.label.replace(/\?$/, ""), ctx.answers![q.key]] as [string, string]),
+    ...(ctx.worse ? [["What has got worse", ctx.worse] as [string, string]] : []),
+    ...(ctx.fix ? [["What would fix it", ctx.fix] as [string, string]] : []),
+    ...(ctx.caseFileHealth ? (ctx.affected ?? []).map((a) => [AFFECTED[a.kind].tick, a.how] as [string, string]) : []),
+  ].map(([k, v]) => [k, sentence(v)] as [string, string]);
 
   return (
     <div className="font-sans text-[10pt] leading-[14pt] text-ink">
@@ -182,6 +192,22 @@ function Document({ group, issue, preparedBy }: { group: Group; issue: Issue; pr
           ))}
         </tbody>
       </table>
+
+      {words.length ? (
+        <>
+          <h3 className="mt-[5mm] mb-[2mm] text-[11pt] font-bold">In the household&rsquo;s own words</h3>
+          <table className="w-full border-collapse">
+            <tbody>
+              {words.map(([k, v]) => (
+                <tr key={k} className="border-b border-line-subtle break-inside-avoid">
+                  <th className="w-[42mm] py-[1.6mm] pr-[4mm] text-left align-top font-semibold text-ink-muted">{k}</th>
+                  <td className="py-[1.6mm] align-top">{v}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      ) : null}
 
       {rules.length ? (
         <>

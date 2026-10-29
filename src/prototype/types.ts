@@ -102,8 +102,28 @@ export type UnsortedEmail = {
   auth: EmailAuth;
 };
 
+/** Kinds of people a problem can affect (north star, document 2: Affected person). */
+export type AffectedKind = "child" | "pregnancy" | "older" | "condition" | "mental_health";
+
+/** Who a problem affects and how, in the member's words. Private and consented (document 5). */
+export type Affected = { kind: AffectedKind; how: string; by: string; consentAt: string };
+
+/** The problem's context in the member's own words, asked once and reused by every message. */
+export type IssueContext = {
+  started?: string;
+  impact?: string;
+  worse?: string;
+  fix?: string;
+  /** Answers to the one or two questions for this kind of problem. */
+  answers?: Record<string, string>;
+  affected?: Affected[];
+  /** Include who is affected in case files. */
+  caseFileHealth?: boolean;
+};
+
 export type Issue = {
   id: string;
+  context?: IssueContext;
   /** Short reference for letter subjects, shown as CL-<ref>. */
   ref: number;
   title: string;
@@ -129,6 +149,8 @@ export type Group = {
   unsorted: UnsortedEmail[];
   /** Who the group writes to about repairs. Asked for the first time someone sends a prepared email. */
   landlord?: { name?: string; email?: string };
+  /** The address used in letters; each member's flat is added for buildings. */
+  address?: { line: string; postcode: string };
   issues: Issue[];
 };
 
@@ -149,6 +171,8 @@ export type Prefs = {
   reduceMotion: boolean;
   copyIn: "bcc" | "cc" | "none";
   access: string;
+  /** When you're usually in, as tick boxes; "access" holds any extra note. */
+  accessSlots: string[];
   signoff: string;
   showAs: "name" | "initial";
   /** Groups you've muted notifications for. */
@@ -168,6 +192,7 @@ export const DEFAULT_PREFS: Prefs = {
   reduceMotion: false,
   copyIn: "bcc",
   access: "",
+  accessSlots: [],
   signoff: "",
   showAs: "name",
   muted: [],

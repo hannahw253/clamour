@@ -56,9 +56,24 @@ export function sampleGroups(now: Date): Group[] {
     inbox: "",
     unsorted: [],
     landlord: { name: "Dan", email: "lettings@agent.example" },
+    address: { line: "14 Marsh Road, Leeds", postcode: "LS6 1XX" },
     issues: [
       issue(
-        { id: "boiler", ref: 1, title: "Boiler keeps cutting out, no hot water", category: "heating", room: "Kitchen", createdBy: "priya", createdAt: at(20, 7, 40) },
+        {
+          id: "boiler",
+          ref: 1,
+          title: "Boiler keeps cutting out, no hot water",
+          category: "heating",
+          room: "Kitchen",
+          createdBy: "priya",
+          createdAt: at(20, 7, 40),
+          context: {
+            started: "the first week of October",
+            impact: "Four of us have had cold showers for three weeks",
+            answers: { coping: "We boil the kettle to wash and use a plug-in heater in the bathroom" },
+            fix: "A working boiler, not another reset",
+          },
+        },
         [
           e({ kind: "logged", at: at(20, 7, 40), by: "priya" }),
           e({ kind: "note", at: at(20, 7, 42), by: "priya", text: "Pressure drops to zero every morning. Cold showers for all four of us." }),
@@ -130,6 +145,7 @@ export function sampleGroups(now: Date): Group[] {
     invites: { submitter: "", admin: "" },
     inbox: "",
     landlord: { name: "Greenhill Property Factors", email: "repairs@factor.example" },
+    address: { line: "Greenhill Court, Edinburgh", postcode: "EH9 9XX" },
     unsorted: [
       {
         id: "u1",
@@ -153,7 +169,22 @@ export function sampleGroups(now: Date): Group[] {
     ],
     issues: [
       issue(
-        { id: "bedroom-mould", ref: 1, title: "Black mould spreading in the back bedroom", category: "damp_mould", room: "Flat 5, back bedroom", createdBy: "callum", createdAt: at(9, 20, 0) },
+        {
+          id: "bedroom-mould",
+          ref: 1,
+          title: "Black mould spreading in the back bedroom",
+          category: "damp_mould",
+          room: "Flat 5, back bedroom",
+          createdBy: "callum",
+          createdAt: at(9, 20, 0),
+          context: {
+            started: "in September, after the window seal failed",
+            answers: { rooms: "The back bedroom. The cot mattress and curtains have gone mouldy" },
+            fix: "Replace the window seal and treat the wall properly",
+            affected: [{ kind: "child", how: "Our 8-month-old sleeps in that room and has had a cough for two weeks", by: "callum", consentAt: at(9, 20, 10) }],
+            caseFileHealth: true,
+          },
+        },
         [
           e({ kind: "logged", at: at(9, 20, 0), by: "callum" }),
           e({ kind: "note", at: at(9, 20, 2), by: "callum", text: "Started after the window seal failed. Our baby sleeps in this room." }),
@@ -164,7 +195,20 @@ export function sampleGroups(now: Date): Group[] {
         ],
       ),
       issue(
-        { id: "kitchen-damp", ref: 2, title: "Damp patch on the kitchen ceiling, getting bigger", category: "damp_mould", room: "Flat 2, kitchen", createdBy: "aileen", createdAt: at(21, 18, 30) },
+        {
+          id: "kitchen-damp",
+          ref: 2,
+          title: "Damp patch on the kitchen ceiling, getting bigger",
+          category: "damp_mould",
+          room: "Flat 2, kitchen",
+          createdBy: "aileen",
+          createdAt: at(21, 18, 30),
+          context: {
+            answers: { rooms: "The kitchen ceiling, above the cooker" },
+            worse: "It's now the size of a dinner plate and drips when it rains",
+            fix: "Find and fix the leak from the flat above",
+          },
+        },
         [
           e({ kind: "logged", at: at(21, 18, 30), by: "aileen" }),
           e({ kind: "reported", method: "portal", at: at(20, 9, 5), by: "aileen", text: "Reported through the factor's website. Reference 48213." }),

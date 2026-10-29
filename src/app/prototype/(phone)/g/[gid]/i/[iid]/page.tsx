@@ -6,6 +6,7 @@ import { Suspense, useState } from "react";
 import { nextAction } from "@/prototype/actions";
 import { SCOTLAND_PACK, issueClock, issueStatus, ruleLines, type ClockView } from "@/prototype/clocks";
 import { longDate } from "@/prototype/dates";
+import { CaseContextCard, CaseContextSheet } from "@/prototype/CaseContext";
 import { AddEvidenceSheet, ReportSheet, WhenSheet, type Save } from "@/prototype/EvidenceSheet";
 import { MESSAGE_TITLE } from "@/prototype/messages";
 import { RecentActivity } from "@/prototype/Record";
@@ -13,7 +14,7 @@ import { addEntries, effectiveRole, findGroup, useStore } from "@/prototype/stor
 import { CATEGORY_LABEL, ME, issueRef, type LetterKey } from "@/prototype/types";
 import { Button, Chip, Icon, Loading, SafetyBanner, Sheet, buttonClass, label, safetyKind, type IconName } from "@/prototype/ui";
 
-type SheetKind = "report" | "evidence" | "visit" | "fixed" | "more" | null;
+type SheetKind = "report" | "evidence" | "visit" | "fixed" | "more" | "context" | null;
 
 export default function IssuePage() {
   return (
@@ -173,6 +174,8 @@ function IssueDetail() {
         ) : null}
       </section>
 
+      {status !== "fixed" ? <CaseContextCard issue={issue} onOpen={() => setSheet("context")} /> : null}
+
       <nav aria-label="Actions" className="grid grid-cols-3 gap-2">
         {quick.map((q) =>
           q.href ? (
@@ -201,6 +204,7 @@ function IssueDetail() {
         <RecentActivity group={group} issue={issue} limit={showAll ? undefined : 3} />
       </section>
 
+      <CaseContextSheet open={sheet === "context"} onClose={() => setSheet(null)} group={group} issue={issue} />
       <ReportSheet open={sheet === "report"} onClose={() => setSheet(null)} onSave={save} group={group} issue={issue} />
       <AddEvidenceSheet open={sheet === "evidence"} onClose={() => setSheet(null)} onSave={save} group={group} issue={issue} />
       <WhenSheet
