@@ -8,6 +8,7 @@ import { IssueCard, needsAttention } from "@/prototype/IssueCard";
 import { effectiveRole, findGroup, useStore, visibleIssues } from "@/prototype/store";
 import { ME } from "@/prototype/types";
 import { ButtonLink, Icon, Loading } from "@/prototype/ui";
+import { RequestBanner } from "@/prototype/Updates";
 
 export default function Issues() {
   const { gid } = useParams<{ gid: string }>();
@@ -29,6 +30,7 @@ export default function Issues() {
 
   return (
     <main className="flex flex-1 flex-col gap-5 px-4 pt-5 pb-8">
+      <RequestBanner group={group} issueIds={all.map((i) => i.id)} />
       <div role="tablist" aria-label="Show" className="grid grid-cols-2 rounded-xl bg-concrete p-1">
         {(
           [

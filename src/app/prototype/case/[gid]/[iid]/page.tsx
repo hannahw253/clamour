@@ -6,7 +6,8 @@ import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { SpannerC } from "@/components/brand/SpannerC";
 import { SCOTLAND_PACK, firstReport, issueClock, issueStatus, ruleLines } from "@/prototype/clocks";
 import { daysBetween, letterDate, londonParts, longDate, stamp, todayYmd } from "@/prototype/dates";
-import { AFFECTED, CATEGORY_QUESTIONS, sentence } from "@/prototype/context";
+import { AFFECTED, household, latestUpdates, sentence } from "@/prototype/context";
+import { topicLabel } from "@/prototype/topics";
 import { fileSize } from "@/prototype/photos";
 import { entrySummary, exhibitNumbers, sortedEntries } from "@/prototype/Record";
 import { findGroup, memberName, myMember, useStore } from "@/prototype/store";
@@ -147,15 +148,13 @@ function Document({ group, issue, preparedBy }: { group: Group; issue: Issue; pr
     ["Formal complaint", complaint ? `Made on ${longDate(londonParts(complaint.at).ymd)}` : "Not made yet"],
     ["Evidence", `${entries.length} entries, ${exhibits.size} exhibits`],
   ];
-  const ctx = issue.context ?? {};
-  const words: [string, string][] = [
-    ...(ctx.started ? [["When it started", ctx.started] as [string, string]] : []),
-    ...(ctx.impact ? [["What it stops us doing", ctx.impact] as [string, string]] : []),
-    ...CATEGORY_QUESTIONS[issue.category].filter((q) => ctx.answers?.[q.key]?.trim()).map((q) => [q.label.replace(/\?$/, ""), ctx.answers![q.key]] as [string, string]),
-    ...(ctx.worse ? [["What has got worse", ctx.worse] as [string, string]] : []),
-    ...(ctx.fix ? [["What would fix it", ctx.fix] as [string, string]] : []),
-    ...(ctx.caseFileHealth ? (ctx.affected ?? []).map((a) => [AFFECTED[a.kind].tick, a.how] as [string, string]) : []),
-  ].map(([k, v]) => [k, sentence(v)] as [string, string]);
+  const who = (id: string) => `${household(group, id)}${group.type !== "house" ? ` (${group.members.find((m) => m.id === id)?.name ?? "former member"})` : ""}`;
+  const words: { k: string; who: string; about: string; text: string; date: string }[] = [
+    ...latestUpdates(issue).map((n) => ({ k: n.id, who: who(n.by), about: topicLabel(n.topic, issue.category) ?? "Update", text: sentence(n.text ?? ""), date: letterDate(londonParts(n.at).ymd) })),
+    ...(issue.affected ?? [])
+      .filter((a) => a.caseFile)
+      .map((a, i) => ({ k: `aff-${i}`, who: who(a.by), about: AFFECTED[a.kind].tick, text: sentence(a.how), date: letterDate(londonParts(a.consentAt).ymd) })),
+  ];
 
   return (
     <div className="font-sans text-[10pt] leading-[14pt] text-ink">
@@ -195,13 +194,24 @@ function Document({ group, issue, preparedBy }: { group: Group; issue: Issue; pr
 
       {words.length ? (
         <>
-          <h3 className="mt-[5mm] mb-[2mm] text-[11pt] font-bold">In the household&rsquo;s own words</h3>
+          <h3 className="mt-[5mm] mb-[2mm] text-[11pt] font-bold">In the households&rsquo; own words</h3>
           <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-line text-left text-[8.5pt] text-ink-muted uppercase">
+                <th className="w-[34mm] py-[1.6mm] pr-[3mm] font-semibold">Who</th>
+                <th className="w-[34mm] py-[1.6mm] pr-[3mm] font-semibold">About</th>
+                <th className="py-[1.6mm] font-semibold">What they said</th>
+              </tr>
+            </thead>
             <tbody>
-              {words.map(([k, v]) => (
-                <tr key={k} className="border-b border-line-subtle break-inside-avoid">
-                  <th className="w-[42mm] py-[1.6mm] pr-[4mm] text-left align-top font-semibold text-ink-muted">{k}</th>
-                  <td className="py-[1.6mm] align-top">{v}</td>
+              {words.map((w) => (
+                <tr key={w.k} className="border-b border-line-subtle break-inside-avoid">
+                  <td className="py-[1.6mm] pr-[3mm] align-top">
+                    {w.who}
+                    <span className={`block ${mono}`}>{w.date}</span>
+                  </td>
+                  <td className="py-[1.6mm] pr-[3mm] align-top text-ink-muted">{w.about}</td>
+                  <td className="py-[1.6mm] align-top">{w.text}</td>
                 </tr>
               ))}
             </tbody>

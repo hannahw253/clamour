@@ -90,6 +90,7 @@ export default function Settings() {
             <Toggle title="Replies from landlords" on={p.notify.replies} onChange={(v) => notify({ replies: v })} />
             <Toggle title="Deadlines coming up or missed" on={p.notify.deadlines} onChange={(v) => notify({ deadlines: v })} />
             <Toggle title="New problems in my groups" on={p.notify.problems} onChange={(v) => notify({ problems: v })} />
+            <Toggle title="Requests for updates" desc="When someone's about to write to the landlord" on={p.notify.requests} onChange={(v) => notify({ requests: v })} />
             <Toggle title="People asking to join" desc="Admins only" on={p.notify.joins} onChange={(v) => notify({ joins: v })} />
           </>
         ) : null}

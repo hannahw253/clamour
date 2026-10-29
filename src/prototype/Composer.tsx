@@ -1,19 +1,22 @@
 "use client";
 
 /**
- * The prepared email (north star, documents 6 and 8: "Do it for them"). Used full-screen on the
- * phone and beside the record on the desktop dashboard. With several issues it writes one group letter.
+ * The email screen (north star, document 6: What goes into a prepared message; decision D-026).
+ * Choose what to say and the style first; nothing is written until "Write it". With AI on, the
+ * model writes from the ticked items only; with AI off, the standard letter is built from them.
+ * Used full-screen on the phone and beside the record on the desktop dashboard.
  */
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
-import { AiHelp } from "./AiHelp";
-import { CaseContextSheet } from "./CaseContext";
-import { LETTER_PROMPT, accessText, affectedFacts, recordFacts, wordsFacts, type Fact } from "./context";
-import { MESSAGE_TITLE, aiFacts, buildGroupMessage, buildMessage } from "./messages";
-import { addEntries, myMember, prefsOf, setGroupAddress, setLandlord, setMyFlat, updateIssueContext, useStore } from "./store";
-import { LETTER_LABEL, type Group, type Issue, type LetterKey } from "./types";
+import { useEffect, useState, type ReactNode } from "react";
+import { AiHelp, aiEnabled } from "./AiHelp";
+import { DEFAULT_STYLE, NEW_PROMPT, accessText, affectedFacts, openRequests, recordFacts, updateText, updatesSince, wordsFacts, type Fact, type Style } from "./context";
+import { londonParts, shortDate } from "./dates";
+import { MESSAGE_TITLE, aiFacts, buildGroupMessage, buildMessage, type Answers } from "./messages";
+import { addEntries, closeRequests, myMember, prefsOf, setGroupAddress, setLandlord, setMyFlat, useStore } from "./store";
+import { UpdateSheet } from "./Updates";
+import { LETTER_LABEL, ME, issueRef, type Group, type Issue, type LetterKey } from "./types";
 import { Button, Icon, Sheet, buttonClass, inputClass, label } from "./ui";
 
 type CopyIn = "bcc" | "cc" | "none";
@@ -23,6 +26,8 @@ const COPY_TEXT: Record<CopyIn, { short: string; long: string }> = {
   cc: { short: "Your group, openly (CC)", long: "Your landlord will see it. When they reply to all, their reply is saved too." },
   none: { short: "Not copied", long: "Nothing is saved automatically. You’ll need to forward it to your group." },
 };
+
+type Written = { body: string; source: "ai" | "standard"; why?: "off" | "failed" };
 
 export function Composer({
   group,
@@ -43,52 +48,76 @@ export function Composer({
 }) {
   const s = useStore();
   const router = useRouter();
+  const key: LetterKey = issues.length > 1 ? "group" : letterKey;
   const single = issues.length === 1 ? issues[0] : null;
-  const promptCfg = single ? LETTER_PROMPT[letterKey] : null;
-  const [prompt, setPrompt] = useState(() => (single && promptCfg?.saveTo ? (single.context?.[promptCfg.saveTo] ?? "") : ""));
   /** Facts ticked off (record and words start ticked) and private facts ticked on (start unticked). */
   const [off, setOff] = useState<string[]>([]);
   const [on, setOn] = useState<string[]>([]);
   const [useAccess, setUseAccess] = useState(true);
+  const [extra, setExtra] = useState("");
+  const [style, setStyle] = useState<Style>(DEFAULT_STYLE[key]);
+  const [written, setWritten] = useState<Written | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [aiOn, setAiOn] = useState<boolean | null>(null);
   const [addrDraft, setAddrDraft] = useState<{ line: string; postcode: string; flat: string } | null>(null);
-  const [contextOpen, setContextOpen] = useState(false);
+  const [updateFor, setUpdateFor] = useState<Issue | null>(null);
   const [copyIn, setCopyIn] = useState<CopyIn>(() => prefsOf(s).copyIn);
-  const [edited, setEdited] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [aiPrev, setAiPrev] = useState<string | null>(null);
   const [toDraft, setToDraft] = useState<{ name: string; email: string } | null>(null);
   const [sheet, setSheet] = useState<"copy" | "other" | "sent" | null>(null);
   const [channel, setChannel] = useState<"email" | "whatsapp" | "text" | "copy">("email");
+
+  useEffect(() => {
+    let live = true;
+    aiEnabled().then((v) => live && setAiOn(v));
+    return () => {
+      live = false;
+    };
+  }, []);
+
   if (!s) return null;
 
-  const key: LetterKey = issues.length > 1 ? "group" : letterKey;
   const prefs = prefsOf(s);
+  const useAi = prefs.ai && aiOn === true;
   const me = myMember(group);
   const needsFlat = group.type !== "house" && !me?.flat;
   const needsAddress = !group.address?.line || needsFlat;
   const addr = addrDraft ?? { line: group.address?.line ?? "", postcode: group.address?.postcode ?? "", flat: me?.flat ?? "" };
-  const facts: Fact[] = single ? [...recordFacts(single), ...wordsFacts(single, promptCfg?.saveTo), ...affectedFacts(single)] : [];
-  const selected = facts.filter((f) => (f.source === "affected" ? on.includes(f.id) : !off.includes(f.id)));
+  const prompt = NEW_PROMPT[key];
+  const ids = issues.map((i) => i.id);
+
+  const perIssue = issues.map((issue) => {
+    const aff = affectedFacts(group, issue);
+    return { issue, record: key === "group" ? [] : recordFacts(issue), words: wordsFacts(group, issue), affected: aff.facts, hidden: aff.hidden };
+  });
+  const facts: Fact[] = perIssue.flatMap((p) => [...p.record, ...p.words, ...p.affected]);
+  const isOn = (f: Fact) => (f.source === "affected" ? on.includes(f.id) : !off.includes(f.id));
+  const flip = (f: Fact) =>
+    f.source === "affected" ? setOn(on.includes(f.id) ? on.filter((x) => x !== f.id) : [...on, f.id]) : setOff(off.includes(f.id) ? off.filter((x) => x !== f.id) : [...off, f.id]);
+  const selected = facts.filter(isOn);
   const access = useAccess ? accessText(prefs) : "";
-  const answers = { prompt, selected, access };
   const landlord = toDraft ?? { name: group.landlord?.name ?? "", email: group.landlord?.email ?? "" };
   const askForLandlord = !group.landlord?.email || toDraft !== null;
-  const myName = prefsOf(s).signoff.trim() || myMember(group)?.name || s.myName || "Your name";
-  const message =
+  const myName = prefs.signoff.trim() || me?.name || s.myName || "Your name";
+
+  const standard = (answers: Answers) =>
     key === "group"
       ? buildGroupMessage({ group, issues, myName, landlordName: landlord.name }, answers)
       : buildMessage(key, { group, issue: issues[0], myName, landlordName: landlord.name }, answers);
-  const body = edited ?? message.body;
+  const subject = standard({ selected, access, style }).subject;
+  const body = written?.body ?? "";
+  const myRequest = openRequests(group, ids).find((r) => r.by === ME);
 
   const params = new URLSearchParams();
-  params.set("subject", message.subject);
+  params.set("subject", subject);
   params.set("body", body);
   if (copyIn !== "none") params.set(copyIn, group.inbox);
   const mailto = `mailto:${encodeURIComponent(landlord.email.trim())}?${params.toString().replace(/\+/g, "%20")}`;
-  const shareText = `${message.subject}\n\n${body}`;
+  const shareText = `${subject}\n\n${body}`;
 
-  const saveLandlord = () => {
-    if (landlord.email.trim() || landlord.name.trim()) setLandlord(group.id, { name: landlord.name.trim(), email: landlord.email.trim() });
+  const saveDetails = () => {
+    if (toDraft && (landlord.email.trim() || landlord.name.trim())) setLandlord(group.id, { name: landlord.name.trim(), email: landlord.email.trim() });
     setToDraft(null);
     if (addrDraft) {
       if (addrDraft.line.trim()) setGroupAddress(group.id, { line: addrDraft.line.trim(), postcode: addrDraft.postcode.trim().toUpperCase() });
@@ -97,9 +126,46 @@ export function Composer({
     }
   };
 
+  /** Write the message from what's ticked: AI when it's on, the standard letter otherwise. */
+  const write = async () => {
+    saveDetails();
+    let chosen = selected;
+    let onlyHere: string | undefined;
+    if (extra.trim()) {
+      if (single && prompt.save) {
+        // "Anything new?" is an update like any other: it goes on the record, then into this letter.
+        addEntries(group.id, single.id, [{ kind: "note", at: new Date().toISOString(), text: extra.trim(), topic: prompt.topic }]);
+        chosen = [...selected, { id: "new", source: "words", topic: prompt.topic, issueId: single.id, text: updateText(group, single, { by: ME, topic: prompt.topic, text: extra }) }];
+        setExtra("");
+      } else {
+        onlyHere = extra.trim();
+      }
+    }
+    const std = standard({ selected: chosen, access, style, extra: onlyHere });
+    setAiPrev(null);
+    setEditing(false);
+    if (!useAi) {
+      setWritten({ body: std.body, source: "standard", why: "off" });
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/ai/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "write", draft: std.body, style, facts: aiFacts(key, group, issues, chosen.map((f) => f.text)) }),
+      });
+      const json = (await res.json()) as { body?: string };
+      setWritten(res.ok && json.body ? { body: json.body, source: "ai" } : { body: std.body, source: "standard", why: "failed" });
+    } catch {
+      setWritten({ body: std.body, source: "standard", why: "failed" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const confirmSent = () => {
     const at = new Date().toISOString();
-    if (single && promptCfg?.saveTo && prompt.trim()) updateIssueContext(group.id, single.id, { [promptCfg.saveTo]: prompt.trim() });
     const viaEmail = channel === "email" && copyIn !== "none";
     for (const issue of issues) {
       if (viaEmail) {
@@ -110,7 +176,7 @@ export function Composer({
             at,
             from: `${myName} (you)`,
             to: landlord.email.trim() || "your landlord",
-            subject: message.subject,
+            subject,
             text: body,
             via: copyIn as "cc" | "bcc",
             auth: "passed",
@@ -132,11 +198,12 @@ export function Composer({
         ]);
       }
     }
+    closeRequests(group.id, { issueIds: ids });
     router.push(afterSent(viaEmail ? "email" : "other"));
   };
 
-  const composer = (
-    <div className="flex flex-col gap-6">
+  const header = (
+    <>
       {askForLandlord ? (
         <section className="flex flex-col gap-3 rounded-xl bg-concrete p-4">
           <p className="text-[17px] leading-6 font-bold">Who do you email about repairs?</p>
@@ -159,7 +226,7 @@ export function Composer({
         </section>
       ) : null}
 
-      {needsAddress ? (
+      {needsAddress && !written ? (
         <section className="flex flex-col gap-3 rounded-xl bg-concrete p-4">
           <p className="text-[17px] leading-6 font-bold">Your address for letters</p>
           {group.type !== "house" ? (
@@ -199,135 +266,220 @@ export function Composer({
           </button>
         </Row>
         <Row title="Subject">
-          <span className="min-w-0 flex-1 font-bold">{message.subject}</span>
+          <span className="min-w-0 flex-1 font-bold">{subject}</span>
         </Row>
       </dl>
+    </>
+  );
 
-      {promptCfg && !edited ? (
-        <section className="flex flex-col gap-2">
-          <label htmlFor="letter-prompt" className="text-[17px] leading-6 font-bold">
-            {promptCfg.label}
-          </label>
-          <textarea
-            id="letter-prompt"
-            className={`${inputClass} min-h-24 py-3 text-[16px] leading-[24px]`}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder={promptCfg.placeholder}
-          />
-          <p className="text-[14px] leading-[20px] text-ink-muted">In your own words. Optional, and you can speak instead of typing.</p>
-        </section>
-      ) : null}
-
-      {single && !edited ? (
-        <section className="flex flex-col gap-3">
-          <h2 className={label}>What we&rsquo;ll mention</h2>
-          <FactGroup title="From your record" facts={facts.filter((f) => f.source === "record")} isOn={(f) => !off.includes(f.id)} onToggle={(f) => setOff(off.includes(f.id) ? off.filter((x) => x !== f.id) : [...off, f.id])} empty="Nothing extra yet. Add evidence and it will appear here." />
-          <FactGroup
-            title="In your words"
-            facts={facts.filter((f) => f.source === "words")}
-            isOn={(f) => !off.includes(f.id)}
-            onToggle={(f) => setOff(off.includes(f.id) ? off.filter((x) => x !== f.id) : [...off, f.id])}
-            empty="Say what it stops you doing and what would fix it."
-            action={{ text: facts.some((f) => f.source === "words") ? "Edit" : "Add details", onClick: () => setContextOpen(true) }}
-          />
-          {facts.some((f) => f.source === "affected") ? (
-            <FactGroup
-              title="Who is affected (private)"
-              note="Only included if you tick it, for this message."
-              facts={facts.filter((f) => f.source === "affected")}
-              isOn={(f) => on.includes(f.id)}
-              onToggle={(f) => setOn(on.includes(f.id) ? on.filter((x) => x !== f.id) : [...on, f.id])}
-            />
-          ) : (
-            <button type="button" onClick={() => setContextOpen(true)} className="min-h-11 self-start text-[15px] font-bold underline underline-offset-3">
-              Is anyone affected more because of who they are?
-            </button>
-          )}
-          {accessText(prefs) ? (
-            <FactGroup title="Access" facts={[{ id: "access", source: "record", text: accessText(prefs) }]} isOn={() => useAccess} onToggle={() => setUseAccess(!useAccess)} />
-          ) : (
-            <Link href="/prototype/settings" className="min-h-11 self-start text-[15px] font-bold underline underline-offset-3">
-              Add when you&rsquo;re usually in, for access
-            </Link>
-          )}
-        </section>
+  const choose = (
+    <>
+      {myRequest ? (
+        <p className="flex items-start gap-2 rounded-xl border-2 border-line px-4 py-3 text-[15px] leading-[22px]">
+          <Icon name="bell" size={18} className="mt-0.5 flex-none" />
+          <span>
+            You asked for updates on {shortDate(londonParts(myRequest.at).ymd)}.{" "}
+            {(() => {
+              const n = updatesSince(group, ids, myRequest.at);
+              return n ? `${n} new ${n === 1 ? "update" : "updates"} since, included below.` : "Nothing new yet.";
+            })()}
+          </span>
+        </p>
       ) : null}
 
       <section className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-[20px] leading-7 font-bold">What should we say?</h2>
+          <p className="text-[15px] leading-[22px] text-ink-muted">Untick anything you&rsquo;d rather leave out. Nothing is written until you press Write it.</p>
+        </div>
+        {perIssue.map((p) => (
+          <div key={p.issue.id} className="flex flex-col gap-3">
+            {key === "group" ? <p className={`${label} mt-1 text-ink-muted`}>{`${issueRef(p.issue)} · ${p.issue.title}`}</p> : null}
+            {key !== "group" ? (
+              <FactGroup title="From the record" facts={p.record} isOn={isOn} onToggle={flip} empty="Nothing extra yet. Add evidence and it will appear here." />
+            ) : null}
+            <FactGroup
+              title={group.type === "house" ? "From your housemates and you" : "From households"}
+              facts={p.words}
+              isOn={isOn}
+              onToggle={flip}
+              empty="No updates yet. Add how it affects you, or ask your group."
+              action={{ text: "Add yours", onClick: () => setUpdateFor(p.issue) }}
+            />
+            {p.affected.length || p.hidden ? (
+              <FactGroup
+                title="Who is affected (private)"
+                note="Only details each household agreed to share for letters. Unticked until you tick them."
+                facts={p.affected}
+                isOn={isOn}
+                onToggle={flip}
+                empty=""
+                footer={p.hidden ? `${p.hidden} more ${p.hidden === 1 ? "detail isn't" : "details aren't"} shared for letters by the household that gave ${p.hidden === 1 ? "it" : "them"}.` : undefined}
+              />
+            ) : null}
+          </div>
+        ))}
+        {accessText(prefs) ? (
+          <FactGroup title="Access" facts={[{ id: "access", source: "record", text: accessText(prefs) }]} isOn={() => useAccess} onToggle={() => setUseAccess(!useAccess)} />
+        ) : (
+          <Link href="/prototype/settings" className="min-h-11 self-start text-[15px] font-bold underline underline-offset-3">
+            Add when you&rsquo;re usually in, for access
+          </Link>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <label htmlFor="letter-extra" className="text-[17px] leading-6 font-bold">
+          {prompt.label}
+        </label>
+        <textarea
+          id="letter-extra"
+          className={`${inputClass} min-h-24 py-3 text-[16px] leading-[24px]`}
+          value={extra}
+          onChange={(e) => setExtra(e.target.value)}
+          placeholder={prompt.placeholder}
+        />
+        <p className="text-[14px] leading-[20px] text-ink-muted">
+          Optional{single && prompt.save ? ", and saved to the record as your update" : ""}. You can speak instead of typing.
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-[20px] leading-7 font-bold">How should it sound?</h2>
+        <Segmented
+          legend="Tone"
+          value={style.tone}
+          options={[
+            { value: "polite", text: "Polite" },
+            { value: "firm", text: "Firm" },
+          ]}
+          onChange={(tone) => setStyle({ ...style, tone })}
+        />
+        <Segmented
+          legend="Length"
+          value={style.length}
+          options={[
+            { value: "short", text: "Short" },
+            { value: "detailed", text: "Detailed" },
+          ]}
+          onChange={(length) => setStyle({ ...style, length })}
+        />
+      </section>
+    </>
+  );
+
+  const review = (
+    <>
+      <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className={label}>Message</h2>
+          <h2 className={label}>Your message</h2>
           <button type="button" className="min-h-11 px-2 font-bold underline underline-offset-3" onClick={() => setEditing(!editing)}>
             {editing ? "Done" : "Edit"}
           </button>
         </div>
-        {aiPrev !== null ? (
+        {written?.source === "ai" ? (
           <p role="status" className="flex items-center gap-2 rounded-lg bg-signal-soft px-3 py-2 text-[15px] leading-[22px]">
             <Icon name="spark" size={16} />
-            <span className="flex-1 font-bold">AI suggestion. Check every fact before you send.</span>
-            <button
-              type="button"
-              className="min-h-11 px-1 font-bold underline underline-offset-3"
-              onClick={() => {
-                setEdited(aiPrev === message.body ? null : aiPrev);
-                setAiPrev(null);
-              }}
-            >
-              Undo
-            </button>
+            <span className="flex-1 font-bold">Written by AI from what you ticked. Check every fact before you send.</span>
+            {aiPrev !== null ? (
+              <button
+                type="button"
+                className="min-h-11 px-1 font-bold underline underline-offset-3"
+                onClick={() => {
+                  setWritten({ ...written, body: aiPrev });
+                  setAiPrev(null);
+                }}
+              >
+                Undo
+              </button>
+            ) : null}
           </p>
-        ) : null}
+        ) : (
+          <p role="status" className="rounded-lg bg-concrete px-3 py-2 text-[15px] leading-[22px]">
+            <span className="font-bold">The standard letter, from what you ticked.</span>{" "}
+            {written?.why === "failed" ? "AI couldn't write it just now, so nothing is lost." : !prefs.ai ? "AI help is off in your settings." : "AI writing isn't switched on in this prototype yet."}
+          </p>
+        )}
         {editing ? (
-          <textarea aria-label="Message" className={`${inputClass} min-h-[380px] py-3 text-[16px] leading-[25px]`} value={body} onChange={(e) => setEdited(e.target.value)} />
+          <textarea aria-label="Message" className={`${inputClass} min-h-[380px] py-3 text-[16px] leading-[25px]`} value={body} onChange={(e) => setWritten({ ...(written as Written), body: e.target.value })} />
         ) : (
           <p className="rounded-xl border border-line-subtle px-4 py-4 text-[16px] leading-[25px] whitespace-pre-wrap">{body}</p>
         )}
       </section>
 
-      {prefsOf(s).ai ? (
+      {prefs.ai ? (
         <AiHelp
           draft={body}
-          facts={aiFacts(key, group, issues, [...selected.map((f) => f.text), ...(prompt.trim() ? [prompt.trim()] : [])])}
-          language={prefsOf(s).language}
+          facts={aiFacts(key, group, issues, selected.map((f) => f.text))}
+          language={prefs.language}
           onApply={(text) => {
             setAiPrev(body);
-            setEdited(text);
+            setWritten({ body: text, source: "ai" });
             setEditing(false);
           }}
+          onAgain={write}
+          againBusy={busy}
         />
       ) : null}
 
-      {edited && !aiPrev ? (
-        <button type="button" className="min-h-11 self-start font-bold underline underline-offset-3" onClick={() => setEdited(null)}>
-          Start again from what we wrote
-        </button>
-      ) : null}
+      <button type="button" className="min-h-11 self-start font-bold underline underline-offset-3" onClick={() => setWritten(null)}>
+        Change what&rsquo;s included
+      </button>
+    </>
+  );
 
-      <div className={`sticky bottom-0 flex flex-col gap-2 border-t border-line-subtle bg-paper pt-3 pb-[max(12px,env(safe-area-inset-bottom))] ${aside ? "" : "-mx-4 px-4"}`}>
-        <a
-          className={buttonClass("primary")}
-          href={mailto}
-          onClick={() => {
-            saveLandlord();
-            setChannel("email");
-            setTimeout(() => setSheet("sent"), 400);
-          }}
-        >
-          <Icon name="letter" />
-          Open in email
-        </a>
-        <button type="button" className="min-h-11 font-bold underline underline-offset-3" onClick={() => setSheet("other")}>
-          Send another way
-        </button>
-      </div>
+  const footer = (
+    <div className={`sticky bottom-0 flex flex-col gap-2 border-t border-line-subtle bg-paper pt-3 pb-[max(12px,env(safe-area-inset-bottom))] ${aside ? "" : "-mx-4 px-4"}`}>
+      {written ? (
+        <>
+          <a
+            className={buttonClass("primary")}
+            href={mailto}
+            onClick={() => {
+              saveDetails();
+              setChannel("email");
+              setTimeout(() => setSheet("sent"), 400);
+            }}
+          >
+            <Icon name="letter" />
+            Open in email
+          </a>
+          <button type="button" className="min-h-11 font-bold underline underline-offset-3" onClick={() => setSheet("other")}>
+            Send another way
+          </button>
+        </>
+      ) : (
+        <>
+          <Button variant="primary" icon="spark" onClick={write} disabled={busy}>
+            {busy ? "Writing…" : "Write it"}
+          </Button>
+          <p className="text-center text-[13px] leading-[18px] text-ink-muted">
+            {useAi ? "AI writes it from what you ticked. You check it before anything is sent." : "Builds the standard letter from what you ticked. You check it before anything is sent."}
+          </p>
+        </>
+      )}
+    </div>
+  );
+
+  const composer = (
+    <div className="flex flex-col gap-6">
+      {header}
+      {written ? review : choose}
+      {footer}
     </div>
   );
 
   return (
     <main className={`flex flex-1 flex-col gap-6 ${aside ? "px-8 pt-6 pb-6" : "px-4 pt-4 pb-6"}`}>
-      <Link href={back} className="-ml-1 inline-flex min-h-11 items-center gap-1 self-start font-bold">
-        <Icon name="back" /> Back
-      </Link>
+      {written ? (
+        <button type="button" onClick={() => setWritten(null)} className="-ml-1 inline-flex min-h-11 items-center gap-1 self-start font-bold">
+          <Icon name="back" /> What to include
+        </button>
+      ) : (
+        <Link href={back} className="-ml-1 inline-flex min-h-11 items-center gap-1 self-start font-bold">
+          <Icon name="back" /> Back
+        </Link>
+      )}
       <h1 className="font-display text-[32px] leading-[1.05] tracking-[0.01em] uppercase">{MESSAGE_TITLE[key]}</h1>
       {aside ? (
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-8">
@@ -338,7 +490,7 @@ export function Composer({
         composer
       )}
 
-      {single ? <CaseContextSheet open={contextOpen} onClose={() => setContextOpen(false)} group={group} issue={single} /> : null}
+      {updateFor ? <UpdateSheet open onClose={() => setUpdateFor(null)} group={group} issue={group.issues.find((i) => i.id === updateFor.id) ?? updateFor} /> : null}
 
       <Sheet open={sheet === "copy"} onClose={() => setSheet(null)} title="Copy your group in?">
         <div className="flex flex-col gap-2">
@@ -431,6 +583,25 @@ function Row({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+function Segmented<T extends string>({ legend, value, options, onChange }: { legend: string; value: T; options: { value: T; text: string }[]; onChange: (v: T) => void }) {
+  return (
+    <fieldset className="flex items-center gap-3">
+      <legend className="sr-only">{legend}</legend>
+      <span aria-hidden className="w-16 flex-none text-[15px] text-ink-muted">
+        {legend}
+      </span>
+      <div className="grid flex-1 grid-cols-2 rounded-lg bg-concrete p-1">
+        {options.map((o) => (
+          <label key={o.value} className={`flex min-h-11 cursor-pointer items-center justify-center rounded-md text-[16px] font-bold ${value === o.value ? "bg-paper shadow-sm ring-2 ring-line" : "text-ink-muted"}`}>
+            <input type="radio" name={legend} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="sr-only" />
+            {o.text}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
 function FactGroup({
   title,
   facts,
@@ -438,6 +609,7 @@ function FactGroup({
   onToggle,
   empty,
   note,
+  footer,
   action,
 }: {
   title: string;
@@ -446,6 +618,7 @@ function FactGroup({
   onToggle: (f: Fact) => void;
   empty?: string;
   note?: string;
+  footer?: string;
   action?: { text: string; onClick: () => void };
 }) {
   return (
@@ -465,14 +638,18 @@ function FactGroup({
             <li key={f.id}>
               <label className="flex cursor-pointer items-start gap-3 px-4 py-3">
                 <input type="checkbox" checked={isOn(f)} onChange={() => onToggle(f)} className="mt-0.5 size-5 flex-none accent-[var(--ink)]" />
-                <span className={`text-[15px] leading-[22px] ${isOn(f) ? "" : "text-ink-muted line-through"}`}>{f.text}</span>
+                <span className="flex flex-col gap-0.5">
+                  <span className={`text-[15px] leading-[22px] ${isOn(f) ? "" : f.source === "affected" ? "text-ink-muted" : "text-ink-muted line-through"}`}>{f.text}</span>
+                  {f.meta ? <span className="text-[13px] leading-[18px] text-ink-muted">{f.meta}</span> : null}
+                </span>
               </label>
             </li>
           ))}
         </ul>
-      ) : (
+      ) : empty ? (
         <p className="px-4 pt-1 pb-3 text-[14px] leading-[20px] text-ink-muted">{empty}</p>
-      )}
+      ) : null}
+      {footer ? <p className="px-4 pt-1 pb-3 text-[13px] leading-[18px] text-ink-muted">{footer}</p> : null}
     </div>
   );
 }

@@ -4,17 +4,18 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { nextAction } from "@/prototype/actions";
+import { openRequests } from "@/prototype/context";
 import { SCOTLAND_PACK, issueClock, issueStatus, ruleLines, type ClockView } from "@/prototype/clocks";
 import { longDate } from "@/prototype/dates";
-import { CaseContextCard, CaseContextSheet } from "@/prototype/CaseContext";
 import { AddEvidenceSheet, ReportSheet, WhenSheet, type Save } from "@/prototype/EvidenceSheet";
 import { MESSAGE_TITLE } from "@/prototype/messages";
 import { RecentActivity } from "@/prototype/Record";
+import { RequestBanner, RequestSheet, UpdateSheet, UpdatesCard } from "@/prototype/Updates";
 import { addEntries, effectiveRole, findGroup, useStore } from "@/prototype/store";
 import { CATEGORY_LABEL, ME, issueRef, type LetterKey } from "@/prototype/types";
 import { Button, Chip, Icon, Loading, SafetyBanner, Sheet, buttonClass, label, safetyKind, type IconName } from "@/prototype/ui";
 
-type SheetKind = "report" | "evidence" | "visit" | "fixed" | "more" | "context" | null;
+type SheetKind = "report" | "evidence" | "visit" | "fixed" | "more" | "update" | "request" | null;
 
 export default function IssuePage() {
   return (
@@ -38,7 +39,7 @@ function IssueDetail() {
   const sent = search.get("sent");
   const isNew = search.get("new") === "1";
   const s = useStore();
-  const [sheet, setSheet] = useState<SheetKind>(null);
+  const [sheet, setSheet] = useState<SheetKind>(() => (search.get("update") === "1" ? "update" : null));
   const [allDeadlines, setAllDeadlines] = useState(false);
   const [showAll, setShowAll] = useState(false);
   if (!s) return <Loading />;
@@ -54,6 +55,7 @@ function IssueDetail() {
 
   const role = effectiveRole(s, group);
   const canManage = role !== "submitter" || issue.createdBy === ME;
+  const canAsk = role !== "submitter" && group.members.some((m) => m.id !== ME && m.status === "active");
   const status = issueStatus(issue);
   const clock = issueClock(group, issue);
   const rules = ruleLines(group, issue);
@@ -115,6 +117,7 @@ function IssueDetail() {
         </p>
       ) : null}
       {safety && status !== "fixed" ? <SafetyBanner kind={safety} /> : null}
+      <RequestBanner group={group} issueIds={[issue.id]} onAdd={() => setSheet("update")} />
 
       <header className="flex flex-col gap-1">
         <h1 className="text-[26px] leading-8 font-bold">{issue.title}</h1>
@@ -172,9 +175,14 @@ function IssueDetail() {
             Already told them another way?
           </button>
         ) : null}
+        {next.kind === "send" && canAsk && !openRequests(group, [issue.id]).some((r) => r.by === ME) ? (
+          <button type="button" className="-mt-2 min-h-11 self-start font-bold underline underline-offset-3" onClick={() => setSheet("request")}>
+            Ask your group for updates first
+          </button>
+        ) : null}
       </section>
 
-      {status !== "fixed" ? <CaseContextCard issue={issue} onOpen={() => setSheet("context")} /> : null}
+      {status !== "fixed" ? <UpdatesCard group={group} issue={issue} onOpen={() => setSheet("update")} /> : null}
 
       <nav aria-label="Actions" className="grid grid-cols-3 gap-2">
         {quick.map((q) =>
@@ -204,7 +212,8 @@ function IssueDetail() {
         <RecentActivity group={group} issue={issue} limit={showAll ? undefined : 3} />
       </section>
 
-      <CaseContextSheet open={sheet === "context"} onClose={() => setSheet(null)} group={group} issue={issue} />
+      <UpdateSheet open={sheet === "update"} onClose={() => setSheet(null)} group={group} issue={issue} />
+      <RequestSheet open={sheet === "request"} onClose={() => setSheet(null)} group={group} issues={[issue]} />
       <ReportSheet open={sheet === "report"} onClose={() => setSheet(null)} onSave={save} group={group} issue={issue} />
       <AddEvidenceSheet open={sheet === "evidence"} onClose={() => setSheet(null)} onSave={save} group={group} issue={issue} />
       <WhenSheet
@@ -228,6 +237,7 @@ function IssueDetail() {
       <Sheet open={sheet === "more"} onClose={() => setSheet(null)} title="More">
         <ul className="flex flex-col divide-y divide-line-subtle rounded-xl bg-concrete">
           <MoreRow icon="send" text="Log contact you've already made" onClick={() => setSheet("report")} />
+          {canAsk && status !== "fixed" ? <MoreRow icon="bell" text="Ask your group for updates" onClick={() => setSheet("request")} /> : null}
           {status !== "open" ? <MoreRow icon="door" text="Record a landlord visit" onClick={() => setSheet("visit")} /> : null}
           {canManage
             ? (["repair_request", "reminder", "complaint"] as LetterKey[]).map((k) => (

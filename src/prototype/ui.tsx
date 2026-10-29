@@ -38,6 +38,7 @@ const ICONS = {
   video: "M3 6h12v12H3zM15 10l6-3v10l-6-3",
   shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM8.5 12l2.5 2.5 4.5-5",
   folder: "M3 6h7l2 2h9v11H3z",
+  bell: "M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20.5a2 2 0 0 0 4 0",
 } as const;
 
 export type IconName = keyof typeof ICONS;

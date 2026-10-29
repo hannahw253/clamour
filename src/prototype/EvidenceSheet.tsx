@@ -12,6 +12,7 @@ import { PhotoPicker } from "./PhotoPicker";
 import { fileSize, fingerprintFile, parseChatExport, shortHash } from "./photos";
 import type { NewEntry } from "./store";
 import { METHOD_LABEL, type FileRef, type Group, type Issue, type Photo, type ReportMethod } from "./types";
+import { UpdateForm } from "./Updates";
 import { Button, ChoiceCard, Field, Icon, Sheet, buttonClass, inputClass, label, type IconName } from "./ui";
 
 export type Save = (entries: NewEntry[]) => void;
@@ -27,7 +28,7 @@ const KINDS: { kind: Kind; icon: IconName; title: string; short: string }[] = [
   { kind: "reading", icon: "gauge", title: "Damp or temperature reading", short: "Reading" },
   { kind: "receipt", icon: "receipt", title: "Receipt", short: "Receipt" },
   { kind: "chat", icon: "chat", title: "Whole chat export", short: "Chat export" },
-  { kind: "note", icon: "note", title: "Note", short: "Note" },
+  { kind: "note", icon: "note", title: "Add an update", short: "Update in words" },
 ];
 
 const textareaClass = `${inputClass} min-h-24 py-3 leading-[26px]`;
@@ -88,7 +89,7 @@ export function AddEvidenceSheet({
           {kind === "reading" ? <ReadingForm onSave={save} /> : null}
           {kind === "receipt" ? <ReceiptForm onSave={save} /> : null}
           {kind === "chat" ? <ChatForm onSave={save} /> : null}
-          {kind === "note" ? <NoteForm onSave={save} /> : null}
+          {kind === "note" ? <UpdateForm group={group} issue={issue} onDone={close} /> : null}
         </div>
       )}
     </Sheet>
@@ -442,15 +443,6 @@ function ChatForm({ onSave }: { onSave: Save }) {
         <p className="text-[15px] leading-[22px] text-ink-muted">Prototype: zip files keep their fingerprint only. The full app reads the messages and photos inside.</p>
       ) : null}
       <Note id="chat-note" value={text} onChange={setText} />
-    </Form>
-  );
-}
-
-function NoteForm({ onSave }: { onSave: Save }) {
-  const [text, setText] = useState("");
-  return (
-    <Form disabled={!text.trim()} onSubmit={() => onSave([{ kind: "note", at: now(), text: text.trim() }])}>
-      <Note id="note-text" title="Note" value={text} onChange={setText} placeholder="It's spread to the window frame" />
     </Form>
   );
 }

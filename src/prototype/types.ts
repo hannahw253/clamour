@@ -56,7 +56,8 @@ type EntryBase = {
 export type Entry =
   | (EntryBase & { kind: "logged" })
   | (EntryBase & { kind: "photo"; photo: Photo })
-  | (EntryBase & { kind: "note" })
+  /** An update in a member's own words. "topic" says which question it answers (north star, document 2: Entry). */
+  | (EntryBase & { kind: "note"; topic?: string })
   | (EntryBase & { kind: "reported"; method: ReportMethod })
   | (EntryBase & { kind: "visit" })
   | (EntryBase & { kind: "letter"; letter: LetterKey })
@@ -105,25 +106,18 @@ export type UnsortedEmail = {
 /** Kinds of people a problem can affect (north star, document 2: Affected person). */
 export type AffectedKind = "child" | "pregnancy" | "older" | "condition" | "mental_health";
 
-/** Who a problem affects and how, in the member's words. Private and consented (document 5). */
-export type Affected = { kind: AffectedKind; how: string; by: string; consentAt: string };
+/**
+ * Who in a household a problem affects and how, in that household's words. Private and consented
+ * (document 5). Only the member who added it decides whether it can be used in letters.
+ */
+export type Affected = { kind: AffectedKind; how: string; by: string; consentAt: string; letters: boolean; caseFile: boolean };
 
-/** The problem's context in the member's own words, asked once and reused by every message. */
-export type IssueContext = {
-  started?: string;
-  impact?: string;
-  worse?: string;
-  fix?: string;
-  /** Answers to the one or two questions for this kind of problem. */
-  answers?: Record<string, string>;
-  affected?: Affected[];
-  /** Include who is affected in case files. */
-  caseFileHealth?: boolean;
-};
+/** An admin's notice that they'll write to the landlord on a date, asking for updates first. */
+export type UpdateRequest = { id: string; issueIds: string[]; by: string; writeOn: string; note?: string; at: string; closedAt?: string };
 
 export type Issue = {
   id: string;
-  context?: IssueContext;
+  affected?: Affected[];
   /** Short reference for letter subjects, shown as CL-<ref>. */
   ref: number;
   title: string;
@@ -151,6 +145,7 @@ export type Group = {
   landlord?: { name?: string; email?: string };
   /** The address used in letters; each member's flat is added for buildings. */
   address?: { line: string; postcode: string };
+  requests?: UpdateRequest[];
   issues: Issue[];
 };
 
@@ -165,6 +160,7 @@ export type Prefs = {
     deadlines: boolean;
     problems: boolean;
     joins: boolean;
+    requests: boolean;
   };
   theme: "system" | "light" | "dark";
   largeText: boolean;
@@ -186,7 +182,7 @@ export type Prefs = {
 export const DEFAULT_PREFS: Prefs = {
   email: "",
   phone: "",
-  notify: { channel: "email", when: "instant", replies: true, deadlines: true, problems: true, joins: true },
+  notify: { channel: "email", when: "instant", replies: true, deadlines: true, problems: true, joins: true, requests: true },
   theme: "system",
   largeText: false,
   reduceMotion: false,
@@ -201,7 +197,7 @@ export const DEFAULT_PREFS: Prefs = {
 };
 
 export type State = {
-  version: 3;
+  version: 4;
   myName: string | null;
   prefs?: Prefs;
   /** Prototype only: see the app as another role. */

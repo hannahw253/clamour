@@ -8,11 +8,14 @@ import { addWorkingDays, firstReport, issueClock, unconfirmedCall } from "./cloc
 import { addDays, daysBetween, letterDate, londonParts, todayYmd } from "./dates";
 import { entrySummary, sortedEntries } from "./Record";
 import type { AiFacts } from "@/lib/ai/rules";
-import { addressLine, sentence, type Fact } from "./context";
+import { addressLine, sentence, type Fact, type Style } from "./context";
 import { CATEGORY_LABEL, LETTER_LABEL, NATION_LABEL, issueRef, type Group, type Issue, type LetterKey } from "./types";
 
-/** What the member chose for this message: the facts ticked, this letter's prompt, and access times. */
-export type Answers = { prompt: string; selected: Fact[]; access: string };
+/**
+ * What the sender chose on the email screen: the facts ticked, access times, the style, and
+ * "Anything new?" when it's only for this letter (otherwise it's already a ticked update).
+ */
+export type Answers = { selected: Fact[]; access: string; style: Style; extra?: string };
 
 export const MESSAGE_TITLE: Record<LetterKey, string> = {
   repair_request: "Report the problem",
@@ -29,12 +32,15 @@ const time = (iso: string) => {
   return `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`;
 };
 
+/** The standard letter: built from the ticked facts with templates, no AI. "Write it" starts from this. */
 export function buildMessage(
   key: LetterKey,
   ctx: { group: Group; issue: Issue; myName: string; landlordName?: string },
   answers: Answers,
 ): { subject: string; body: string } {
   const { group, issue, myName } = ctx;
+  const { tone, length } = answers.style;
+  const firm = tone === "firm";
   const report = firstReport(issue);
   const today = todayYmd();
   const address = addressLine(group, issue.createdBy);
@@ -51,13 +57,10 @@ export function buildMessage(
     : "";
 
   const picked = (source: Fact["source"]) => answers.selected.filter((f) => f.source === source);
-  const fix = answers.selected.find((f) => f.id === "fix");
-  const wordFacts = picked("words").filter((f) => f.id !== "fix");
-  const words = [
-    ...wordFacts.filter((f) => f.id === "started").map((f) => f.text),
-    key === "confirm" ? "" : sentence(answers.prompt),
-    ...wordFacts.filter((f) => f.id !== "started").map((f) => f.text),
-  ].filter(Boolean);
+  const fixes = picked("words").filter((f) => f.topic === "fix");
+  const words = picked("words")
+    .filter((f) => f.topic !== "fix")
+    .map((f) => f.text);
   const record = picked("record").filter((f) => !(key === "complaint" && f.id === "contacts"));
 
   const paras: string[] = [`Dear ${ctx.landlordName?.trim() || "landlord"},`];
@@ -67,7 +70,9 @@ export function buildMessage(
   if (key === "repair_request") {
     subject = `Repair needed at ${short}${ref}`;
     paras.push(`I am writing to report a repair needed at ${address}.`, `${issue.title}${issue.room ? ` (${issue.room})` : ""}.`);
-    request = "Please let me know when someone can come to look at it.";
+    request = firm
+      ? `Please arrange for someone to look at it, and tell me by ${replyBy} when they will come.`
+      : "Please let me know when someone can come to look at it.";
   } else if (key === "confirm") {
     const call = unconfirmedCall(issue);
     const how =
@@ -77,7 +82,7 @@ export function buildMessage(
       `I am writing to confirm our ${how}${call ? ` on ${letterDate(londonParts(call.at).ymd)} at ${time(call.at)}` : ""} about a repair at ${address}.`,
       `${issue.title}${issue.room ? ` (${issue.room})` : ""}.`,
     );
-    const said = [call?.text ? `My note of what was said: ${call.text.trim().replace(/\.?$/, ".")}` : "", answers.prompt.trim() ? `You also said: ${sentence(answers.prompt)}` : ""].filter(Boolean);
+    const said = [call?.text ? `My note of what was said: ${call.text.trim().replace(/\.?$/, ".")}` : "", answers.extra?.trim() ? `You also said: ${sentence(answers.extra)}` : ""].filter(Boolean);
     if (said.length) paras.push(said.join(" "));
     request = `If I have misunderstood anything, please reply by ${replyBy}.`;
   } else if (key === "complaint") {
@@ -95,13 +100,20 @@ export function buildMessage(
       `${issue.title}${issue.room ? ` (${issue.room})` : ""}.`,
       `${firstDate ? `This was first reported on ${firstDate}, ${days} days ago, and it has not been fixed.` : "It has not been fixed."}${law}`,
     );
-    request = `Please let me know by ${replyBy} when the work will be done.`;
+    request = firm ? `I need a date for this work. Please tell me by ${replyBy} when it will be done.` : `Please let me know by ${replyBy} when the work will be done.`;
   }
 
-  if (words.length) paras.push(words.join(" "));
+  if (words.length) paras.push(...(length === "detailed" ? words : [words.join(" ")]));
   const affected = picked("affected").map((f) => f.text);
   if (affected.length) paras.push(`${affected.join(" ")}${key === "confirm" ? "" : " Please treat this as urgent."}`);
-  if (record.length) paras.push(`${key === "repair_request" ? "" : "Since it was first reported:\n"}${record.map((f) => (key === "repair_request" ? f.text : `- ${f.text}`)).join(key === "repair_request" ? " " : "\n")}`);
+  if (record.length) {
+    const inline = length === "short";
+    paras.push(
+      inline
+        ? record.map((f) => f.text).join(" ")
+        : `${key === "repair_request" ? "What we have on record:" : "Since it was first reported:"}\n${record.map((f) => `- ${f.text}`).join("\n")}`,
+    );
+  }
   if (key === "complaint") {
     const steps = sortedEntries(issue)
       .filter((e) => e.kind === "reported" || e.kind === "letter" || e.kind === "call" || e.kind === "visit" || e.kind === "email")
@@ -109,7 +121,7 @@ export function buildMessage(
       .join("\n");
     paras.push(`What has happened so far:\n${steps || "- No contact recorded yet"}`);
   }
-  if (fix) paras.push(fix.text);
+  if (fixes.length) paras.push(fixes.map((f) => f.text).join(" "));
   paras.push(request);
   if (answers.access) paras.push(answers.access);
   paras.push(`${key === "complaint" ? "Yours sincerely" : "Thank you"},\n\n${myName}\n${myAddress}`, FOOTER);
@@ -118,11 +130,9 @@ export function buildMessage(
 }
 
 /** One letter about several problems in the same group: the "group letter of demands" in document 6. */
-export function buildGroupMessage(
-  ctx: { group: Group; issues: Issue[]; myName: string; landlordName?: string },
-  answers: Pick<Answers, "access">,
-): { subject: string; body: string } {
+export function buildGroupMessage(ctx: { group: Group; issues: Issue[]; myName: string; landlordName?: string }, answers: Answers): { subject: string; body: string } {
   const { group, issues, myName } = ctx;
+  const firm = answers.style.tone === "firm";
   const today = todayYmd();
   const replyBy = letterDate(addDays(today, 7));
   const households = new Set(issues.map((i) => i.createdBy)).size;
@@ -135,8 +145,9 @@ export function buildGroupMessage(
         ? `First reported ${letterDate(londonParts(report.at).ymd)}, ${daysBetween(londonParts(report.at).ymd, today)} days ago.`
         : "Not reported before this letter.";
       const missed = clock.tone === "missed" ? ` Legal deadline missed: ${clock.value}.` : "";
-      const impact = issue.context?.impact ? ` ${sentence(issue.context.impact)}` : "";
-      return `- [${issueRef(issue)}] ${issue.title}${issue.room ? ` (${issue.room})` : ""}. ${first}${missed}${impact}`;
+      const said = answers.selected.filter((f) => f.issueId === issue.id).map((f) => f.text);
+      const detail = said.length ? (answers.style.length === "detailed" ? said.map((t) => `\n  ${t}`).join("") : ` ${said.join(" ")}`) : "";
+      return `- [${issueRef(issue)}] ${issue.title}${issue.room ? ` (${issue.room})` : ""}. ${first}${missed}${detail}`;
     })
     .join("\n");
   return {
@@ -145,7 +156,8 @@ export function buildGroupMessage(
       `Dear ${ctx.landlordName?.trim() || "landlord"},`,
       `I am writing on behalf of ${households} ${households === 1 ? "household" : "households"} at ${place}${group.address?.postcode ? `, ${group.address.postcode}` : ""} about ${issues.length} repairs that have not been fixed.`,
       lines,
-      `Please reply by ${replyBy} with a date for each repair.`,
+      answers.extra?.trim() ? sentence(answers.extra) : "",
+      firm ? `We need a date for each repair. Please reply by ${replyBy}.` : `Please reply by ${replyBy} with a date for each repair.`,
       answers.access,
       `Yours sincerely,\n\n${myName}\nOn behalf of ${group.name}`,
       FOOTER,
@@ -157,7 +169,7 @@ export function buildGroupMessage(
 
 /**
  * The facts sent with an AI request: only what the message needs (north star, document 5: AI, least data).
- * Members' free-text notes aren't sent; anything personal reaches the AI only if it's already in the draft.
+ * Only what the sender ticked is sent as "included"; members' other updates and health details never are.
  */
 export function aiFacts(key: LetterKey, group: Group, issues: Issue[], included: string[] = []): AiFacts {
   return {

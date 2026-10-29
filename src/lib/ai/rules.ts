@@ -4,7 +4,7 @@
  * and are checked again on the way back, so a suggestion that breaks them is never shown.
  */
 
-export const AI_MODES = ["firmer", "friendlier", "shorter", "simpler", "own_words", "translate"] as const;
+export const AI_MODES = ["write", "firmer", "friendlier", "shorter", "simpler", "own_words", "translate"] as const;
 export type AiMode = (typeof AI_MODES)[number];
 
 export type AiFacts = {
@@ -24,11 +24,13 @@ export type AiRequest = {
   facts: AiFacts;
   ownWords?: string;
   language?: string;
+  /** For "write": the tone and length the sender chose. */
+  style?: { tone: "polite" | "firm"; length: "short" | "detailed" };
 };
 
 export const FOOTER = "This message was prepared with Clamour. It is not legal advice.";
 
-const MODE_INSTRUCTION: Record<Exclude<AiMode, "translate">, string> = {
+const MODE_INSTRUCTION: Record<Exclude<AiMode, "translate" | "write">, string> = {
   firmer: "Make it firmer and more direct while staying polite. Make the request, and any reply-by date already in the draft, stand out.",
   friendlier: "Make it warmer and more cooperative, while keeping the request clear.",
   shorter: "Make it as short as you can while keeping every fact, date and the request.",
@@ -36,6 +38,15 @@ const MODE_INSTRUCTION: Record<Exclude<AiMode, "translate">, string> = {
   own_words:
     "Fit the member's own words into the message where they belong, correcting spelling and grammar and keeping their meaning. Leave out anything in their words that breaks the rules.",
 };
+
+function writeInstruction(style: AiRequest["style"]) {
+  const tone = style?.tone === "firm" ? "Firm and direct, while staying polite: make the request and any reply-by date stand out." : "Polite and cooperative, while keeping the request clear.";
+  const length =
+    style?.length === "detailed"
+      ? "Detailed: keep every fact, grouped into short paragraphs, with a short list where it helps."
+      : "Short: as few words as possible while keeping every fact, date and the request.";
+  return `Write this as a natural, well-organised email from the renter. The DRAFT holds everything the member chose to say; use it and nothing else. Quoted words from other households stay as quotes, with who said them. Keep every legal deadline sentence and the "What has happened so far" list if there is one. Tone: ${tone} Length: ${length}`;
+}
 
 const RULES = `Rules you must follow:
 1. Use only facts that appear in the DRAFT, the FACTS or the MEMBER'S OWN WORDS. Never add dates, times, amounts, names, promises or events that are not there.
@@ -66,7 +77,7 @@ export function buildPrompt(req: AiRequest): { system: string; user: string } {
 
   return {
     system: `You help a UK renter improve a message to their landlord or letting agent about a repair. The message was drafted from their group's verified record. ${RULES}`,
-    user: `${MODE_INSTRUCTION[req.mode]}\n\nFACTS:\n${facts}\n\n${req.ownWords ? `MEMBER'S OWN WORDS:\n${req.ownWords}\n\n` : ""}DRAFT:\n${req.draft}`,
+    user: `${req.mode === "write" ? writeInstruction(req.style) : MODE_INSTRUCTION[req.mode]}\n\nFACTS:\n${facts}\n\n${req.ownWords ? `MEMBER'S OWN WORDS:\n${req.ownWords}\n\n` : ""}DRAFT:\n${req.draft}`,
   };
 }
 
@@ -119,5 +130,7 @@ export function validateRequest(body: unknown): AiRequest | string {
   const f = b.facts as AiFacts | undefined;
   if (!f || typeof f !== "object" || !Array.isArray(f.problems) || !Array.isArray(f.record)) return "Facts are missing.";
   if (JSON.stringify(f).length > 12000) return "Too much detail to send.";
-  return { mode: b.mode as AiMode, draft: b.draft, facts: f, ownWords: b.ownWords as string | undefined, language: b.language as string | undefined };
+  const st = b.style as AiRequest["style"] | undefined;
+  if (st !== undefined && (typeof st !== "object" || !["polite", "firm"].includes(st.tone) || !["short", "detailed"].includes(st.length))) return "Unknown style.";
+  return { mode: b.mode as AiMode, draft: b.draft, facts: f, ownWords: b.ownWords as string | undefined, language: b.language as string | undefined, style: st };
 }

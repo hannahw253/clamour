@@ -7,6 +7,7 @@
  * a receipt and emails waiting to be filed.
  */
 
+import { addDays, todayYmd } from "./dates";
 import { ME, type Entry, type Group, type Issue, type Photo } from "./types";
 
 /** A drawing of a chat, standing in for a real screenshot. No words, so nothing to misread. */
@@ -67,16 +68,15 @@ export function sampleGroups(now: Date): Group[] {
           room: "Kitchen",
           createdBy: "priya",
           createdAt: at(20, 7, 40),
-          context: {
-            started: "the first week of October",
-            impact: "Four of us have had cold showers for three weeks",
-            answers: { coping: "We boil the kettle to wash and use a plug-in heater in the bathroom" },
-            fix: "A working boiler, not another reset",
-          },
+          affected: [
+            { kind: "condition", how: "I have asthma and the cold house has made it much worse", by: "jess", consentAt: at(11, 20, 5), letters: true, caseFile: false },
+            { kind: "mental_health", how: "The stress of it is keeping me awake", by: "tom", consentAt: at(12, 18, 10), letters: false, caseFile: false },
+          ],
         },
         [
           e({ kind: "logged", at: at(20, 7, 40), by: "priya" }),
           e({ kind: "note", at: at(20, 7, 42), by: "priya", text: "Pressure drops to zero every morning. Cold showers for all four of us." }),
+          e({ kind: "note", topic: "started", at: at(20, 7, 43), by: "priya", text: "The first week of October" }),
           e({ kind: "reported", method: "text", at: at(19, 9, 15), by: "priya", text: "Texted the letting agent with photos of the pressure gauge." }),
           e({
             kind: "email",
@@ -104,6 +104,9 @@ export function sampleGroups(now: Date): Group[] {
             auth: "lost",
           }),
           e({ kind: "note", at: at(12, 18, 5), by: "tom", text: "Thursday came and went. Nobody came and nobody called." }),
+          e({ kind: "note", topic: "impact", at: at(11, 20, 0), by: "jess", text: "I work early shifts and can't shower before work" }),
+          e({ kind: "note", topic: "coping", at: at(10, 9, 0), by: "priya", text: "We boil the kettle to wash and use a plug-in heater in the bathroom" }),
+          e({ kind: "note", topic: "fix", at: at(10, 9, 1), by: "priya", text: "A working boiler, not another reset" }),
           e({ kind: "receipt", at: at(10, 13, 0), by: "jess", amount: "£34.99", text: "Electric shower heater for the bathroom while the boiler's broken." }),
           e({ kind: "call", direction: "you_called", with: "Letting agent (Dan)", at: at(2, 11, 20), by: ME, text: "Dan said the engineer is waiting for a part and would come next week. He couldn't give a date." }),
         ],
@@ -146,6 +149,16 @@ export function sampleGroups(now: Date): Group[] {
     inbox: "",
     landlord: { name: "Greenhill Property Factors", email: "repairs@factor.example" },
     address: { line: "Greenhill Court, Edinburgh", postcode: "EH9 9XX" },
+    requests: [
+      {
+        id: "req-damp",
+        issueIds: ["kitchen-damp", "bedroom-mould"],
+        by: "aileen",
+        writeOn: addDays(todayYmd(now), 4),
+        note: "I'm sending one letter to the factor about the damp in the building. Photos of anything new would really help.",
+        at: at(1, 18, 0),
+      },
+    ],
     unsorted: [
       {
         id: "u1",
@@ -177,17 +190,13 @@ export function sampleGroups(now: Date): Group[] {
           room: "Flat 5, back bedroom",
           createdBy: "callum",
           createdAt: at(9, 20, 0),
-          context: {
-            started: "in September, after the window seal failed",
-            answers: { rooms: "The back bedroom. The cot mattress and curtains have gone mouldy" },
-            fix: "Replace the window seal and treat the wall properly",
-            affected: [{ kind: "child", how: "Our 8-month-old sleeps in that room and has had a cough for two weeks", by: "callum", consentAt: at(9, 20, 10) }],
-            caseFileHealth: true,
-          },
+          affected: [{ kind: "child", how: "Our 8-month-old sleeps in that room and has had a cough for two weeks", by: "callum", consentAt: at(9, 20, 10), letters: true, caseFile: true }],
         },
         [
           e({ kind: "logged", at: at(9, 20, 0), by: "callum" }),
-          e({ kind: "note", at: at(9, 20, 2), by: "callum", text: "Started after the window seal failed. Our baby sleeps in this room." }),
+          e({ kind: "note", topic: "started", at: at(9, 20, 2), by: "callum", text: "In September, after the window seal failed" }),
+          e({ kind: "note", topic: "rooms", at: at(9, 20, 3), by: "callum", text: "The back bedroom. The cot mattress and curtains have gone mouldy" }),
+          e({ kind: "note", topic: "fix", at: at(9, 20, 4), by: "callum", text: "Replace the window seal and treat the wall properly" }),
           e({ kind: "reading", measure: "humidity", value: 78, room: "Back bedroom", at: at(9, 20, 5), by: "callum" }),
           e({ kind: "reported", method: "email", at: at(8, 10, 20), by: "callum" }),
           e({ kind: "messages", photo: screenshot, with: "Factor (WhatsApp)", at: at(6, 14, 30), recordedAt: at(6, 18, 2), by: "callum", text: "Factor said they'd 'pass it on' and to wipe it with bleach." }),
@@ -203,11 +212,6 @@ export function sampleGroups(now: Date): Group[] {
           room: "Flat 2, kitchen",
           createdBy: "aileen",
           createdAt: at(21, 18, 30),
-          context: {
-            answers: { rooms: "The kitchen ceiling, above the cooker" },
-            worse: "It's now the size of a dinner plate and drips when it rains",
-            fix: "Find and fix the leak from the flat above",
-          },
         },
         [
           e({ kind: "logged", at: at(21, 18, 30), by: "aileen" }),
@@ -236,7 +240,10 @@ export function sampleGroups(now: Date): Group[] {
             via: "cc",
             auth: "passed",
           }),
-          e({ kind: "note", at: at(6, 19, 45), by: "aileen", text: "Patch is now the size of a dinner plate. No inspection, no reply since." }),
+          e({ kind: "note", topic: "rooms", at: at(21, 18, 32), by: "aileen", text: "The kitchen ceiling, above the cooker" }),
+          e({ kind: "note", topic: "worse", at: at(6, 19, 45), by: "aileen", text: "It's now the size of a dinner plate and drips when it rains" }),
+          e({ kind: "note", topic: "fix", at: at(6, 19, 46), by: "aileen", text: "Find and fix the leak from the flat above" }),
+          e({ kind: "note", topic: "impact", at: at(1, 18, 20), by: "ruth", text: "The damp smell carries down the stairwell to Flat 1, and our hallway wall is starting to mark" }),
         ],
       ),
       issue(

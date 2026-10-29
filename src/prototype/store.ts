@@ -17,14 +17,15 @@ import {
   type Member,
   type Nation,
   type Role,
-  type IssueContext,
+  type Affected,
+  type UpdateRequest,
   type Prefs,
   type State,
   DEFAULT_PREFS,
 } from "./types";
 
-const KEY = "clamour-prototype-v3";
-const EMPTY: State = { version: 3, myName: null, viewAs: null, groups: [] };
+const KEY = "clamour-prototype-v4";
+const EMPTY: State = { version: 4, myName: null, viewAs: null, groups: [] };
 
 let state: State | null = null;
 let storageFull = false;
@@ -35,7 +36,7 @@ function load(): State {
     const raw = window.localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as State;
-      if (parsed.version === 3) return parsed;
+      if (parsed.version === 4) return parsed;
     }
   } catch {
     // Private windows and blocked storage fall back to memory.
@@ -386,8 +387,28 @@ function issueRefOf(i: Issue) {
   return `CL-${i.ref}`;
 }
 
-export function updateIssueContext(groupId: string, issueId: string, patch: Partial<IssueContext>) {
-  updateIssue(groupId, issueId, (i) => ({ ...i, context: { ...i.context, ...patch } }));
+/** Replace your own household's "who is affected" details on a problem. */
+export function setMyAffected(groupId: string, issueId: string, mine: Affected[]) {
+  updateIssue(groupId, issueId, (i) => ({ ...i, affected: [...(i.affected ?? []).filter((a) => a.by !== ME), ...mine] }));
+}
+
+/** Ask the group for updates before writing to the landlord on a date. */
+export function requestUpdates(groupId: string, input: { issueIds: string[]; writeOn: string; note?: string }): string {
+  const id = newId();
+  const request: UpdateRequest = { id, by: ME, at: new Date().toISOString(), issueIds: input.issueIds, writeOn: input.writeOn, note: input.note?.trim() || undefined };
+  updateGroup(groupId, (g) => ({ ...g, requests: [...(g.requests ?? []).filter((r) => !(r.by === ME && !r.closedAt && r.issueIds.some((x) => input.issueIds.includes(x)))), request] }));
+  return id;
+}
+
+/** Close requests for updates: cancelled, or because the letter they were for has been sent. */
+export function closeRequests(groupId: string, match: { id?: string; issueIds?: string[] }) {
+  const now = new Date().toISOString();
+  updateGroup(groupId, (g) => ({
+    ...g,
+    requests: (g.requests ?? []).map((r) =>
+      !r.closedAt && (r.id === match.id || (match.issueIds && r.by === ME && r.issueIds.some((x) => match.issueIds!.includes(x)))) ? { ...r, closedAt: now } : r,
+    ),
+  }));
 }
 
 export function setGroupAddress(groupId: string, address: { line: string; postcode: string }) {

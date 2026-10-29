@@ -5,6 +5,7 @@
 import { useState } from "react";
 
 import { stamp } from "./dates";
+import { topicLabel } from "./topics";
 import { fileSize, shortHash } from "./photos";
 import { memberName } from "./store";
 import { EMAIL_VIA_LABEL, LETTER_LABEL, METHOD_LABEL, type Entry, type Group, type Issue } from "./types";
@@ -46,7 +47,7 @@ export function entrySummary(e: Entry): { icon: IconName; text: string } {
     case "video":
       return { icon: "video", text: "Added a video" };
     case "note":
-      return { icon: "note", text: "Added a note" };
+      return { icon: "note", text: e.topic && topicLabel(e.topic) ? `Added an update: ${topicLabel(e.topic)!.toLowerCase()}` : "Added an update" };
     case "reported":
       return { icon: "send", text: `Told the landlord: ${METHOD_LABEL[e.method].toLowerCase()}` };
     case "visit":
