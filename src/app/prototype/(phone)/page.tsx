@@ -7,7 +7,7 @@ import { issueStatus } from "@/prototype/clocks";
 import { useWide } from "@/prototype/Frame";
 import { loadSamples, myMember, setPrefs, useStore } from "@/prototype/store";
 import { NATION_LABEL, ROLE_LABEL, TYPE_LABEL } from "@/prototype/types";
-import { Button, ButtonLink, Chip, Icon, Loading, PageTitle, label } from "@/prototype/ui";
+import { Button, ButtonLink, Chip, Icon, Loading, PageTitle, label, panel } from "@/prototype/ui";
 
 export default function PrototypeHome() {
   const s = useStore();
@@ -27,12 +27,12 @@ export default function PrototypeHome() {
           <Lockup size={44} ground="paper" />
         </div>
         <div className="flex flex-col gap-4">
-          <h1 className="font-display text-[44px] leading-[1.02] tracking-[0.01em] uppercase">Fix it together</h1>
-          <p className="text-[17px] leading-[26px]">
+          <h1 className="font-display text-[2.75rem] leading-[1.02] tracking-[0.01em] uppercase">Fix it together</h1>
+          <p className="text-[1.0625rem] leading-[1.625rem]">
             Clamour keeps one dated record of what needs fixing in your home, shared with the people you live with, your
             neighbours or your union branch.
           </p>
-          <ul className="flex flex-col gap-2 text-[17px] leading-[26px]">
+          <ul className="flex flex-col gap-2 text-[1.0625rem] leading-[1.625rem]">
             {[
               "Log a problem with a photo in seconds",
               "Invite your group with a link, like a group chat",
@@ -52,7 +52,7 @@ export default function PrototypeHome() {
           </ButtonLink>
           <Button onClick={trySample}>Try a sample group</Button>
         </div>
-        <p className="text-[15px] leading-[22px] text-ink-muted">
+        <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
           This is a prototype for testing with renters. Nothing you enter leaves this device.
         </p>
       </main>
@@ -83,8 +83,8 @@ export default function PrototypeHome() {
                   <span className={`${label} text-ink-muted`}>
                     {TYPE_LABEL[g.type]} · {NATION_LABEL[g.nation]}
                   </span>
-                  <span className="truncate text-[20px] leading-7 font-bold">{g.name}</span>
-                  <span className="flex flex-wrap items-center gap-2 text-[15px] leading-[22px]">
+                  <span className="truncate text-[1.125rem] leading-[1.625rem] font-bold">{g.name}</span>
+                  <span className="flex flex-wrap items-center gap-2 text-[0.9375rem] leading-[1.375rem]">
                     {pending ? (
                       <Chip tone="signal">Waiting for approval</Chip>
                     ) : (
@@ -115,17 +115,17 @@ export default function PrototypeHome() {
         <Link
           href="/prototype/desk"
           onClick={() => setPrefs({ layout: "auto" })}
-          className="flex items-center gap-3 rounded-xl bg-concrete px-4 py-3 no-underline"
+          className={`flex items-center gap-3 px-4 py-3 no-underline ${panel}`}
         >
           <Icon name="list" />
           <span className="flex flex-1 flex-col">
             <span className="font-bold">Open the dashboard</span>
-            <span className="text-[15px] text-ink-muted">Every problem at once, for a computer</span>
+            <span className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Every problem at once, for a computer</span>
           </span>
           <Icon name="arrow" />
         </Link>
       ) : (
-        <p className="text-[15px] leading-[22px] text-ink-muted">On a computer, this opens as a dashboard with every problem at once.</p>
+        <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">On a computer, this opens as a dashboard with every problem at once.</p>
       )}
     </main>
   );

@@ -80,12 +80,12 @@ export function DeskHeader() {
     <header className="flex h-14 flex-none items-center gap-4 border-b border-line-subtle px-6 print:hidden">
       <Link href="/prototype/desk" className="flex items-center gap-2 no-underline">
         <SpannerC size={26} color="var(--ink)" />
-        <span className="font-display text-[22px] leading-none tracking-[0.01em] uppercase">Clamour</span>
+        <span className="font-display text-[1.375rem] leading-none tracking-[0.01em] uppercase">Clamour</span>
       </Link>
-      <Link href="/prototype/desk" className="text-[15px] font-semibold text-ink-muted no-underline">
+      <Link href="/prototype/desk" className="text-[0.9375rem] font-semibold text-ink-muted no-underline">
         Dashboard
       </Link>
-      <span className="rounded-full bg-concrete px-2.5 py-0.5 text-[12px] font-bold tracking-[0.08em] uppercase">Prototype</span>
+      <span className="rounded-full bg-concrete px-2.5 py-0.5 text-[0.8125rem] font-bold tracking-[0.08em] uppercase">Prototype</span>
       <span className="flex-1" />
       <Link href="/prototype/settings" className="inline-flex min-h-11 items-center gap-2 font-bold">
         <Icon name="settings" size={18} /> Settings
@@ -106,7 +106,7 @@ export function DeskHeader() {
 
 export function GroupsSidebar({ s, active }: { s: State; active: string }) {
   const needs = (g: Group) => (myMember(g)?.status === "pending" ? 0 : visibleIssues(s, g).filter((i) => nextAction(g, i).kind === "send").length);
-  const item = (on: boolean) => `flex min-h-12 items-center gap-2 rounded-lg px-3 py-2 no-underline ${on ? "bg-paper font-bold shadow-sm" : "hover:bg-paper/60"}`;
+  const item = (on: boolean) => `flex min-h-12 items-center gap-2 rounded-lg px-3 py-2 no-underline border-2 ${on ? "border-line bg-paper font-bold" : "border-transparent hover:bg-paper/60"}`;
   return (
     <nav aria-label="Groups" className="flex w-64 flex-none flex-col gap-1 border-r border-line-subtle bg-concrete p-3 print:hidden">
       <p className={`${label} px-3 pt-2 pb-1 text-ink-muted`}>Groups</p>
@@ -118,7 +118,7 @@ export function GroupsSidebar({ s, active }: { s: State; active: string }) {
         <Link key={g.id} href={`/prototype/desk?g=${g.id}`} className={item(active === g.id)}>
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate">{g.name}</span>
-            <span className="text-[13px] font-normal text-ink-muted">
+            <span className="text-[0.8125rem] leading-[1.125rem] font-normal text-ink-muted">
               {TYPE_LABEL[g.type]} · {NATION_LABEL[g.nation]}
             </span>
           </span>
@@ -135,7 +135,7 @@ export function GroupsSidebar({ s, active }: { s: State; active: string }) {
 function Count({ n }: { n: number }) {
   if (!n) return null;
   return (
-    <span className="min-w-6 rounded-full bg-ink px-2 text-center text-[13px] leading-6 font-bold text-paper" aria-label={`${n} need action`}>
+    <span className="min-w-6 rounded-full bg-ink px-2 text-center text-[0.8125rem] leading-[1.125rem] font-bold text-paper" aria-label={`${n} need action`}>
       {n}
     </span>
   );

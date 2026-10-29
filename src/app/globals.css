@@ -55,9 +55,12 @@
   color-scheme: dark;
 }
 
-/* "Larger text" in settings. Sizes are set in pixels, so the whole page is scaled. */
-:root[data-text="large"] body {
-  zoom: 1.15;
+/*
+ * Text sizes are in rem, so they follow the browser's or phone's own text size. "Larger text" in
+ * settings adds 15% on top.
+ */
+:root[data-text="large"] {
+  font-size: 115%;
 }
 
 @theme inline {
@@ -95,6 +98,12 @@ body {
 }
 
 :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Visually hidden radios and checkboxes show their focus on the label that draws them. */
+label:has(> input.sr-only:focus-visible) {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }

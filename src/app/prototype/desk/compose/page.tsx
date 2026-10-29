@@ -36,25 +36,25 @@ function Compose() {
   const aside =
     issues.length === 1 ? (
       <>
-        <p className="font-mono text-[13px] text-ink-muted">{issueRef(issues[0])}</p>
-        <h2 className="text-[20px] leading-7 font-bold">{issues[0].title}</h2>
-        <p className="text-[15px] text-ink-muted">{issueClock(group, issues[0]).words}</p>
-        <h3 className="pt-2 text-[17px] font-bold">Everything on the record</h3>
+        <p className="font-mono text-[0.8125rem] text-ink-muted">{issueRef(issues[0])}</p>
+        <h2 className="text-[1.125rem] leading-[1.75rem] font-bold">{issues[0].title}</h2>
+        <p className="text-[0.9375rem] text-ink-muted">{issueClock(group, issues[0]).words}</p>
+        <h3 className="pt-2 text-[1.0625rem] font-bold">Everything on the record</h3>
         <RecentActivity group={group} issue={issues[0]} />
       </>
     ) : (
       <>
-        <h2 className="text-[20px] leading-7 font-bold">{issues.length} problems in this letter</h2>
+        <h2 className="text-[1.125rem] leading-[1.75rem] font-bold">{issues.length} problems in this letter</h2>
         <ul className="flex flex-col divide-y divide-line-subtle">
           {issues.map((i) => (
             <li key={i.id} className="flex flex-col py-3">
-              <span className="font-mono text-[13px] text-ink-muted">{issueRef(i)}</span>
+              <span className="font-mono text-[0.8125rem] text-ink-muted">{issueRef(i)}</span>
               <span className="font-bold">{i.title}</span>
-              <span className="text-[15px] text-ink-muted">{issueClock(group, i).words}</span>
+              <span className="text-[0.9375rem] text-ink-muted">{issueClock(group, i).words}</span>
             </li>
           ))}
         </ul>
-        <p className="text-[15px] leading-[22px] text-ink-muted">Once it&rsquo;s sent, the letter is added to each problem&rsquo;s record and counts as a reminder for each.</p>
+        <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Once it&rsquo;s sent, the letter is added to each problem&rsquo;s record and counts as a reminder for each.</p>
       </>
     );
 

@@ -33,7 +33,7 @@ export default function Unsorted() {
       </PageTitle>
 
       {list.length === 0 ? (
-        <p className="text-[17px] leading-[26px]">Nothing to file. Everything that arrived went straight to the right problem.</p>
+        <p className="text-[1.0625rem] leading-[1.625rem]">Nothing to file. Everything that arrived went straight to the right problem.</p>
       ) : (
         <ul className="flex flex-col gap-4">
           {list.map((u, i) => {
@@ -46,11 +46,11 @@ export default function Unsorted() {
                     Not from a member
                   </Chip>
                 ) : null}
-                <p className="text-[18px] leading-6 font-bold">{u.subject}</p>
-                <p className="font-mono text-[13px] leading-[18px] break-all text-ink-muted">
+                <p className="text-[1.125rem] leading-[1.625rem] font-bold">{u.subject}</p>
+                <p className="font-mono text-[0.8125rem] leading-[1.125rem] break-all text-ink-muted">
                   From {fromWho(u)} · {stamp(u.receivedAt)}
                 </p>
-                <p className="text-[16px] leading-[25px]">{u.text}</p>
+                <p className="text-[1.0625rem] leading-[1.625rem]">{u.text}</p>
                 <span className="flex flex-wrap gap-2">
                   <Chip>{EMAIL_VIA_LABEL[u.via]}</Chip>
                   {u.auth === "passed" ? (
@@ -64,7 +64,7 @@ export default function Unsorted() {
                 {member ? (
                   <>
                     <label className="flex flex-col gap-2">
-                      <span className="text-[15px] font-bold">Which problem is it about?</span>
+                      <span className="text-[0.9375rem] leading-[1.375rem] font-bold">Which problem is it about?</span>
                       <select
                         className={inputClass}
                         value={selected}
@@ -89,7 +89,7 @@ export default function Unsorted() {
                   </>
                 ) : (
                   <>
-                    <p className="text-[15px] leading-[22px] text-ink-muted">
+                    <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
                       Only members&rsquo; emails go on the record. If this is from a member using another address, ask them to
                       forward it from the address they joined with. Otherwise it&rsquo;s deleted after 14 days.
                     </p>

@@ -9,12 +9,12 @@ import { longDate } from "@/prototype/dates";
 import { AddEvidenceSheet, ReportSheet, WhenSheet, type Save } from "@/prototype/EvidenceSheet";
 import { MESSAGE_TITLE } from "@/prototype/messages";
 import { RecentActivity } from "@/prototype/Record";
-import { RequestBanner, RequestSheet, UpdateSheet, UpdatesCard } from "@/prototype/Updates";
+import { RequestBanner, RequestSheet, UpdateSheet } from "@/prototype/Updates";
 import { addEntries, findGroup, memberName, permissions, useStore } from "@/prototype/store";
 import { nextFor } from "@/prototype/nextFor";
 import { useDesktop } from "@/prototype/Frame";
 import { CATEGORY_LABEL, ME, issueRef, type LetterKey } from "@/prototype/types";
-import { Button, Chip, Icon, Loading, SafetyBanner, Sheet, buttonClass, label, safetyKind, type IconName } from "@/prototype/ui";
+import { Button, Chip, Icon, Loading, SafetyBanner, Sheet, buttonClass, label, safetyKind, type IconName, panelList, toastClass } from "@/prototype/ui";
 
 type SheetKind = "report" | "evidence" | "visit" | "fixed" | "more" | "update" | "request" | null;
 
@@ -50,7 +50,7 @@ function IssueDetail() {
   if (!group || !issue) {
     return (
       <main className="px-4 py-8">
-        <p className="text-[20px] font-bold">This problem isn&rsquo;t here any more.</p>
+        <p className="text-[1.125rem] leading-[1.625rem] font-bold">This problem isn&rsquo;t here any more.</p>
       </main>
     );
   }
@@ -95,13 +95,10 @@ function IssueDetail() {
       </Button>
     ) : null;
 
-  const quick: { text: string; icon: IconName; onClick?: () => void; href?: string }[] = [
-    !can.addEvidence
-      ? { text: "Your update", icon: "note", onClick: () => setSheet("update") }
-      : next.kind === "evidence"
-        ? { text: "Log contact", icon: "send", onClick: () => setSheet("report") }
-        : { text: "Add evidence", icon: "plus", onClick: () => setSheet("evidence") },
-    { text: "Case file", icon: "folder", href: `/prototype/case/${group.id}/${issue.id}` },
+  // One row of secondary actions under the next step; everything else lives in More (calm screens).
+  const quick: { text: string; icon: IconName; onClick: () => void }[] = [
+    ...(next.kind === "update" ? [] : [{ text: "Update", icon: "note" as IconName, onClick: () => setSheet("update") }]),
+    ...(can.addEvidence && next.kind !== "evidence" ? [{ text: "Evidence", icon: "plus" as IconName, onClick: () => setSheet("evidence") }] : []),
     { text: "More", icon: "more", onClick: () => setSheet("more") },
   ];
 
@@ -112,37 +109,37 @@ function IssueDetail() {
       </Link>
 
       {sent ? (
-        <p role="status" className="flex items-start gap-2 rounded-xl bg-done px-4 py-3 text-[16px] leading-[22px] font-bold text-on-done">
+        <p role="status" className={toastClass}>
           <Icon name="tick" className="mt-0.5" />
           {sent === "email" ? "Sent. Your group’s copy is on the record, and the sender is verified." : "Added to the record. A screenshot of what you sent will make it stronger."}
         </p>
       ) : isNew ? (
-        <p role="status" className="flex items-center gap-2 rounded-xl bg-concrete px-4 py-3 text-[16px] font-bold">
+        <p role="status" className={toastClass}>
           <Icon name="tick" /> Saved to your group&rsquo;s record
         </p>
       ) : null}
       {safety && status !== "fixed" ? <SafetyBanner kind={safety} /> : null}
-      <RequestBanner group={group} issueIds={[issue.id]} onAdd={() => setSheet("update")} />
 
       <header className="flex flex-col gap-1">
-        <h1 className="text-[26px] leading-8 font-bold">{issue.title}</h1>
-        <p className="text-[15px] leading-[22px] text-ink-muted">
-          {issue.room ? `${issue.room} · ` : ""}
-          {CATEGORY_LABEL[issue.category]} · <span className="font-mono text-[13px]">{issueRef(issue)}</span>
+        <p className={`${label} text-ink-muted`}>
+          {[issue.room, CATEGORY_LABEL[issue.category]].filter(Boolean).join(" · ")}
         </p>
+        <h1 className="text-[1.375rem] leading-[1.75rem] font-bold">{issue.title}</h1>
+        <p className="font-mono text-[0.8125rem] leading-[1.125rem] text-ink-muted">{issueRef(issue)}</p>
       </header>
+      <RequestBanner group={group} issueIds={[issue.id]} onAdd={() => setSheet("update")} />
 
       <StatusCard clock={clock} hasRules={rules.length > 0} open={allDeadlines} onToggle={() => setAllDeadlines(!allDeadlines)} />
       {allDeadlines && rules.length ? (
-        <section className="-mt-3 flex flex-col gap-3 rounded-xl border border-line-subtle p-4">
+        <section className="-mt-3 flex flex-col gap-3 rounded-lg border border-line-subtle p-4">
           <ul className="flex flex-col gap-3">
             {rules.map((r) => (
               <li key={r.label} className="flex flex-col gap-1">
-                <span className="text-[16px] leading-[22px] font-bold">
+                <span className="text-[1rem] leading-[1.375rem] font-bold">
                   {r.label}
                   {r.condition ? <span className="font-normal">, {r.condition}</span> : null}
                 </span>
-                <span className="flex flex-wrap items-center gap-2 text-[15px] leading-[22px] text-ink-muted">
+                <span className="flex flex-wrap items-center gap-2 text-[0.9375rem] leading-[1.375rem] text-ink-muted">
                   {r.state === "met" ? (
                     <Chip tone="done" icon="tick">
                       In time
@@ -159,7 +156,7 @@ function IssueDetail() {
               </li>
             ))}
           </ul>
-          <p className="text-[13px] leading-[18px] text-ink-muted">
+          <p className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">
             <a href={SCOTLAND_PACK.source.url} target="_blank" rel="noreferrer" className="underline">
               {SCOTLAND_PACK.source.title}
             </a>
@@ -171,8 +168,8 @@ function IssueDetail() {
       <section aria-label="Next step" className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <p className={`${label} text-ink-muted`}>Next step</p>
-          <h2 className="text-[22px] leading-7 font-bold">{next.headline}</h2>
-          <p className="text-[16px] leading-[24px]">{next.why}</p>
+          <h2 className="text-[1.125rem] leading-[1.625rem] font-bold">{next.headline}</h2>
+          <p className="text-[1.0625rem] leading-[1.625rem]">{next.why}</p>
         </div>
         {primary}
         {status === "open" ? (
@@ -180,34 +177,20 @@ function IssueDetail() {
             Already told them another way?
           </button>
         ) : null}
-        {next.kind === "send" && canAsk && !openRequests(group, [issue.id]).some((r) => r.by === ME) ? (
-          <button type="button" className="-mt-2 min-h-11 self-start font-bold underline underline-offset-3" onClick={() => setSheet("request")}>
-            Ask your group for updates first
-          </button>
-        ) : null}
       </section>
 
-      {status !== "fixed" ? <UpdatesCard group={group} issue={issue} onOpen={() => setSheet("update")} /> : null}
-
-      <nav aria-label="Actions" className="grid grid-cols-3 gap-2">
-        {quick.map((q) =>
-          q.href ? (
-            <Link key={q.text} href={q.href} className="flex min-h-[72px] flex-col items-center justify-center gap-1 rounded-xl bg-concrete text-[14px] font-bold no-underline">
-              <Icon name={q.icon} size={22} />
-              {q.text}
-            </Link>
-          ) : (
-            <button key={q.text} type="button" onClick={q.onClick} className="flex min-h-[72px] flex-col items-center justify-center gap-1 rounded-xl bg-concrete text-[14px] font-bold">
-              <Icon name={q.icon} size={22} />
-              {q.text}
-            </button>
-          ),
-        )}
+      <nav aria-label="More actions" className={`grid gap-2 ${quick.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+        {quick.map((q) => (
+          <button key={q.text} type="button" onClick={q.onClick} className={buttonClass("secondary", "px-2 text-[0.9375rem]")}>
+            <Icon name={q.icon} size={18} />
+            {q.text}
+          </button>
+        ))}
       </nav>
 
       <section className="desk-side flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <h2 className="text-[20px] leading-7 font-bold">{showAll || desktop ? "Everything on the record" : "Latest"}</h2>
+          <h2 className="text-[1.125rem] leading-[1.75rem] font-bold">{showAll || desktop ? "Everything on the record" : "Latest"}</h2>
           {issue.entries.length > 3 && !desktop ? (
             <button type="button" className="min-h-11 px-1 font-bold underline underline-offset-3" onClick={() => setShowAll(!showAll)}>
               {showAll ? "Show less" : `See all ${issue.entries.length}`}
@@ -240,9 +223,14 @@ function IssueDetail() {
         onSave={(at, text) => save([{ kind: "fixed", at, text }])}
       />
       <Sheet open={sheet === "more"} onClose={() => setSheet(null)} title="More">
-        <ul className="flex flex-col divide-y divide-line-subtle rounded-xl bg-concrete">
+        <ul className={panelList}>
           {can.addEvidence ? <MoreRow icon="send" text="Log contact you've already made" onClick={() => setSheet("report")} /> : null}
-          {canAsk && status !== "fixed" ? <MoreRow icon="bell" text="Ask your group for updates" onClick={() => setSheet("request")} /> : null}
+          {canAsk && status !== "fixed" && !openRequests(group, [issue.id]).some((r) => r.by === ME) ? (
+            <MoreRow icon="bell" text="Ask your group for updates first" onClick={() => setSheet("request")} />
+          ) : null}
+          <MoreRow icon="note" text="Add your household's update" onClick={() => setSheet("update")} />
+          {can.addEvidence ? <MoreRow icon="plus" text="Add evidence" onClick={() => setSheet("evidence")} /> : null}
+          <MoreRow icon="folder" text="Case file" onClick={() => router.push(`/prototype/case/${group.id}/${issue.id}`)} />
           {status !== "open" && can.addEvidence ? <MoreRow icon="door" text="Record a landlord visit" onClick={() => setSheet("visit")} /> : null}
           {canManage
             ? (["repair_request", "reminder", "complaint"] as LetterKey[]).map((k) => (
@@ -255,7 +243,7 @@ function IssueDetail() {
           ) : null}
         </ul>
         {!canManage ? (
-          <p className="text-[15px] leading-[22px] text-ink-muted">
+          <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
             Only {memberName(group, issue.createdBy) === "You" ? "you" : memberName(group, issue.createdBy)}, who logged this, or an admin can send messages about it or mark it fixed
             {can.addEvidence ? "." : ", or add evidence. You can add your household's update."}
           </p>
@@ -268,13 +256,13 @@ function IssueDetail() {
 function StatusCard({ clock, hasRules, open, onToggle }: { clock: ClockView; hasRules: boolean; open: boolean; onToggle: () => void }) {
   const muted = clock.tone === "informal" || clock.tone === "statutory" ? "text-ink-muted" : "";
   return (
-    <div className={`flex flex-col gap-1 rounded-xl px-5 py-4 ${CLOCK_TONE[clock.tone]}`}>
-      {clock.lead ? <p className="text-[15px] leading-[22px] font-semibold">{clock.lead}</p> : null}
-      <p className="font-display text-[40px] leading-[1.05] uppercase">{clock.value}</p>
-      {clock.unit ? <p className="text-[15px] leading-[22px]">{clock.unit}</p> : null}
+    <div className={`flex flex-col gap-1 rounded-lg px-5 py-4 ${CLOCK_TONE[clock.tone]}`}>
+      {clock.lead ? <p className="text-[0.9375rem] leading-[1.375rem] font-semibold">{clock.lead}</p> : null}
+      <p className="font-display text-[2.75rem] leading-[1.05] uppercase">{clock.value}</p>
+      {clock.unit ? <p className="text-[0.9375rem] leading-[1.375rem]">{clock.unit}</p> : null}
       <p className={`${label} ${muted} mt-1`}>{clock.note}</p>
       {hasRules ? (
-        <button type="button" aria-expanded={open} onClick={onToggle} className="-mb-2 min-h-11 self-start text-[15px] font-bold underline underline-offset-3">
+        <button type="button" aria-expanded={open} onClick={onToggle} className="-mb-2 min-h-11 self-start text-[0.9375rem] leading-[1.375rem] font-bold underline underline-offset-3">
           {open ? "Hide deadlines" : "See all deadlines"}
         </button>
       ) : null}
@@ -285,7 +273,7 @@ function StatusCard({ clock, hasRules, open, onToggle }: { clock: ClockView; has
 function MoreRow({ icon, text, onClick }: { icon: IconName; text: string; onClick: () => void }) {
   return (
     <li>
-      <button type="button" onClick={onClick} className="flex min-h-14 w-full items-center gap-3 px-4 text-left text-[17px] font-bold">
+      <button type="button" onClick={onClick} className="flex min-h-14 w-full items-center gap-3 px-4 text-left text-[1.0625rem] leading-[1.625rem] font-bold">
         <Icon name={icon} />
         <span className="flex-1">{text}</span>
         <Icon name="arrow" />

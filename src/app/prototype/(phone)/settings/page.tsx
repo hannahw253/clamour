@@ -7,7 +7,7 @@ import { myEntries, prefsOf, resetPrototype, setMyName, setPrefs, useStore } fro
 import { LANGUAGES } from "@/prototype/AiHelp";
 import { ACCESS_SLOTS, accessText } from "@/prototype/context";
 import type { Prefs } from "@/prototype/types";
-import { Button, Icon, Loading, PageTitle, Sheet, inputClass, label } from "@/prototype/ui";
+import { Button, Icon, Loading, PageTitle, Sheet, inputClass, label, toggleClass, panelList } from "@/prototype/ui";
 
 /** Your account and settings (north star, document 8: Account). Changes save as you make them. */
 export default function Settings() {
@@ -42,7 +42,7 @@ export default function Settings() {
         <Link href="/prototype" className="-ml-1 inline-flex min-h-11 items-center gap-1 font-bold">
           <Icon name="back" /> Your groups
         </Link>
-        <span role="status" className="text-[15px] text-ink-muted">
+        <span role="status" className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
           {saved ? "Saved" : ""}
         </span>
       </div>
@@ -96,7 +96,7 @@ export default function Settings() {
         ) : null}
         {s.groups.length ? (
           <div className="flex flex-col gap-1 px-4 py-3">
-            <p className="text-[15px] font-bold">Groups</p>
+            <p className="text-[0.9375rem] leading-[1.375rem] font-bold">Groups</p>
             {s.groups.map((g) => {
               const on = !p.muted.includes(g.id);
               return (
@@ -110,7 +110,7 @@ export default function Settings() {
             })}
           </div>
         ) : null}
-        <p className="px-4 pb-3 text-[13px] text-ink-muted">Prototype: nothing is sent. Notifications never include details of the problem, only that something needs you.</p>
+        <p className="px-4 pb-3 text-[0.8125rem] leading-[1.125rem] text-ink-muted">Prototype: nothing is sent. Notifications never include details of the problem, only that something needs you.</p>
       </Section>
 
       <Section title="Appearance">
@@ -140,7 +140,7 @@ export default function Settings() {
           onChange={(v) => update({ copyIn: v as Prefs["copyIn"] })}
         />
         <div className="flex flex-col gap-2 px-4 py-3">
-          <p className="text-[15px] font-bold">When you&rsquo;re usually in</p>
+          <p className="text-[0.9375rem] leading-[1.375rem] font-bold">When you&rsquo;re usually in</p>
           <div className="flex flex-wrap gap-2">
             {ACCESS_SLOTS.map((slot) => {
               const onSlot = p.accessSlots.includes(slot);
@@ -150,7 +150,7 @@ export default function Settings() {
                   type="button"
                   aria-pressed={onSlot}
                   onClick={() => update({ accessSlots: onSlot ? p.accessSlots.filter((x) => x !== slot) : [...p.accessSlots, slot] })}
-                  className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 px-3.5 text-[14px] font-bold ${onSlot ? "border-line bg-ink text-paper" : "border-line-subtle bg-paper"}`}
+                  className={toggleClass(onSlot)}
                 >
                   {slot.charAt(0).toUpperCase() + slot.slice(1)}
                 </button>
@@ -161,7 +161,7 @@ export default function Settings() {
             Anything else about access
           </label>
           <input id="access" className={`${inputClass} min-h-11 border bg-paper`} value={p.access} placeholder="Anything else? e.g. spare key with number 12" onChange={(e) => update({ access: e.target.value })} />
-          <p className="text-[13px] leading-[18px] text-ink-muted">{accessText(p) || "Added to messages so landlords can arrange access."}</p>
+          <p className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">{accessText(p) || "Added to messages so landlords can arrange access."}</p>
         </div>
         <TextRow id="signoff" title="Sign off as" value={p.signoff} onChange={(v) => update({ signoff: v })} placeholder={s.myName ?? "Your name"} help="Your full name, if you'd rather landlords saw it." />
       </Section>
@@ -169,7 +169,7 @@ export default function Settings() {
       <Section title="AI help">
         <Toggle title="Offer AI help with messages" desc="Firmer, friendlier, shorter, simpler, in your own words" on={p.ai} onChange={(v) => update({ ai: v })} />
         <div className="flex flex-col gap-1.5 px-4 py-3">
-          <label htmlFor="language" className="text-[15px] font-bold">
+          <label htmlFor="language" className="text-[0.9375rem] font-bold">
             Your language
           </label>
           <select id="language" className={`${inputClass} min-h-11 border bg-paper`} value={p.language} onChange={(e) => update({ language: e.target.value })}>
@@ -178,9 +178,9 @@ export default function Settings() {
               <option key={l}>{l}</option>
             ))}
           </select>
-          <p className="text-[13px] leading-[18px] text-ink-muted">We can show messages in your language so you understand them. What&rsquo;s sent stays in English.</p>
+          <p className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">We can show messages in your language so you understand them. What&rsquo;s sent stays in English.</p>
         </div>
-        <p className="px-4 pb-3 text-[13px] text-ink-muted">AI runs in London and only sees the message and the basic facts of the problem, never your photos or notes.</p>
+        <p className="px-4 pb-3 text-[0.8125rem] text-ink-muted">AI runs in London and only sees the message and the basic facts of the problem, never your photos or notes.</p>
       </Section>
 
       <Section title="Your data">
@@ -190,7 +190,7 @@ export default function Settings() {
       </Section>
 
       <Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete your account?">
-        <p className="text-[17px] leading-[26px]">
+        <p className="text-[1.0625rem] leading-[1.625rem]">
           You&rsquo;ll be removed from every group. What you added stays on each group&rsquo;s record, shown as &ldquo;former
           member&rdquo;, because others rely on it. Download your entries first if you want a copy.
         </p>
@@ -213,7 +213,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-2">
       <h2 className={`${label} px-1 text-ink-muted`}>{title}</h2>
-      <div className="flex flex-col divide-y divide-line-subtle rounded-xl bg-concrete">{children}</div>
+      <div className={panelList}>{children}</div>
     </section>
   );
 }
@@ -237,11 +237,11 @@ function TextRow({
 }) {
   return (
     <div className="flex flex-col gap-1.5 px-4 py-3">
-      <label htmlFor={id} className="text-[15px] font-bold">
+      <label htmlFor={id} className="text-[0.9375rem] leading-[1.375rem] font-bold">
         {title}
       </label>
       <input id={id} type={type} className={`${inputClass} min-h-11 border bg-paper`} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
-      {help ? <p className="text-[13px] leading-[18px] text-ink-muted">{help}</p> : null}
+      {help ? <p className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">{help}</p> : null}
     </div>
   );
 }
@@ -249,16 +249,11 @@ function TextRow({
 function Choice({ title, value, options, onChange }: { title: string; value: string; options: [string, string][]; onChange: (v: string) => void }) {
   return (
     <fieldset className="flex flex-col gap-2 px-4 py-3">
-      <legend className="mb-2 text-[15px] font-bold">{title}</legend>
-      <div className="flex rounded-lg bg-paper p-1">
+      <legend className="mb-2 text-[0.9375rem] font-bold">{title}</legend>
+      <div className="flex flex-wrap gap-2">
         {options.map(([v, text]) => (
-          <label
-            key={v}
-            className={`flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-md px-2 text-center text-[14px] font-bold has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-focus ${
-              value === v ? "bg-ink text-paper" : "text-ink-muted"
-            }`}
-          >
-            <input type="radio" className="sr-only" checked={value === v} onChange={() => onChange(v)} />
+          <label key={v} className={`flex-1 cursor-pointer justify-center text-center has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus ${toggleClass(value === v)}`}>
+            <input type="radio" name={title} className="sr-only" checked={value === v} onChange={() => onChange(v)} />
             {text}
           </label>
         ))}
@@ -279,8 +274,8 @@ function ToggleInline({ title, desc, on, onChange }: { title: string; desc?: str
   return (
     <label className="flex min-h-12 cursor-pointer items-center gap-3">
       <span className="flex flex-1 flex-col">
-        <span className="text-[16px]">{title}</span>
-        {desc ? <span className="text-[13px] text-ink-muted">{desc}</span> : null}
+        <span className="text-[1.0625rem]">{title}</span>
+        {desc ? <span className="text-[0.8125rem] text-ink-muted">{desc}</span> : null}
       </span>
       <input type="checkbox" role="switch" className="peer sr-only" checked={on} onChange={(e) => onChange(e.target.checked)} />
       <span
@@ -289,18 +284,18 @@ function ToggleInline({ title, desc, on, onChange }: { title: string; desc?: str
       >
         <span className={`absolute top-1 size-5 rounded-full bg-paper transition-all ${on ? "left-6" : "left-1"}`} />
       </span>
-      <span className="w-7 text-right text-[13px] font-bold text-ink-muted">{on ? "On" : "Off"}</span>
+      <span className="w-7 text-right text-[0.8125rem] leading-[1.125rem] font-bold text-ink-muted">{on ? "On" : "Off"}</span>
     </label>
   );
 }
 
 function RowButton({ icon, text, onClick, danger, note }: { icon: "copy" | "shield" | "warning"; text: string; onClick: () => void; danger?: boolean; note?: string }) {
   return (
-    <button type="button" onClick={onClick} className={`flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left text-[16px] font-bold ${danger ? "text-alarm" : ""}`}>
+    <button type="button" onClick={onClick} className={`flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left text-[1rem] font-bold ${danger ? "text-alarm" : ""}`}>
       <Icon name={icon} />
       <span className="flex flex-1 flex-col">
         {text}
-        {note ? <span className="text-[13px] font-normal text-ink-muted">{note}</span> : null}
+        {note ? <span className="text-[0.8125rem] leading-[1.125rem] font-normal text-ink-muted">{note}</span> : null}
       </span>
       <Icon name="arrow" />
     </button>

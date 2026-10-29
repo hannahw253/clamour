@@ -96,7 +96,7 @@ export default function Join() {
           <Button type="submit" variant="primary">
             Send me a code
           </Button>
-          <p className="text-[15px] leading-[22px] text-ink-muted">
+          <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
             {invite.a
               ? "An admin will check your request before you can see the group."
               : "You'll join straight away."}{" "}
@@ -105,7 +105,7 @@ export default function Join() {
         </form>
       ) : (
         <form onSubmit={join} noValidate className="flex flex-col gap-6">
-          <p className="text-[17px] leading-[26px]">
+          <p className="text-[1.0625rem] leading-[1.625rem]">
             We&rsquo;ve sent a 6-digit code to <span className="font-bold">{email}</span>.
           </p>
           <Field id="join-code" title="Code" error={errors.code} help="Prototype: any 6 numbers will work, and no email is sent.">

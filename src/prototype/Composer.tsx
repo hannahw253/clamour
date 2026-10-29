@@ -17,7 +17,7 @@ import { MESSAGE_TITLE, aiFacts, buildGroupMessage, buildMessage, type Answers }
 import { addEntries, closeRequests, myMember, prefsOf, setGroupAddress, setLandlord, setMyFlat, useStore } from "./store";
 import { UpdateSheet } from "./Updates";
 import { LETTER_LABEL, ME, issueRef, type Group, type Issue, type LetterKey } from "./types";
-import { Button, Icon, Sheet, buttonClass, inputClass, label } from "./ui";
+import { Button, Icon, Sheet, buttonClass, inputClass, label, panel, panelList, selectedPanel, toggleClass } from "./ui";
 
 type CopyIn = "bcc" | "cc" | "none";
 
@@ -205,14 +205,14 @@ export function Composer({
   const header = (
     <>
       {askForLandlord ? (
-        <section className="flex flex-col gap-3 rounded-xl bg-concrete p-4">
-          <p className="text-[17px] leading-6 font-bold">Who do you email about repairs?</p>
+        <section className={`flex flex-col gap-3 p-4 ${panel}`}>
+          <p className="text-[1.0625rem] leading-[1.5rem] font-bold">Who do you email about repairs?</p>
           <label className="flex flex-col gap-1">
-            <span className="text-[15px] text-ink-muted">Name (landlord, agent or factor)</span>
+            <span className="text-[0.9375rem] text-ink-muted">Name (landlord, agent or factor)</span>
             <input className={inputClass} value={landlord.name} onChange={(e) => setToDraft({ ...landlord, name: e.target.value })} placeholder="Dan at the letting agent" />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-[15px] text-ink-muted">Email</span>
+            <span className="text-[0.9375rem] text-ink-muted">Email</span>
             <input
               className={inputClass}
               type="email"
@@ -222,37 +222,37 @@ export function Composer({
               placeholder="repairs@agent.co.uk"
             />
           </label>
-          <p className="text-[15px] leading-[22px] text-ink-muted">Saved for your whole group, so nobody has to look it up again.</p>
+          <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Saved for your whole group, so nobody has to look it up again.</p>
         </section>
       ) : null}
 
       {needsAddress && !written ? (
-        <section className="flex flex-col gap-3 rounded-xl bg-concrete p-4">
-          <p className="text-[17px] leading-6 font-bold">Your address for letters</p>
+        <section className={`flex flex-col gap-3 p-4 ${panel}`}>
+          <p className="text-[1.0625rem] leading-[1.5rem] font-bold">Your address for letters</p>
           {group.type !== "house" ? (
             <label className="flex flex-col gap-1">
-              <span className="text-[15px] text-ink-muted">Your flat</span>
+              <span className="text-[0.9375rem] text-ink-muted">Your flat</span>
               <input className={inputClass} value={addr.flat} onChange={(e) => setAddrDraft({ ...addr, flat: e.target.value })} placeholder="Flat 3" />
             </label>
           ) : null}
           <label className="flex flex-col gap-1">
-            <span className="text-[15px] text-ink-muted">Street address</span>
+            <span className="text-[0.9375rem] text-ink-muted">Street address</span>
             <input className={inputClass} value={addr.line} onChange={(e) => setAddrDraft({ ...addr, line: e.target.value })} placeholder={group.name} />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-[15px] text-ink-muted">Postcode</span>
+            <span className="text-[0.9375rem] text-ink-muted">Postcode</span>
             <input className={inputClass} value={addr.postcode} onChange={(e) => setAddrDraft({ ...addr, postcode: e.target.value })} placeholder="LS6 1AB" autoComplete="postal-code" />
           </label>
-          <p className="text-[15px] leading-[22px] text-ink-muted">Formal letters need the full address. The street and postcode are saved for your group; your flat is saved for you.</p>
+          <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Formal letters need the full address. The street and postcode are saved for your group; your flat is saved for you.</p>
         </section>
       ) : null}
 
-      <dl className="flex flex-col divide-y divide-line-subtle rounded-xl bg-concrete">
+      <dl className={panelList}>
         {!askForLandlord ? (
           <Row title="To">
             <span className="min-w-0 flex-1">
               <span className="block truncate font-bold">{landlord.name || landlord.email}</span>
-              {landlord.name ? <span className="block truncate text-[15px] text-ink-muted">{landlord.email}</span> : null}
+              {landlord.name ? <span className="block truncate text-[0.9375rem] text-ink-muted">{landlord.email}</span> : null}
             </span>
             <button type="button" className="min-h-11 px-2 font-bold underline underline-offset-3" onClick={() => setToDraft(landlord)}>
               Change
@@ -275,7 +275,7 @@ export function Composer({
   const choose = (
     <>
       {myRequest ? (
-        <p className="flex items-start gap-2 rounded-xl border-2 border-line px-4 py-3 text-[15px] leading-[22px]">
+        <p className="flex items-start gap-2 rounded-lg border-2 border-line px-4 py-3 text-[0.9375rem] leading-[1.375rem]">
           <Icon name="bell" size={18} className="mt-0.5 flex-none" />
           <span>
             You asked for updates on {shortDate(londonParts(myRequest.at).ymd)}.{" "}
@@ -289,8 +289,8 @@ export function Composer({
 
       <section className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
-          <h2 className="text-[20px] leading-7 font-bold">What should we say?</h2>
-          <p className="text-[15px] leading-[22px] text-ink-muted">Untick anything you&rsquo;d rather leave out. Nothing is written until you press Write it.</p>
+          <h2 className="text-[1.125rem] leading-[1.75rem] font-bold">What should we say?</h2>
+          <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Everything useful is ticked. Open a list to leave something out.</p>
         </div>
         {perIssue.map((p) => (
           <div key={p.issue.id} className="flex flex-col gap-3">
@@ -322,30 +322,30 @@ export function Composer({
         {accessText(prefs) ? (
           <FactGroup title="Access" facts={[{ id: "access", source: "record", text: accessText(prefs) }]} isOn={() => useAccess} onToggle={() => setUseAccess(!useAccess)} />
         ) : (
-          <Link href="/prototype/settings" className="min-h-11 self-start text-[15px] font-bold underline underline-offset-3">
+          <Link href="/prototype/settings" className="min-h-11 self-start text-[0.9375rem] font-bold underline underline-offset-3">
             Add when you&rsquo;re usually in, for access
           </Link>
         )}
       </section>
 
       <section className="flex flex-col gap-2">
-        <label htmlFor="letter-extra" className="text-[17px] leading-6 font-bold">
+        <label htmlFor="letter-extra" className="text-[1.0625rem] leading-[1.5rem] font-bold">
           {prompt.label}
         </label>
         <textarea
           id="letter-extra"
-          className={`${inputClass} min-h-24 py-3 text-[16px] leading-[24px]`}
+          className={`${inputClass} min-h-24 py-3 text-[1rem] leading-[1.5rem]`}
           value={extra}
           onChange={(e) => setExtra(e.target.value)}
           placeholder={prompt.placeholder}
         />
-        <p className="text-[14px] leading-[20px] text-ink-muted">
-          Optional{single && prompt.save ? ", and saved to the record as your update" : ""}. You can speak instead of typing.
+        <p className="text-[0.9375rem] leading-[1.25rem] text-ink-muted">
+          Optional{single && prompt.save ? ". Saved as your update" : ""}.
         </p>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-[20px] leading-7 font-bold">How should it sound?</h2>
+        <h2 className="text-[1.125rem] leading-[1.75rem] font-bold">How should it sound?</h2>
         <Segmented
           legend="Tone"
           value={style.tone}
@@ -378,7 +378,7 @@ export function Composer({
           </button>
         </div>
         {written?.source === "ai" ? (
-          <p role="status" className="flex items-center gap-2 rounded-lg bg-signal-soft px-3 py-2 text-[15px] leading-[22px]">
+          <p role="status" className={`flex items-center gap-2 px-3 py-2 text-[0.9375rem] leading-[1.375rem] ${panel}`}>
             <Icon name="spark" size={16} />
             <span className="flex-1 font-bold">Written by AI from what you ticked. Check every fact before you send.</span>
             {aiPrev !== null ? (
@@ -395,15 +395,15 @@ export function Composer({
             ) : null}
           </p>
         ) : (
-          <p role="status" className="rounded-lg bg-concrete px-3 py-2 text-[15px] leading-[22px]">
+          <p role="status" className="rounded-lg bg-concrete px-3 py-2 text-[0.9375rem] leading-[1.375rem]">
             <span className="font-bold">The standard letter, from what you ticked.</span>{" "}
             {written?.why === "failed" ? "AI couldn't write it just now, so nothing is lost." : !prefs.ai ? "AI help is off in your settings." : "AI writing isn't switched on in this prototype yet."}
           </p>
         )}
         {editing ? (
-          <textarea aria-label="Message" className={`${inputClass} min-h-[380px] py-3 text-[16px] leading-[25px]`} value={body} onChange={(e) => setWritten({ ...(written as Written), body: e.target.value })} />
+          <textarea aria-label="Message" className={`${inputClass} min-h-[380px] py-3 text-[1rem] leading-[1.5625rem]`} value={body} onChange={(e) => setWritten({ ...(written as Written), body: e.target.value })} />
         ) : (
-          <p className="rounded-xl border border-line-subtle px-4 py-4 text-[16px] leading-[25px] whitespace-pre-wrap">{body}</p>
+          <p className="rounded-lg border border-line-subtle px-4 py-4 text-[1rem] leading-[1.25rem] whitespace-pre-wrap">{body}</p>
         )}
       </section>
 
@@ -453,9 +453,7 @@ export function Composer({
           <Button variant="primary" icon="spark" onClick={write} disabled={busy}>
             {busy ? "Writing…" : "Write it"}
           </Button>
-          <p className="text-center text-[13px] leading-[18px] text-ink-muted">
-            {useAi ? "AI writes it from what you ticked. You check it before anything is sent." : "Builds the standard letter from what you ticked. You check it before anything is sent."}
-          </p>
+          <p className="text-center text-[0.8125rem] leading-[1.125rem] text-ink-muted">You check it before anything is sent.</p>
         </>
       )}
     </div>
@@ -480,11 +478,11 @@ export function Composer({
           <Icon name="back" /> Back
         </Link>
       )}
-      <h1 className="font-display text-[32px] leading-[1.05] tracking-[0.01em] uppercase">{MESSAGE_TITLE[key]}</h1>
+      <h1 className="font-display text-[1.75rem] leading-[1.05] tracking-[0.01em] uppercase">{MESSAGE_TITLE[key]}</h1>
       {aside ? (
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-8">
           {composer}
-          <aside className="sticky top-6 flex max-h-[calc(100dvh-48px)] flex-col gap-3 overflow-y-auto rounded-xl border border-line-subtle p-5">{aside}</aside>
+          <aside className="sticky top-6 flex max-h-[calc(100dvh-48px)] flex-col gap-3 overflow-y-auto rounded-lg border border-line-subtle p-5">{aside}</aside>
         </div>
       ) : (
         composer
@@ -502,17 +500,17 @@ export function Composer({
                 setCopyIn(c);
                 setSheet(null);
               }}
-              className={`flex flex-col items-start gap-0.5 rounded-xl px-4 py-3 text-left ${copyIn === c ? "bg-signal-soft ring-2 ring-line" : "bg-concrete"}`}
+              className={`flex flex-col items-start gap-0.5 px-4 py-3 text-left ${copyIn === c ? selectedPanel : panel}`}
             >
-              <span className="text-[17px] font-bold">{COPY_TEXT[c].short}</span>
-              <span className="text-[15px] leading-[22px] text-ink-muted">{COPY_TEXT[c].long}</span>
+              <span className="text-[1.0625rem] font-bold">{COPY_TEXT[c].short}</span>
+              <span className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">{COPY_TEXT[c].long}</span>
             </button>
           ))}
         </div>
       </Sheet>
 
       <Sheet open={sheet === "other"} onClose={() => setSheet(null)} title="Send another way">
-        <p className="text-[17px] leading-[26px]">Email leaves the clearest record, but use what your landlord answers.</p>
+        <p className="text-[1.0625rem] leading-[1.625rem]">Email leaves the clearest record, but use what your landlord answers.</p>
         <div className="flex flex-col gap-2">
           <a
             className={buttonClass("secondary")}
@@ -551,17 +549,17 @@ export function Composer({
             Copy the message
           </Button>
         </div>
-        <p className="text-[15px] leading-[22px] text-ink-muted">Sending a letter by post? Copy it, print it, and keep the proof of postage. Add a photo of both afterwards.</p>
+        <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Sending a letter by post? Copy it, print it, and keep the proof of postage. Add a photo of both afterwards.</p>
       </Sheet>
 
       <Sheet open={sheet === "sent"} onClose={() => setSheet(null)} title="Did you send it?">
-        <p className="text-[17px] leading-[26px]">
+        <p className="text-[1.0625rem] leading-[1.625rem]">
           {channel === "email" && copyIn !== "none"
             ? "Once you press send, your group’s copy goes straight onto the record."
             : "Tell us once it’s sent and we’ll add it to the record."}
         </p>
         {channel === "email" && copyIn !== "none" ? (
-          <p className="text-[15px] leading-[22px] text-ink-muted">Prototype: the full app does this by itself when your copy arrives, so there&rsquo;s no need to ask.</p>
+          <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Prototype: the full app does this by itself when your copy arrives, so there&rsquo;s no need to ask.</p>
         ) : null}
         <Button variant="primary" onClick={confirmSent}>
           Yes, I sent it
@@ -577,8 +575,8 @@ export function Composer({
 function Row({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="flex min-h-14 items-center gap-3 px-4 py-2">
-      <dt className="w-16 flex-none text-[15px] text-ink-muted">{title}</dt>
-      <dd className="flex min-w-0 flex-1 items-center gap-2 text-[16px] leading-[22px]">{children}</dd>
+      <dt className="w-16 flex-none text-[0.9375rem] text-ink-muted">{title}</dt>
+      <dd className="flex min-w-0 flex-1 items-center gap-2 text-[1.0625rem] leading-[1.375rem]">{children}</dd>
     </div>
   );
 }
@@ -587,12 +585,12 @@ function Segmented<T extends string>({ legend, value, options, onChange }: { leg
   return (
     <fieldset className="flex items-center gap-3">
       <legend className="sr-only">{legend}</legend>
-      <span aria-hidden className="w-16 flex-none text-[15px] text-ink-muted">
+      <span aria-hidden className="w-16 flex-none text-[0.9375rem] text-ink-muted">
         {legend}
       </span>
-      <div className="grid flex-1 grid-cols-2 rounded-lg bg-concrete p-1">
+      <div className="grid flex-1 grid-cols-2 gap-2">
         {options.map((o) => (
-          <label key={o.value} className={`flex min-h-11 cursor-pointer items-center justify-center rounded-md text-[16px] font-bold ${value === o.value ? "bg-paper shadow-sm ring-2 ring-line" : "text-ink-muted"}`}>
+          <label key={o.value} className={`cursor-pointer justify-center ${toggleClass(value === o.value)}`}>
             <input type="radio" name={legend} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="sr-only" />
             {o.text}
           </label>
@@ -602,6 +600,7 @@ function Segmented<T extends string>({ legend, value, options, onChange }: { leg
   );
 }
 
+/** A tick list folded to one line ("From the record · 4 of 4 ticked"), so the screen stays short. */
 function FactGroup({
   title,
   facts,
@@ -621,35 +620,47 @@ function FactGroup({
   footer?: string;
   action?: { text: string; onClick: () => void };
 }) {
+  const [open, setOpen] = useState(false);
+  const ticked = facts.filter(isOn).length;
+  const summary = !facts.length ? "" : ticked === 0 ? "None ticked" : ticked === facts.length ? `All ${facts.length} ticked` : `${ticked} of ${facts.length} ticked`;
   return (
-    <div className="flex flex-col rounded-xl bg-concrete">
-      <div className="flex min-h-11 items-center justify-between px-4 pt-2">
-        <p className="text-[15px] font-bold">{title}</p>
+    <div className={`flex flex-col ${panel}`}>
+      <div className="flex min-h-12 items-center gap-2 px-4">
+        {facts.length ? (
+          <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="flex min-h-12 flex-1 items-center gap-2 text-left">
+            <Icon name="arrow" size={18} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+            <span className="flex flex-col py-2">
+              <span className="text-[1rem] leading-[1.375rem] font-bold">{title}</span>
+              <span className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">{summary}</span>
+            </span>
+          </button>
+        ) : (
+          <p className="flex-1 py-3 text-[1rem] leading-[1.375rem] font-bold">{title}</p>
+        )}
         {action ? (
-          <button type="button" onClick={action.onClick} className="min-h-11 px-1 text-[15px] font-bold underline underline-offset-3">
+          <button type="button" onClick={action.onClick} className="min-h-11 px-1 text-[0.9375rem] font-bold underline underline-offset-3">
             {action.text}
           </button>
         ) : null}
       </div>
-      {note ? <p className="px-4 text-[13px] leading-[18px] text-ink-muted">{note}</p> : null}
-      {facts.length ? (
-        <ul className="flex flex-col divide-y divide-line-subtle">
+      {open && note ? <p className="px-4 pb-1 text-[0.8125rem] leading-[1.125rem] text-ink-muted">{note}</p> : null}
+      {open && facts.length ? (
+        <ul className="flex flex-col divide-y divide-line-subtle border-t border-line-subtle">
           {facts.map((f) => (
             <li key={f.id}>
               <label className="flex cursor-pointer items-start gap-3 px-4 py-3">
                 <input type="checkbox" checked={isOn(f)} onChange={() => onToggle(f)} className="mt-0.5 size-5 flex-none accent-[var(--ink)]" />
                 <span className="flex flex-col gap-0.5">
-                  <span className={`text-[15px] leading-[22px] ${isOn(f) ? "" : f.source === "affected" ? "text-ink-muted" : "text-ink-muted line-through"}`}>{f.text}</span>
-                  {f.meta ? <span className="text-[13px] leading-[18px] text-ink-muted">{f.meta}</span> : null}
+                  <span className={`text-[0.9375rem] leading-[1.375rem] ${isOn(f) ? "" : f.source === "affected" ? "text-ink-muted" : "text-ink-muted line-through"}`}>{f.text}</span>
+                  {f.meta ? <span className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">{f.meta}</span> : null}
                 </span>
               </label>
             </li>
           ))}
         </ul>
-      ) : empty ? (
-        <p className="px-4 pt-1 pb-3 text-[14px] leading-[20px] text-ink-muted">{empty}</p>
       ) : null}
-      {footer ? <p className="px-4 pt-1 pb-3 text-[13px] leading-[18px] text-ink-muted">{footer}</p> : null}
+      {!facts.length && empty ? <p className="px-4 pb-3 text-[0.9375rem] leading-[1.375rem] text-ink-muted">{empty}</p> : null}
+      {open && footer ? <p className="px-4 pt-1 pb-3 text-[0.8125rem] leading-[1.125rem] text-ink-muted">{footer}</p> : null}
     </div>
   );
 }

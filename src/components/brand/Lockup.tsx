@@ -37,8 +37,9 @@ export function Lockup({ size = 64, tagline = true, ground = "ink" }: LockupProp
         </span>
         {tagline ? (
           <span
-            className="absolute left-0 whitespace-nowrap font-semibold"
-            style={{ top: `calc(100% + ${size * 0.14}px)`, fontSize: Math.max(13, size * 0.17), color: inks.tag }}
+            className="absolute whitespace-nowrap font-semibold"
+            // Anton's C sits just inside its box, so the tagline steps in to line its f up with the C.
+            style={{ left: size * 0.032, top: `calc(100% + ${size * 0.14}px)`, fontSize: Math.max(13, size * 0.17), color: inks.tag }}
           >
             for habitable homes
           </span>

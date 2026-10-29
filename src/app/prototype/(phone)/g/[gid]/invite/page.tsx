@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { effectiveRole, findGroup, resetInvite, useStore } from "@/prototype/store";
-import { Button, ButtonLink, Icon, Loading, PageTitle, Sheet } from "@/prototype/ui";
+import { Button, ButtonLink, Icon, Loading, PageTitle, Sheet, toastClass } from "@/prototype/ui";
 
 type LinkRole = "submitter" | "admin";
 
@@ -37,7 +37,7 @@ function Invites() {
     return (
       <main className="flex flex-col gap-6 px-4 pt-5 pb-8">
         <PageTitle sub="Only admins can invite people, so links don't end up in the wrong chat.">Invite people</PageTitle>
-        <p className="text-[17px] leading-[26px]">Ask an admin in your group to send you a link to pass on.</p>
+        <p className="text-[1.0625rem] leading-[1.625rem] ">Ask an admin in your group to send you a link to pass on.</p>
         <ButtonLink href={`${base}/members`} variant="secondary">
           See who the admins are
         </ButtonLink>
@@ -67,7 +67,7 @@ function Invites() {
   return (
     <main className="desk-flow flex flex-col gap-6 px-4 pt-5 pb-8">
       {isNew ? (
-        <p role="status" className="desk-span flex items-center gap-2 rounded-lg bg-concrete px-4 py-3 text-[17px] font-bold">
+        <p role="status" className={`desk-span ${toastClass}`}>
           <Icon name="tick" /> {group.name} is set up
         </p>
       ) : null}
@@ -79,8 +79,8 @@ function Invites() {
         {ROLES.map(({ role: r, title, desc }) => (
           <li key={r} className="flex flex-col gap-3 rounded-lg bg-concrete p-4">
             <div>
-              <p className="text-[17px] leading-6 font-bold">{title}</p>
-              <p className="text-[15px] leading-[22px] text-ink-muted">{desc}</p>
+              <p className="text-[1.0625rem] leading-[1.5rem] font-bold">{title}</p>
+              <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">{desc}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button variant={r === "submitter" ? "primary" : "secondary"} icon="share" onClick={() => share(r)}>
@@ -103,12 +103,12 @@ function Invites() {
       </ul>
 
       {message ? (
-        <p role="status" className="rounded-lg border-2 border-line px-4 py-3 text-[17px] font-bold">
+        <p role="status" className="rounded-lg border-2 border-line px-4 py-3 text-[1.0625rem] font-bold">
           {message}
         </p>
       ) : null}
 
-      <p className="text-[15px] leading-[22px] text-ink-muted">
+      <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
         {group.approval
           ? "New members wait for an admin to approve them before they can see anything."
           : "Anyone with a link joins straight away. You can turn on approval in More."}{" "}
@@ -126,7 +126,7 @@ function Invites() {
       )}
 
       <Sheet open={confirmReset !== null} onClose={() => setConfirmReset(null)} title="Reset this link?">
-        <p className="text-[17px] leading-[26px]">
+        <p className="text-[1.0625rem] leading-[1.625rem] ">
           The old link will stop working. People who already joined stay in the group. Do this if a link was shared
           somewhere it shouldn&rsquo;t have been.
         </p>

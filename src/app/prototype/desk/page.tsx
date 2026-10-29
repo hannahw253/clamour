@@ -14,7 +14,7 @@ import { RequestBanner, RequestSheet, UpdateSheet } from "@/prototype/Updates";
 import { RecentActivity } from "@/prototype/Record";
 import { addEntries, effectiveRole, loadSamples, memberName, myMember, permissions, setViewAs, useStore, visibleIssues } from "@/prototype/store";
 import { CATEGORY_LABEL, ME, NATION_LABEL, ROLE_LABEL, TYPE_LABEL, issueRef, type Group, type Issue, type LetterKey, type Role, type State } from "@/prototype/types";
-import { Button, Chip, Icon, Loading, buttonClass, inputClass, label } from "@/prototype/ui";
+import { Button, Chip, Icon, Loading, buttonClass, inputClass, label, panel, panelList, selectedPanel, tabClass } from "@/prototype/ui";
 
 type Filter = "action" | "open" | "missed" | "fixed";
 type Row = { group: Group; issue: Issue };
@@ -58,8 +58,8 @@ function Desk() {
   if (!s.groups.length) {
     return (
       <main className="mx-auto flex max-w-xl flex-col gap-6 px-6 py-16">
-        <h1 className="font-display text-[44px] leading-[1.02] uppercase">Your dashboard</h1>
-        <p className="text-[17px] leading-[26px]">
+        <h1 className="font-display text-[2.75rem] leading-[1.02] uppercase">Your dashboard</h1>
+        <p className="text-[1.0625rem] leading-[1.625rem]">
           Every problem across your groups in one place, for organisers, union reps and anyone handling a lot at once.
         </p>
         <Button
@@ -118,8 +118,8 @@ function Desk() {
       <main className="flex min-w-0 flex-1 flex-col gap-6 px-8 py-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-[28px] leading-9 font-bold">{group ? group.name : "All groups"}</h1>
-            <p className="text-[15px] text-ink-muted">
+            <h1 className="text-[1.75rem] leading-[1.1] font-bold">{group ? group.name : "All groups"}</h1>
+            <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
               {group
                 ? `${TYPE_LABEL[group.type]} · ${NATION_LABEL[group.nation]} · ${group.members.filter((m) => m.status === "active").length} members${group.landlord?.name ? ` · Landlord: ${group.landlord.name}` : ""}`
                 : `${s.groups.length} groups · the branch view unions would pay for`}
@@ -128,14 +128,14 @@ function Desk() {
           {group ? (
             <div className="flex flex-col items-end gap-2">
               <ViewAs s={s} group={group} />
-              <nav aria-label="Group" className="flex items-center gap-4 text-[15px] font-bold">
+              <nav aria-label="Group" className="flex items-center gap-4 text-[0.9375rem] leading-[1.375rem] font-bold">
                 <Link href={`/prototype/g/${group.id}/members`} className="inline-flex min-h-11 items-center underline underline-offset-3">
                   Members
                 </Link>
                 <Link href={`/prototype/g/${group.id}/more`} className="inline-flex min-h-11 items-center underline underline-offset-3">
                   Settings
                 </Link>
-                <Link href={`/prototype/g/${group.id}/add`} className={buttonClass("secondary", "min-h-11")}>
+                <Link href={`/prototype/g/${group.id}/add`} className={buttonClass("secondary", "min-h-11 whitespace-nowrap")}>
                   <Icon name="plus" /> Add a problem
                 </Link>
               </nav>
@@ -149,9 +149,9 @@ function Desk() {
           <Tile value={counts.action} text="Need action from you" onClick={() => setFilter("action")} active={filter === "action"} />
           <Tile value={counts.missed} text="Deadlines missed" tone={counts.missed ? "alarm" : undefined} onClick={() => setFilter("missed")} active={filter === "missed"} />
           {group ? (
-            <Link href={`/prototype/g/${group.id}/unsorted`} className="flex flex-col gap-1 rounded-xl bg-concrete px-5 py-4 no-underline">
-              <span className="font-display text-[36px] leading-none">{toFile}</span>
-              <span className="text-[15px] font-semibold">Emails to file</span>
+            <Link href={`/prototype/g/${group.id}/unsorted`} className={`flex flex-col gap-1 px-5 py-4 no-underline ${panel}`}>
+              <span className="font-display text-[1.75rem] leading-none">{toFile}</span>
+              <span className="text-[0.9375rem] font-semibold">Emails to file</span>
             </Link>
           ) : (
             <Tile value={toFile} text="Emails to file" />
@@ -159,7 +159,7 @@ function Desk() {
         </section>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div role="tablist" aria-label="Show" className="flex rounded-xl bg-concrete p-1">
+          <div role="tablist" aria-label="Show" className="flex border-b-2 border-line-subtle">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
@@ -167,7 +167,7 @@ function Desk() {
                 aria-selected={filter === f.key}
                 type="button"
                 onClick={() => setFilter(f.key)}
-                className={`min-h-10 rounded-lg px-4 text-[15px] font-bold ${filter === f.key ? "bg-paper shadow-sm" : "text-ink-muted"}`}
+                className={`-mb-0.5 ${tabClass(filter === f.key)}`}
               >
                 {f.text} ({counts[f.key]})
               </button>
@@ -175,7 +175,7 @@ function Desk() {
           </div>
           <label className="ml-auto flex w-72 items-center gap-2">
             <span className="sr-only">Search</span>
-            <input className={`${inputClass} min-h-11 text-[15px]`} placeholder="Search problems, flats or CL numbers" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input className={`${inputClass} min-h-11 text-[0.9375rem] leading-[1.375rem]`} placeholder="Search problems, flats or CL numbers" value={query} onChange={(e) => setQuery(e.target.value)} />
           </label>
         </div>
 
@@ -183,9 +183,9 @@ function Desk() {
           <BulkBar s={s} rows={selRows} onClear={() => setSelected([])} onAsk={(g, issues) => setAsking({ group: g, issues })} />
         ) : null}
 
-        <div className="overflow-hidden rounded-xl border border-line-subtle">
-          <table className="w-full border-collapse text-left text-[15px] leading-[22px]">
-            <thead className="bg-concrete text-[13px] tracking-[0.04em] text-ink-muted uppercase">
+        <div className="overflow-hidden rounded-lg border-2 border-line">
+          <table className="w-full border-collapse text-left text-[0.9375rem] leading-[1.375rem]">
+            <thead className="border-b-2 border-line text-[0.8125rem] leading-[1.125rem] tracking-[0.04em] text-ink-muted uppercase">
               <tr>
                 <th className="w-10 px-3 py-2">
                   <span className="sr-only">Select</span>
@@ -208,9 +208,10 @@ function Desk() {
                   <tr
                     key={r.issue.id}
                     onClick={() => setFocus(isFocus ? null : r.issue.id)}
-                    className={`cursor-pointer border-t border-line-subtle align-top ${isFocus ? "bg-signal-soft" : "hover:bg-concrete/50"}`}
+                    className={`cursor-pointer border-t border-line-subtle align-top ${isFocus ? "bg-concrete" : "hover:bg-concrete/50"}`}
                   >
-                    <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                    <td className="p-0" onClick={(e) => e.stopPropagation()}>
+                      <label className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center">
                       <input
                         type="checkbox"
                         aria-label={`Select ${r.issue.title}`}
@@ -218,12 +219,13 @@ function Desk() {
                         onChange={() => toggle(r.issue.id)}
                         className="size-5 accent-[var(--ink)]"
                       />
+                      </label>
                     </td>
                     <td className="px-3 py-3">
                       <button type="button" className="text-left font-bold" onClick={(e) => (e.stopPropagation(), setFocus(isFocus ? null : r.issue.id))}>
                         {r.issue.title}
                       </button>
-                      <span className="block text-[13px] text-ink-muted">
+                      <span className="block text-[0.8125rem] leading-[1.125rem] text-ink-muted">
                         <span className="font-mono">{issueRef(r.issue)}</span>
                         {r.issue.room ? ` · ${r.issue.room}` : ""} · {CATEGORY_LABEL[r.issue.category]}
                       </span>
@@ -260,11 +262,14 @@ function Desk() {
 }
 
 function Tile({ value, text, tone, onClick, active }: { value: number; text: string; tone?: "alarm"; onClick?: () => void; active?: boolean }) {
-  const cls = `flex flex-col gap-1 rounded-xl px-5 py-4 text-left ${tone === "alarm" ? "bg-alarm text-on-alarm" : "bg-concrete"} ${active ? "ring-2 ring-line" : ""}`;
+  const cls = `flex flex-col gap-1 px-5 py-4 text-left ${active ? selectedPanel : panel}`;
   const inner = (
     <>
-      <span className="font-display text-[36px] leading-none">{value}</span>
-      <span className="text-[15px] font-semibold">{text}</span>
+      <span className={`font-display text-[1.75rem] leading-none ${tone === "alarm" && value ? "text-alarm" : ""}`}>{value}</span>
+      <span className="flex items-center gap-1.5 text-[0.9375rem] font-semibold">
+        {tone === "alarm" && value ? <Icon name="warning" size={16} className="text-alarm" /> : null}
+        {text}
+      </span>
     </>
   );
   return onClick ? (
@@ -279,7 +284,7 @@ function Tile({ value, text, tone, onClick, active }: { value: number; text: str
 function ViewAs({ s, group }: { s: State; group: Group }) {
   const realRole = myMember(group)?.role ?? "submitter";
   return (
-    <label className="flex items-center gap-2 text-[14px] font-semibold">
+    <label className="flex items-center gap-2 text-[0.9375rem] font-semibold">
       <span className="text-ink-muted">Prototype: view as</span>
       <select
         value={s.viewAs ?? realRole}
@@ -310,10 +315,10 @@ function BulkBar({ s, rows, onClear, onAsk }: { s: State; rows: Row[]; onClear: 
   }, []);
   const several = byGroup.length > 1;
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-ink px-4 py-3 text-paper">
+    <div className="flex flex-col gap-3 rounded-lg bg-ink px-4 py-3 text-paper">
       <div className="flex items-center gap-3">
         <span className="font-bold">{rows.length} selected</span>
-        <span className="flex-1 text-[15px] opacity-80">
+        <span className="flex-1 text-[0.9375rem] opacity-80">
           {several
             ? `These are in ${byGroup.length} groups, each with its own landlord, so you send one letter per group.`
             : permissions(s, byGroup[0].group).groupLetter
@@ -327,7 +332,7 @@ function BulkBar({ s, rows, onClear, onAsk }: { s: State; rows: Row[]; onClear: 
       {byGroup.map(({ group, issues }) => {
         const can = permissions(s, group);
         if (!can.groupLetter) return several ? (
-          <p key={group.id} className="text-[15px] opacity-80">{group.name}: only admins can send letters for this group.</p>
+          <p key={group.id} className="text-[0.9375rem] leading-[1.375rem] opacity-80">{group.name}: only admins can send letters for this group.</p>
         ) : null;
         return (
           <div key={group.id} className="flex flex-wrap items-center gap-3 border-t border-paper/20 pt-3">
@@ -360,17 +365,17 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
     setSheet(null);
   };
   const tone = { informal: "bg-concrete", statutory: "bg-signal-soft", missed: "bg-alarm text-on-alarm", met: "bg-done text-on-done" }[clock.tone];
-  const action = "flex min-h-11 w-full items-center gap-3 px-3 text-left text-[15px] font-bold";
+  const action = "flex min-h-11 w-full items-center gap-3 px-3 text-left text-[0.9375rem] font-bold";
 
   return (
     <aside aria-label="Selected problem" className="flex w-[420px] flex-none flex-col gap-5 overflow-y-auto border-l border-line-subtle px-6 py-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-[13px] text-ink-muted">
+          <p className="font-mono text-[0.8125rem] text-ink-muted">
             {issueRef(issue)} · {group.name}
           </p>
-          <h2 className="text-[22px] leading-7 font-bold">{issue.title}</h2>
-          <p className="text-[15px] text-ink-muted">
+          <h2 className="text-[1.375rem] leading-[1.75rem] font-bold">{issue.title}</h2>
+          <p className="text-[0.9375rem] text-ink-muted">
             {issue.room ? `${issue.room} · ` : ""}
             {CATEGORY_LABEL[issue.category]}
           </p>
@@ -382,17 +387,17 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
 
       <RequestBanner group={group} issueIds={[issue.id]} onAdd={() => setSheet("update")} />
 
-      <div className={`flex flex-col gap-1 rounded-xl px-4 py-3 ${tone}`}>
-        {clock.lead ? <p className="text-[14px] font-semibold">{clock.lead}</p> : null}
-        <p className="font-display text-[30px] leading-none uppercase">{clock.value}</p>
-        {clock.unit ? <p className="text-[14px]">{clock.unit}</p> : null}
-        <p className="mt-1 text-[12px] font-bold tracking-[0.08em] uppercase opacity-80">{clock.note}</p>
+      <div className={`flex flex-col gap-1 rounded-lg px-4 py-3 ${tone}`}>
+        {clock.lead ? <p className="text-[0.9375rem] font-semibold">{clock.lead}</p> : null}
+        <p className="font-display text-[1.75rem] leading-none uppercase">{clock.value}</p>
+        {clock.unit ? <p className="text-[0.9375rem]">{clock.unit}</p> : null}
+        <p className="mt-1 text-[0.8125rem] font-bold tracking-[0.08em] uppercase opacity-80">{clock.note}</p>
       </div>
 
       <section className="flex flex-col gap-2">
         <p className={`${label} text-ink-muted`}>Next step</p>
-        <p className="text-[18px] leading-6 font-bold">{next.headline}</p>
-        <p className="text-[15px] leading-[22px]">{next.why}</p>
+        <p className="text-[1.125rem] leading-[1.5rem] font-bold">{next.headline}</p>
+        <p className="text-[0.9375rem] leading-[1.375rem]">{next.why}</p>
         {next.kind === "send" ? (
           <Link href={`/prototype/desk/compose?g=${group.id}&ids=${issue.id}&letter=${next.letter}`} className={buttonClass("primary")}>
             <Icon name="letter" /> {next.button}
@@ -418,7 +423,7 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
 
       <section aria-label="Actions" className="flex flex-col">
         <p className={`${label} pb-1 text-ink-muted`}>Actions</p>
-        <ul className="flex flex-col divide-y divide-line-subtle rounded-xl bg-concrete">
+        <ul className={panelList}>
           {can.askUpdates && status !== "fixed" ? (
             <li>
               <button type="button" className={action} onClick={() => setSheet("request")}>
@@ -477,7 +482,7 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
           </li>
         </ul>
         {!can.addEvidence ? (
-          <p className="pt-2 text-[14px] leading-[20px] text-ink-muted">
+          <p className="pt-2 text-[0.9375rem] leading-[1.375rem] text-ink-muted">
             In this group, submitters add evidence only to problems they logged. You can add your household&rsquo;s update to any.
           </p>
         ) : null}
@@ -485,8 +490,8 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
 
       <section className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-[17px] font-bold">Latest</h3>
-          <Link href={phone} className="min-h-11 content-center text-[15px] font-bold underline">
+          <h3 className="text-[1.0625rem] leading-[1.625rem] font-bold">Latest</h3>
+          <Link href={phone} className="min-h-11 content-center text-[0.9375rem] leading-[1.375rem] font-bold underline">
             Full page
           </Link>
         </div>

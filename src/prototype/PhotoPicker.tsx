@@ -59,8 +59,8 @@ export function PhotoPicker({ photos, onChange }: { photos: Photo[]; onChange: (
           />
         </label>
       </div>
-      {busy ? <p className="text-[15px] text-ink-muted">Adding photo…</p> : null}
-      {error ? <p className="text-[15px] font-bold text-alarm">{error}</p> : null}
+      {busy ? <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Adding photo…</p> : null}
+      {error ? <p className="text-[0.9375rem] leading-[1.375rem] font-bold text-alarm">{error}</p> : null}
       {photos.length ? (
         <ul className="flex flex-col gap-3">
           {photos.map((p, i) => (
@@ -73,18 +73,18 @@ export function PhotoPicker({ photos, onChange }: { photos: Photo[]; onChange: (
                 </label>
                 <input
                   id={`${id}-alt-${i}`}
-                  className={`${inputClass} min-h-11 text-[15px]`}
+                  className={`${inputClass} min-h-11 text-[0.9375rem] leading-[1.375rem]`}
                   placeholder="What it shows (optional)"
                   value={p.alt}
                   onChange={(e) => onChange(photos.map((q, j) => (j === i ? { ...q, alt: e.target.value } : q)))}
                 />
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate font-mono text-[13px] leading-[18px] text-ink-muted">
+                  <span className="truncate font-mono text-[0.8125rem] leading-[1.125rem] text-ink-muted">
                     SHA-256 {shortHash(p.sha256)}
                   </span>
                   <button
                     type="button"
-                    className={buttonClass("ghost", "min-h-11 text-[15px]")}
+                    className={buttonClass("ghost", "min-h-11 text-[0.9375rem] leading-[1.375rem]")}
                     onClick={() => onChange(photos.filter((_, j) => j !== i))}
                   >
                     Remove

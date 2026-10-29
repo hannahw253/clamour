@@ -20,14 +20,14 @@ export function PrototypeBar() {
   const wide = useWide();
   const desktop = useDesktop();
   return (
-    <div className="flex flex-col gap-1 bg-concrete px-4 py-1.5 print:hidden">
-      <div className="flex min-h-9 items-center justify-between gap-2">
+    <aside aria-label="Prototype controls" className="flex flex-col gap-1 border-b border-line-subtle bg-paper px-4 print:hidden">
+      <div className="flex min-h-11 items-center justify-between gap-2">
         <span className="flex items-center gap-3">
-          <p className={`${label} text-[12px]`}>Prototype</p>
+          <p className={`${label} text-ink-muted`}>Prototype</p>
           {wide && !desktop ? (
             <button
               type="button"
-              className="min-h-9 text-[13px] font-bold underline underline-offset-2"
+              className="min-h-11 text-[0.8125rem] leading-[1.125rem] font-bold underline underline-offset-2"
               onClick={() => {
                 setPrefs({ layout: "auto" });
                 router.push("/prototype/desk");
@@ -38,7 +38,7 @@ export function PrototypeBar() {
           ) : null}
         </span>
         {group && realRole && role ? (
-          <label className="flex items-center gap-1.5 text-[13px] font-semibold">
+          <label className="flex items-center gap-1.5 text-[0.8125rem] leading-[1.125rem] font-semibold">
             <span className="text-ink-muted">View as</span>
             <select
               value={role}
@@ -46,7 +46,7 @@ export function PrototypeBar() {
                 const r = e.target.value as Role;
                 setViewAs(r === realRole ? null : r);
               }}
-              className="min-h-9 rounded-md border border-line bg-paper px-1.5 text-[13px] font-bold text-ink"
+              className="min-h-11 bg-transparent px-1 text-[0.8125rem] leading-[1.125rem] font-bold text-ink underline underline-offset-2"
             >
               {(["owner", "admin", "submitter"] as Role[]).map((r) => (
                 <option key={r} value={r}>
@@ -57,14 +57,14 @@ export function PrototypeBar() {
             </select>
           </label>
         ) : (
-          <p className="text-[13px] text-ink-muted">Saved on this device only</p>
+          <p className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">Saved on this device only</p>
         )}
       </div>
       {s && isStorageFull() ? (
-        <p className="text-[15px] leading-[22px] font-bold">
+        <p className="text-[0.9375rem] leading-[1.375rem] font-bold">
           This device&rsquo;s storage is full, so new photos will be lost when you close the page.
         </p>
       ) : null}
-    </div>
+    </aside>
   );
 }

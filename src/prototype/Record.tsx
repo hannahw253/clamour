@@ -102,7 +102,7 @@ function Img({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-const mono = "font-mono text-[13px] leading-[18px] text-ink-muted";
+const mono = "font-mono text-[0.8125rem] leading-[1.125rem] text-ink-muted";
 
 export function EntryBody({ e, issue }: { e: Entry; issue: Issue }) {
   const altFor = (alt: string) => alt || `Photo for ${issue.title.toLowerCase()}`;
@@ -110,15 +110,15 @@ export function EntryBody({ e, issue }: { e: Entry; issue: Issue }) {
     <>
       {e.kind === "email" ? (
         <div className="mt-1 flex flex-col gap-2 rounded-md border-2 border-line-subtle p-3">
-          <p className="text-[17px] leading-6 font-bold">{e.subject}</p>
+          <p className="text-[1.0625rem] leading-[1.5rem] font-bold">{e.subject}</p>
           <p className={mono}>
             {e.from} → {e.to}
           </p>
-          {e.text ? <p className="text-[16px] leading-[25px]">{e.text}</p> : null}
+          {e.text ? <p className="text-[1rem] leading-[1.5625rem]">{e.text}</p> : null}
           <EmailCheck e={e} />
         </div>
       ) : e.text ? (
-        <p className="text-[17px] leading-[26px]">{e.text}</p>
+        <p className="text-[1.0625rem] leading-[1.625rem]">{e.text}</p>
       ) : null}
       {e.kind === "photo" ? <Img src={e.photo.src} alt={altFor(e.photo.alt)} /> : null}
       {e.kind === "messages" ? <Img src={e.photo.src} alt={altFor(e.photo.alt)} /> : null}
@@ -132,13 +132,13 @@ export function EntryBody({ e, issue }: { e: Entry; issue: Issue }) {
         <div className="mt-1 flex flex-col gap-2 rounded-md border-2 border-line-subtle p-3">
           {e.count ? (
             <>
-              <p className="text-[16px] leading-6 font-bold">
+              <p className="text-[1rem] leading-[1.5rem] font-bold">
                 {e.count} messages · {e.participants.join(", ")}
               </p>
               <p className={mono}>
                 {e.first} to {e.last}
               </p>
-              <ul className="flex flex-col gap-1 text-[15px] leading-[22px]">
+              <ul className="flex flex-col gap-1 text-[0.9375rem] leading-[1.375rem]">
                 {e.preview.map((p, i) => (
                   <li key={i} className="truncate">
                     {p}
@@ -147,13 +147,13 @@ export function EntryBody({ e, issue }: { e: Entry; issue: Issue }) {
               </ul>
             </>
           ) : (
-            <p className="text-[15px]">Zip file with messages and media</p>
+            <p className="text-[0.9375rem]">Zip file with messages and media</p>
           )}
           <p className={mono}>{e.file.name}</p>
         </div>
       ) : null}
       {e.kind === "video" ? (
-        <div className="mt-1 flex items-center gap-2 rounded-md bg-concrete p-3 text-[15px]">
+        <div className="mt-1 flex items-center gap-2 rounded-md bg-concrete p-3 text-[0.9375rem]">
           <Icon name="video" /> {e.file.name} · {fileSize(e.file.bytes)}
         </div>
       ) : null}
@@ -186,8 +186,8 @@ export function Record({ group, issue, exhibits }: { group: Group; issue: Issue;
               {i < entries.length - 1 ? <span className="w-0.5 flex-1 bg-line-subtle" /> : null}
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-1 pb-5">
-              {exhibit ? <p className="text-[13px] leading-[18px] font-bold tracking-[0.08em] uppercase">Exhibit {exhibit}</p> : null}
-              <p className="text-[17px] leading-6">
+              {exhibit ? <p className="text-[0.8125rem] leading-[1.125rem] font-bold tracking-[0.08em] uppercase">Exhibit {exhibit}</p> : null}
+              <p className="text-[1.0625rem] leading-[1.5rem]">
                 <span className="font-bold">{memberName(group, e.by)}</span> · {meta.text}
               </p>
               <EntryBody e={e} issue={issue} />
@@ -235,10 +235,10 @@ export function RecentActivity({ group, issue, limit }: { group: Group; issue: I
                 <Icon name={meta.icon} size={18} />
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className={`text-[16px] leading-[22px] ${expanded ? "" : "line-clamp-2"}`}>
+                <span className={`text-[1rem] leading-[1.375rem] ${expanded ? "" : "line-clamp-2"}`}>
                   <span className="font-bold">{memberName(group, e.by)}</span> {meta.text.charAt(0).toLowerCase() + meta.text.slice(1)}
                 </span>
-                <span className="flex items-center gap-1.5 text-[13px] leading-[18px] text-ink-muted">
+                <span className="flex items-center gap-1.5 text-[0.8125rem] leading-[1.125rem] text-ink-muted">
                   {verified ? (
                     <>
                       <Icon name="shield" size={14} /> Sender verified ·

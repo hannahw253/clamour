@@ -53,12 +53,6 @@ export function myAnswers(issue: Issue): Record<string, string> {
   return out;
 }
 
-/** How many households have added updates or affected details, for the card on the problem. */
-export function updateSummary(issue: Issue) {
-  const households = new Set([...latestUpdates(issue).map((n) => n.by), ...(issue.affected ?? []).map((a) => a.by)]);
-  return { households: households.size, mine: households.has(ME), updates: latestUpdates(issue).length };
-}
-
 // ---- Facts for "What should we say?" ---------------------------------------------------
 
 export type Fact = {

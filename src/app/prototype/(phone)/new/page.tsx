@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createGroup, setMyName, useStore } from "@/prototype/store";
 import { NATION_LABEL, type GroupType, type Nation } from "@/prototype/types";
-import { Button, ChoiceCard, Field, Icon, Loading, PageTitle, inputClass, label } from "@/prototype/ui";
+import { Button, ChoiceCard, Field, Icon, Loading, PageTitle, inputClass, label, panel } from "@/prototype/ui";
 
 const TYPES: { value: GroupType; title: string; desc: string }[] = [
   { value: "house", title: "Shared house or flat", desc: "You and the people you live with" },
@@ -102,12 +102,12 @@ export default function NewGroup() {
               />
             ))}
           </div>
-          <p className="text-[15px] leading-[22px] text-ink-muted">
+          <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
             This sets which legal deadlines Clamour shows. Only the owner can change it later.
           </p>
         </fieldset>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg bg-concrete px-4 py-3">
+        <label className={`flex cursor-pointer items-start gap-3 px-4 py-3 ${panel}`}>
           <input
             type="checkbox"
             checked={approvalOn}
@@ -115,8 +115,8 @@ export default function NewGroup() {
             className="mt-1 size-5 flex-none accent-[var(--ink)]"
           />
           <span className="flex flex-col">
-            <span className="text-[17px] leading-6 font-bold">Approve new members before they join</span>
-            <span className="text-[15px] leading-[22px] text-ink-muted">
+            <span className="text-[1.0625rem] leading-[1.625rem] font-bold">Approve new members before they join</span>
+            <span className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
               Recommended for union branches and big buildings, where a link could be passed on.
             </span>
           </span>

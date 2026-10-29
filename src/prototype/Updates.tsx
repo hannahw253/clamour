@@ -8,37 +8,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AFFECTED, household, myAnswers, openRequests, updateQuestions, updateSummary, updatesSince } from "./context";
+import { AFFECTED, household, myAnswers, openRequests, updateQuestions, updatesSince } from "./context";
 import { addDays, longDate, shortDate, todayYmd } from "./dates";
 import { addEntries, closeRequests, memberName, requestUpdates, setMyAffected } from "./store";
 import { ME, type Affected, type AffectedKind, type Group, type Issue, type UpdateRequest } from "./types";
-import { Button, Icon, Sheet, buttonClass, inputClass } from "./ui";
+import { Button, Icon, Sheet, buttonClass, inputClass, panel, toggleClass, toastClass } from "./ui";
 
 // ---- On the problem page --------------------------------------------------------------
-
-export function UpdatesCard({ group, issue, onOpen }: { group: Group; issue: Issue; onOpen: () => void }) {
-  const sum = updateSummary(issue);
-  const others = sum.households - (sum.mine ? 1 : 0);
-  const line = sum.mine
-    ? others
-      ? `You and ${others} other ${others === 1 ? "household have" : "households have"} added updates`
-      : "You've added yours. Add more as things change."
-    : sum.households
-      ? `${sum.households} ${sum.households === 1 ? "household has" : "households have"} added updates. Add yours`
-      : group.type === "house"
-        ? "Say how it affects you. Every letter can use it."
-        : "Say how it affects your household. Every letter can use it.";
-  return (
-    <button type="button" onClick={onOpen} className="flex min-h-16 w-full items-center gap-3 rounded-xl bg-concrete px-4 py-3 text-left">
-      <Icon name="note" size={22} />
-      <span className="flex flex-1 flex-col">
-        <span className="text-[16px] leading-[22px] font-bold">{sum.mine ? "Add an update" : "How is it affecting you?"}</span>
-        <span className="text-[14px] leading-[20px] text-ink-muted">{line}</span>
-      </span>
-      <Icon name="arrow" />
-    </button>
-  );
-}
 
 /** "Aileen is writing to the landlord on Monday 2 November." Shown on the group and on each problem it covers. */
 export function RequestBanner({
@@ -62,59 +38,67 @@ export function RequestBanner({
   );
 }
 
+/** One line, with the detail folded away (calm screens): who is writing, when, and the one thing to do. */
 function RequestNote({ group, request, onAdd }: { group: Group; request: UpdateRequest; onAdd?: () => void }) {
   const mine = request.by === ME;
-  const today = todayYmd();
-  const due = request.writeOn <= today;
+  const due = request.writeOn <= todayYmd();
   const since = updatesSince(group, request.issueIds, request.at);
   const problems = group.issues.filter((i) => request.issueIds.includes(i.id));
+  const when = due ? "today" : `on ${shortDate(request.writeOn)}`;
+  const linkOne = !mine && !onAdd && problems.length === 1;
+  const listInside = !mine && !onAdd && problems.length > 1;
+  const hasDetails = !!request.note || listInside || mine;
   return (
-    <section aria-label="Request for updates" className="flex flex-col gap-2 rounded-xl border-2 border-line px-4 py-3">
-      <p className="flex items-start gap-2 text-[16px] leading-[23px]">
-        <Icon name="bell" className="mt-0.5 flex-none" />
-        <span>
+    <section aria-label="Request for updates" className="rounded-lg border-2 border-line bg-paper">
+      <div className="flex items-center gap-3 px-4 py-2">
+        <Icon name="bell" className="flex-none" />
+        <p className="flex-1 py-1.5 text-[0.9375rem] leading-[1.375rem]">
           {mine ? (
             <>
-              <span className="font-bold">{due ? "Today's the day you said you'd write to the landlord." : `You're writing to the landlord on ${longDate(request.writeOn)}.`}</span>{" "}
-              {since ? `${since} ${since === 1 ? "update has" : "updates have"} come in since you asked.` : "No new updates yet."}
+              <span className="font-bold">You&rsquo;re writing to the landlord {when}.</span> {since ? `${since} new ${since === 1 ? "update" : "updates"} since you asked.` : "No new updates yet."}
             </>
           ) : (
             <>
               <span className="font-bold">
-                {memberName(group, request.by)} is writing to the landlord {due ? "today" : `on ${longDate(request.writeOn)}`}.
+                {memberName(group, request.by)} is writing to the landlord {when}.
               </span>{" "}
-              Please add your updates before then.
+              Add yours before then.
             </>
           )}
-        </span>
-      </p>
-      {request.note ? <p className="pl-7 text-[15px] leading-[22px] text-ink-muted">&ldquo;{request.note}&rdquo;</p> : null}
-      {problems.length > 1 && onAdd ? (
-        <p className="pl-7 text-[14px] leading-[20px] text-ink-muted">About: {problems.map((p) => p.title).join("; ")}</p>
-      ) : null}
-      {!onAdd && !mine ? (
-        <ul className="flex flex-col pl-7">
-          {problems.map((p) => (
-            <li key={p.id}>
-              <Link href={`/prototype/g/${group.id}/i/${p.id}?update=1`} className="flex min-h-11 items-center gap-1 font-bold underline underline-offset-3">
-                Add your update: {p.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      <div className="flex flex-wrap items-center gap-x-4 pl-7 empty:hidden">
+        </p>
         {!mine && onAdd ? (
-          <button type="button" onClick={onAdd} className="min-h-11 font-bold underline underline-offset-3">
-            Add your update
+          <button type="button" onClick={onAdd} className="min-h-11 flex-none font-bold underline underline-offset-3">
+            Add update
           </button>
-        ) : null}
-        {mine ? (
-          <button type="button" onClick={() => closeRequests(group.id, { id: request.id })} className="min-h-11 font-bold underline underline-offset-3">
-            Cancel request
-          </button>
+        ) : linkOne ? (
+          <Link href={`/prototype/g/${group.id}/i/${problems[0].id}?update=1`} className="inline-flex min-h-11 flex-none items-center font-bold underline underline-offset-3">
+            Add update
+          </Link>
         ) : null}
       </div>
+      {hasDetails ? (
+        <details className="group border-t border-line-subtle px-4">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1 text-[0.9375rem] font-bold [&::-webkit-details-marker]:hidden">
+            <Icon name="arrow" size={16} className="transition-transform group-open:rotate-90" />
+            {listInside ? "Add your update" : mine ? "Details" : "What they asked"}
+          </summary>
+          <div className="flex flex-col gap-2 pb-3">
+            {request.note ? <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">&ldquo;{request.note}&rdquo;</p> : null}
+            {listInside
+              ? problems.map((p) => (
+                  <Link key={p.id} href={`/prototype/g/${group.id}/i/${p.id}?update=1`} className="flex min-h-11 items-center font-bold underline underline-offset-3">
+                    {p.title}
+                  </Link>
+                ))
+              : null}
+            {mine ? (
+              <button type="button" onClick={() => closeRequests(group.id, { id: request.id })} className="min-h-11 self-start font-bold underline underline-offset-3">
+                Cancel request
+              </button>
+            ) : null}
+          </div>
+        </details>
+      ) : null}
     </section>
   );
 }
@@ -129,7 +113,7 @@ export function UpdateSheet({ open, onClose, group, issue }: { open: boolean; on
   );
 }
 
-const area = `${inputClass} min-h-20 py-3 text-[16px] leading-[24px]`;
+const area = `${inputClass} min-h-20 py-3 text-[1.0625rem] leading-[1.625rem] `;
 
 export function UpdateForm({ group, issue, onDone }: { group: Group; issue: Issue; onDone: () => void }) {
   const before = myAnswers(issue);
@@ -173,15 +157,15 @@ export function UpdateForm({ group, issue, onDone }: { group: Group; issue: Issu
   return (
     <div className="flex flex-col gap-5">
       {request ? (
-        <p className="flex items-start gap-2 rounded-lg bg-signal-soft px-3 py-2 text-[15px] leading-[22px]">
+        <p className="flex items-start gap-2 rounded-lg bg-concrete px-3 py-2 text-[0.9375rem] leading-[1.375rem]">
           <Icon name="bell" size={18} className="mt-0.5 flex-none" />
           <span>
             {memberName(group, request.by)} is writing to the landlord on {shortDate(request.writeOn)}. Anything you add now can go in.
           </span>
         </p>
       ) : null}
-      <p className="text-[16px] leading-[24px] text-ink-muted">
-        For {group.type === "house" ? "you" : `your household${where !== memberName(group, ME) ? ` (${where})` : ""}`}. Answer what you can, in your own words. It goes on the record with today&rsquo;s date, and anyone writing to the landlord can include it.
+      <p className="text-[1.0625rem] leading-[1.625rem] text-ink-muted">
+        For {group.type === "house" ? "you" : `your household${where !== memberName(group, ME) ? ` (${where})` : ""}`}. Answer what you can. Anyone writing to the landlord can include it.
       </p>
 
       <Area id="upd-general" label="What's happened?" placeholder="The patch has spread to the window frame" value={general} onChange={setGeneral} />
@@ -189,11 +173,11 @@ export function UpdateForm({ group, issue, onDone }: { group: Group; issue: Issu
         <Area key={q.key} id={`upd-${q.key}`} label={q.label} placeholder={q.placeholder} value={answers[q.key] ?? ""} onChange={(v) => setAnswers({ ...answers, [q.key]: v })} />
       ))}
 
-      <fieldset className="flex flex-col gap-3 rounded-xl bg-concrete p-4">
+      <fieldset className={`flex flex-col gap-3 p-4 ${panel}`}>
         <legend className="sr-only">Who is affected?</legend>
-        <p className="text-[17px] font-bold">Is anyone in your home affected more because of who they are?</p>
-        <p className="text-[14px] leading-[20px] text-ink-muted">
-          Often what makes a landlord act fastest. Private to you and your group&rsquo;s admins. You decide whether letters can use it.
+        <p className="text-[1.0625rem] font-bold">Is anyone in your home affected more because of who they are?</p>
+        <p className="text-[0.9375rem] leading-[1.25rem] text-ink-muted">
+          Private to you and your group&rsquo;s admins. You decide whether letters can use it.
         </p>
         <div className="flex flex-wrap gap-2">
           {(Object.keys(AFFECTED) as AffectedKind[]).map((k) => {
@@ -204,7 +188,7 @@ export function UpdateForm({ group, issue, onDone }: { group: Group; issue: Issu
                 type="button"
                 aria-pressed={on}
                 onClick={() => toggle(k)}
-                className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 px-4 text-[15px] font-bold ${on ? "border-line bg-ink text-paper" : "border-line-subtle bg-paper"}`}
+                className={toggleClass(on)}
               >
                 <Icon name={on ? "tick" : "plus"} size={16} />
                 {AFFECTED[k].tick}
@@ -238,7 +222,7 @@ export function UpdateForm({ group, issue, onDone }: { group: Group; issue: Issu
       </fieldset>
 
       {error ? (
-        <p role="alert" className="text-[15px] font-bold text-alarm">
+        <p role="alert" className="text-[0.9375rem] font-bold text-alarm">
           {error}
         </p>
       ) : null}
@@ -253,7 +237,7 @@ function Check({ checked, onChange, children }: { checked: boolean; onChange: (v
   return (
     <label className="flex cursor-pointer items-start gap-3">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1 size-5 flex-none accent-[var(--ink)]" />
-      <span className="text-[15px] leading-[22px]">{children}</span>
+      <span className="text-[0.9375rem] leading-[1.375rem]">{children}</span>
     </label>
   );
 }
@@ -261,7 +245,7 @@ function Check({ checked, onChange, children }: { checked: boolean; onChange: (v
 function Area({ id, label: text, placeholder, value, onChange }: { id: string; label: string; placeholder: string; value: string; onChange: (v: string) => void }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-[16px] leading-[22px] font-bold">
+      <label htmlFor={id} className="text-[1rem] leading-[1.375rem] font-bold">
         {text}
       </label>
       <textarea id={id} className={area} placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />
@@ -296,11 +280,11 @@ function RequestForm({ group, issues, onDone }: { group: Group; issues: Issue[];
   if (sent) {
     return (
       <div className="flex flex-col gap-4">
-        <p role="status" className="flex items-start gap-2 rounded-xl bg-done px-4 py-3 text-[16px] leading-[22px] font-bold text-on-done">
+        <p role="status" className={toastClass}>
           <Icon name="tick" className="mt-0.5" />
           Asked {others} {others === 1 ? "member" : "members"}. They&rsquo;ll get a notification, and see it on the problem.
         </p>
-        <p className="text-[16px] leading-[24px]">Most groups also talk in a chat. Share it there too, so nobody misses it.</p>
+        <p className="text-[1rem] leading-[1.25rem] ">Most groups also talk in a chat. Share it there too, so nobody misses it.</p>
         <a className={buttonClass("secondary")} href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noreferrer">
           <Icon name="chat" /> Share in WhatsApp
         </a>
@@ -325,11 +309,11 @@ function RequestForm({ group, issues, onDone }: { group: Group; issues: Issue[];
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-[16px] leading-[24px]">
-        Everyone in your group gets a notification asking them to add their updates before you write. The letter is stronger with every household in it.
+      <p className="text-[1rem] leading-[1.25rem] ">
+        Everyone in your group gets a notification asking for their updates.
       </p>
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-[16px] font-bold">When will you write?</legend>
+        <legend className="mb-2 text-[1rem] leading-[1.25rem] font-bold">When will you write?</legend>
         <div className="flex flex-wrap gap-2">
           {options.map((o) => {
             const ymd = addDays(today, o.days);
@@ -340,28 +324,28 @@ function RequestForm({ group, issues, onDone }: { group: Group; issues: Issue[];
                 type="button"
                 aria-pressed={on}
                 onClick={() => setWriteOn(ymd)}
-                className={`inline-flex min-h-11 flex-col items-start justify-center rounded-xl border-2 px-4 py-1.5 text-left ${on ? "border-line bg-ink text-paper" : "border-line-subtle bg-paper"}`}
+                className={`inline-flex min-h-11 flex-col items-start justify-center rounded-lg border-2 px-4 py-1.5 text-left ${on ? "border-line bg-ink text-paper" : "border-line-subtle bg-paper"}`}
               >
-                <span className="text-[15px] font-bold">{o.text}</span>
-                <span className="text-[13px]">{shortDate(ymd)}</span>
+                <span className="text-[0.9375rem] leading-[1.375rem] font-bold">{o.text}</span>
+                <span className="text-[0.8125rem] leading-[1.125rem]">{shortDate(ymd)}</span>
               </button>
             );
           })}
         </div>
         <label className="mt-1 flex flex-col gap-1">
-          <span className="text-[15px] text-ink-muted">Or pick a date</span>
+          <span className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Or pick a date</span>
           <input type="date" className={inputClass} min={addDays(today, 1)} value={writeOn} onChange={(e) => e.target.value && setWriteOn(e.target.value)} />
         </label>
       </fieldset>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="req-note" className="text-[16px] font-bold">
+        <label htmlFor="req-note" className="text-[1rem] leading-[1.25rem] font-bold">
           Anything to ask for? (optional)
         </label>
         <textarea id="req-note" className={area} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Photos of any new damage would really help" />
       </div>
-      <div className="flex flex-col gap-1 rounded-xl bg-concrete p-4">
-        <p className="text-[13px] font-bold tracking-[0.08em] uppercase">What they&rsquo;ll see</p>
-        <p className="text-[16px] leading-[24px]">
+      <div className="flex flex-col gap-1 rounded-lg bg-concrete p-4">
+        <p className="text-[0.8125rem] leading-[1.125rem] font-bold tracking-[0.08em] uppercase">What they&rsquo;ll see</p>
+        <p className="text-[1.0625rem] leading-[1.625rem]">
           <span className="font-bold">{group.members.find((m) => m.id === ME)?.name ?? "Your name"} is writing to the landlord on {longDate(writeOn)}.</span> Please add your updates before then.
         </p>
       </div>

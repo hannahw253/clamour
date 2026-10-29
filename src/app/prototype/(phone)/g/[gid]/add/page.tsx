@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 import { PhotoPicker } from "@/prototype/PhotoPicker";
 import { addIssue, entry, findGroup, useStore } from "@/prototype/store";
 import { CATEGORY_LABEL, type Category, type Photo } from "@/prototype/types";
-import { Button, Field, Loading, PageTitle, SafetyBanner, inputClass, label, safetyKind } from "@/prototype/ui";
+import { Button, Field, Loading, PageTitle, SafetyBanner, inputClass, label, safetyKind, toggleClass } from "@/prototype/ui";
 
 export default function AddIssue() {
   const { gid } = useParams<{ gid: string }>();
@@ -71,9 +71,7 @@ export default function AddIssue() {
             {(Object.keys(CATEGORY_LABEL) as Category[]).map((c) => (
               <label
                 key={c}
-                className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border-2 px-4 text-[15px] font-bold has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus ${
-                  category === c ? "border-line bg-ink text-paper" : "border-line-subtle bg-paper text-ink"
-                }`}
+                className={`cursor-pointer has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus ${toggleClass(category === c)}`}
               >
                 <input
                   type="radio"

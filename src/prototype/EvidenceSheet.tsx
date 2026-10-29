@@ -13,7 +13,7 @@ import { fileSize, fingerprintFile, parseChatExport, shortHash } from "./photos"
 import type { NewEntry } from "./store";
 import { METHOD_LABEL, type FileRef, type Group, type Issue, type Photo, type ReportMethod } from "./types";
 import { UpdateForm } from "./Updates";
-import { Button, ChoiceCard, Field, Icon, Sheet, buttonClass, inputClass, label, type IconName } from "./ui";
+import { Button, ChoiceCard, Field, Icon, Sheet, buttonClass, inputClass, label, type IconName, panel } from "./ui";
 
 export type Save = (entries: NewEntry[]) => void;
 
@@ -31,7 +31,7 @@ const KINDS: { kind: Kind; icon: IconName; title: string; short: string }[] = [
   { kind: "note", icon: "note", title: "Add an update", short: "Update in words" },
 ];
 
-const textareaClass = `${inputClass} min-h-24 py-3 leading-[26px]`;
+const textareaClass = `${inputClass} min-h-24 py-3 leading-[1.625rem]`;
 
 export function AddEvidenceSheet({
   open,
@@ -60,14 +60,14 @@ export function AddEvidenceSheet({
     <Sheet open={open} onClose={close} title={current ? current.title : "Add evidence"}>
       {!kind ? (
         <>
-          <p className="text-[16px] leading-[24px] text-ink-muted">Originals are kept exactly as they are, with the time they reached the record.</p>
+          <p className="text-[1rem] leading-[1.5rem] text-ink-muted">Originals are kept exactly as they are, with the time they reached the record.</p>
           <ul className="grid grid-cols-3 gap-2">
             {KINDS.map((k) => (
               <li key={k.kind}>
                 <button
                   type="button"
                   onClick={() => setKind(k.kind)}
-                  className="flex min-h-[92px] w-full flex-col items-center justify-center gap-1.5 rounded-xl bg-concrete px-2 py-3 text-center text-[14px] leading-[18px] font-bold"
+                  className={`flex min-h-[92px] w-full flex-col items-center justify-center gap-1.5 px-2 py-3 text-center text-[0.9375rem] leading-[1.125rem] font-bold ${panel}`}
                 >
                   <Icon name={k.icon} size={24} />
                   {k.short}
@@ -156,8 +156,8 @@ function FileList({ files }: { files: FileRef[] }) {
     <ul className="flex flex-col gap-2">
       {files.map((f, i) => (
         <li key={f.sha256 + i} className="flex flex-col rounded-lg bg-concrete px-4 py-3">
-          <span className="truncate text-[15px] font-bold">{f.name}</span>
-          <span className="font-mono text-[13px] leading-[18px] text-ink-muted">
+          <span className="truncate text-[0.9375rem] font-bold">{f.name}</span>
+          <span className="font-mono text-[0.8125rem] leading-[1.125rem] text-ink-muted">
             {fileSize(f.bytes)} · SHA-256 {shortHash(f.sha256)}
           </span>
         </li>
@@ -191,7 +191,7 @@ function PhotoVideoForm({ onSave }: { onSave: Save }) {
       <FilePick accept="video/*" text="Add a video" icon="video" onFiles={async (f) => setVideos([...videos, ...(await Promise.all(f.map(fingerprintFile)))])} />
       <FileList files={videos} />
       {videos.length ? (
-        <p className="text-[15px] leading-[22px] text-ink-muted">Prototype: videos keep their fingerprint only. The full app keeps the video.</p>
+        <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Prototype: videos keep their fingerprint only. The full app keeps the video.</p>
       ) : null}
       <Note id="pv-note" value={text} onChange={setText} />
     </Form>
@@ -210,7 +210,7 @@ function MessagesForm({ onSave }: { onSave: Save }) {
         onSave(photos.map((photo) => ({ kind: "messages" as const, at: fromLocalInput(when), photo, with: who.trim() || "Landlord or agent", text: text.trim() || undefined })))
       }
     >
-      <p className="text-[15px] leading-[22px] text-ink-muted">
+      <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
         Take screenshots that show the name or number and the dates. On Android, the full app will let you share them
         straight from WhatsApp.
       </p>
@@ -233,12 +233,12 @@ function EmailForm({ onSave, group, issue }: { onSave: Save; group: Group; issue
   return (
     <div className="flex flex-col gap-5">
       <GroupAddress group={group} issue={issue} />
-      <p className="text-[17px] leading-[26px]">
+      <p className="text-[1.0625rem] leading-[1.625rem]">
         <span className="font-bold">Already sent or got it?</span> Forward it to the address above. Use &ldquo;forward as
         attachment&rdquo; if your email app has it: that keeps the original sender&rsquo;s proof.
       </p>
       <details className="rounded-lg bg-concrete px-4 py-3">
-        <summary className="min-h-11 cursor-pointer py-2 text-[17px] font-bold">Prototype: paste an email instead</summary>
+        <summary className="min-h-11 cursor-pointer py-2 text-[1.0625rem] font-bold">Prototype: paste an email instead</summary>
         <div className="mt-3">
           <Form
             disabled={!subject.trim() && !body.trim()}
@@ -273,7 +273,7 @@ function EmailForm({ onSave, group, issue }: { onSave: Save; group: Group; issue
               <textarea id="em-body" className={textareaClass} value={body} onChange={(e) => setBody(e.target.value)} />
             </Field>
             <When id="em-when" title="When was it sent?" value={when} onChange={setWhen} />
-            <p className="text-[15px] leading-[22px] text-ink-muted">Pasted emails can&rsquo;t be checked, so the record says so.</p>
+            <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Pasted emails can&rsquo;t be checked, so the record says so.</p>
           </Form>
         </div>
       </details>
@@ -302,7 +302,7 @@ function CallForm({ onSave }: { onSave: Save }) {
       </Field>
       <When id="call-when" title="When?" value={when} onChange={setWhen} />
       <Note id="call-note" title="What did they say?" value={text} onChange={setText} placeholder="Engineer booked for Friday morning" />
-      <p className="text-[15px] leading-[22px] text-ink-muted">
+      <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
         Next, we&rsquo;ll help you send a short message confirming what was said. A conversation is hard to prove; a written
         record of it isn&rsquo;t.
       </p>
@@ -323,14 +323,14 @@ function PostForm({ onSave }: { onSave: Save }) {
         onSave([{ kind: "post", at, photo: first, proof, text: first.alt || undefined }, ...rest.map((photo) => ({ kind: "photo" as const, at, photo, text: photo.alt || undefined }))]);
       }}
     >
-      <p className="text-[15px] leading-[22px] text-ink-muted">
+      <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
         Photograph the letter before you post it, and the proof of postage from the Post Office.
       </p>
       <PhotoPicker photos={photos} onChange={setPhotos} />
       <When id="post-when" title="When did you post it?" value={when} onChange={setWhen} />
       <label className="flex cursor-pointer items-start gap-3 rounded-lg bg-concrete px-4 py-3">
         <input type="checkbox" checked={proof} onChange={(e) => setProof(e.target.checked)} className="mt-1 size-5 flex-none accent-[var(--ink)]" />
-        <span className="text-[17px] leading-6 font-bold">I have proof of postage</span>
+        <span className="text-[1.0625rem] leading-[1.5rem] font-bold">I have proof of postage</span>
       </label>
     </Form>
   );
@@ -406,7 +406,7 @@ function ChatForm({ onSave }: { onSave: Save }) {
         ])
       }
     >
-      <ol className="flex list-decimal flex-col gap-1 pl-5 text-[15px] leading-[22px]">
+      <ol className="flex list-decimal flex-col gap-1 pl-5 text-[0.9375rem] leading-[1.375rem]">
         <li>In WhatsApp, open the chat with your landlord or agent.</li>
         <li>Tap their name, then &ldquo;Export chat&rdquo;.</li>
         <li>Save the file, then choose it here.</li>
@@ -429,18 +429,18 @@ function ChatForm({ onSave }: { onSave: Save }) {
         }}
       />
       {file ? <FileList files={[file]} /> : null}
-      {error ? <p className="text-[15px] font-bold">{error}</p> : null}
+      {error ? <p className="text-[0.9375rem] font-bold">{error}</p> : null}
       {parsed ? (
-        <div className="flex flex-col gap-1 rounded-lg border-2 border-line-subtle px-4 py-3 text-[15px] leading-[22px]">
+        <div className="flex flex-col gap-1 rounded-lg border-2 border-line-subtle px-4 py-3 text-[0.9375rem] leading-[1.375rem]">
           <p className="font-bold">
             {parsed.count} messages between {parsed.participants.join(", ")}
           </p>
-          <p className="font-mono text-[13px] text-ink-muted">
+          <p className="font-mono text-[0.8125rem] text-ink-muted">
             {parsed.first} to {parsed.last}
           </p>
         </div>
       ) : file ? (
-        <p className="text-[15px] leading-[22px] text-ink-muted">Prototype: zip files keep their fingerprint only. The full app reads the messages and photos inside.</p>
+        <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">Prototype: zip files keep their fingerprint only. The full app reads the messages and photos inside.</p>
       ) : null}
       <Note id="chat-note" value={text} onChange={setText} />
     </Form>
@@ -463,7 +463,7 @@ function ReportForm({ onSave, group, issue }: { onSave: Save; group: Group; issu
   const [text, setText] = useState("");
   return (
     <Form onSubmit={() => onSave([{ kind: "reported", method, at: fromLocalInput(when), text: text.trim() || undefined }])}>
-      <p className="text-[17px] leading-[26px]">
+      <p className="text-[1.0625rem] leading-[1.625rem]">
         Tell them the way you normally would, then record it here. Writing (email, text or letter) is easiest to prove.
       </p>
       <fieldset className="flex flex-col gap-2">
@@ -476,12 +476,12 @@ function ReportForm({ onSave, group, issue }: { onSave: Save; group: Group; issu
       </fieldset>
       {method === "email" ? <GroupAddress group={group} issue={issue} /> : null}
       {method === "phone" || method === "in_person" ? (
-        <p className="rounded-lg bg-concrete px-4 py-3 text-[15px] leading-[22px]">
+        <p className="rounded-lg bg-concrete px-4 py-3 text-[0.9375rem] leading-[1.375rem]">
           After saving, we&rsquo;ll help you confirm what was said in writing, so it isn&rsquo;t just your word against theirs.
         </p>
       ) : null}
       {method === "text" || method === "portal" ? (
-        <p className="rounded-lg bg-concrete px-4 py-3 text-[15px] leading-[22px]">
+        <p className="rounded-lg bg-concrete px-4 py-3 text-[0.9375rem] leading-[1.375rem]">
           Take a screenshot of what you sent and add it with &ldquo;Add evidence&rdquo;, then &ldquo;Screenshot of messages&rdquo;.
         </p>
       ) : null}

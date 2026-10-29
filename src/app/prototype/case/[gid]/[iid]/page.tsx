@@ -67,7 +67,7 @@ function CaseFile() {
         }
       `}</style>
 
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-line-subtle bg-paper px-4 py-2 print:hidden">
+      <nav aria-label="Case file" className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-line-subtle bg-paper px-4 py-2 print:hidden">
         <Link href={back} className="inline-flex min-h-11 items-center gap-1 font-bold">
           <Icon name="back" /> Back
         </Link>
@@ -83,15 +83,15 @@ function CaseFile() {
         <Button variant="primary" icon="send" className="min-h-10" onClick={() => window.print()}>
           Print or save as PDF
         </Button>
-      </div>
+      </nav>
 
-      <div ref={frame} className="flex flex-1 justify-center px-3 py-6 print:block print:p-0">
+      <main ref={frame} className="flex flex-1 justify-center px-3 py-6 print:block print:p-0">
         <div style={{ ["--doc-zoom" as string]: scale }} className="[zoom:var(--doc-zoom)] print:[zoom:1]">
-          <article className="doc-light w-[210mm] min-h-[297mm] px-[15mm] py-[16mm] shadow-[0_2px_16px_rgba(0,0,0,0.12)] print:w-auto print:min-h-0 print:p-0 print:shadow-none">
+          <article className="doc-light w-[210mm] min-h-[297mm] px-[15mm] py-[16mm] border-2 border-line print:w-auto print:min-h-0 print:p-0 print:shadow-none">
             <Document group={group} issue={issue} preparedBy={myMember(group)?.name ?? s.myName ?? "a member"} />
           </article>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

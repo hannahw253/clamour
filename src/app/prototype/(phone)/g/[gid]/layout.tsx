@@ -33,7 +33,7 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
         <PageTitle sub={`An admin of ${group.name} needs to approve you. We'll let you know by email when they do.`}>
           Waiting for approval
         </PageTitle>
-        <p className="text-[17px] leading-[26px]">
+        <p className="text-[1.0625rem] leading-[1.625rem] ">
           Until then you can&rsquo;t see the group&rsquo;s problems or members. That keeps everyone&rsquo;s details safe
           if a link is passed on.
         </p>
@@ -66,10 +66,10 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
     ];
     return (
       <div className="flex flex-1 flex-col">
-        <header className="flex flex-col gap-2 border-b border-line-subtle px-6 pt-4 print:hidden">
+        <section aria-label={group.name} className="flex flex-col gap-2 border-b border-line-subtle px-6 pt-4 print:hidden">
           <div>
-            <p className="text-[22px] leading-7 font-bold">{group.name}</p>
-            <p className="text-[14px] text-ink-muted">
+            <p className="text-[1.375rem] leading-[1.75rem] font-bold">{group.name}</p>
+            <p className="text-[0.9375rem] text-ink-muted">
               {TYPE_LABEL[group.type]} · {NATION_LABEL[group.nation]}
             </p>
           </div>
@@ -79,13 +79,13 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
                 key={t.title}
                 href={t.href}
                 aria-current={t.active ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center border-b-[3px] px-3 text-[15px] font-bold no-underline ${t.active ? "border-line text-ink" : "border-transparent text-ink-muted"}`}
+                className={`inline-flex min-h-11 items-center border-b-[3px] px-3 text-[0.9375rem] font-bold no-underline ${t.active ? "border-line text-ink" : "border-transparent text-ink-muted"}`}
               >
                 {t.title}
               </Link>
             ))}
           </nav>
-        </header>
+        </section>
         <div className="flex flex-1 flex-col">{children}</div>
       </div>
     );
@@ -99,8 +99,12 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
             <Icon name="back" />
           </Link>
           <div className="min-w-0">
-            <p className="truncate text-[18px] leading-6 font-bold">{group.name}</p>
-            <p className="text-[13px] leading-[18px] text-ink-muted">
+            {pathname === base ? (
+              <h1 className="truncate text-[1.125rem] leading-[1.5rem] font-bold">{group.name}</h1>
+            ) : (
+              <p className="truncate text-[1.125rem] leading-[1.5rem] font-bold">{group.name}</p>
+            )}
+            <p className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">
               {TYPE_LABEL[group.type]} · {NATION_LABEL[group.nation]}
             </p>
           </div>
@@ -120,7 +124,7 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
                 <Link
                   href={t.href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-bold no-underline ${
+                  className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-[0.8125rem] font-bold no-underline ${
                     active ? "text-ink" : "text-ink-muted"
                   }`}
                 >

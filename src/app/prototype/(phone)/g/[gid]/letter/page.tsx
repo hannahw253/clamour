@@ -8,7 +8,7 @@ import { Composer } from "@/prototype/Composer";
 import { findGroup, permissions, useStore, visibleIssues } from "@/prototype/store";
 import { issueRef } from "@/prototype/types";
 import { RequestBanner, RequestSheet } from "@/prototype/Updates";
-import { Button, Icon, Loading, PageTitle } from "@/prototype/ui";
+import { Button, Icon, Loading, PageTitle, panelList } from "@/prototype/ui";
 
 export default function GroupLetterPage() {
   return (
@@ -39,7 +39,7 @@ function GroupLetter() {
     return (
       <main className="flex flex-col gap-4 px-4 pt-5 pb-8">
         <PageTitle>One letter about several problems</PageTitle>
-        <p className="text-[17px] leading-[26px]">Only admins can send letters in the group&rsquo;s name. You can still email about the problems you logged.</p>
+        <p className="text-[1.0625rem] leading-[1.625rem] ">Only admins can send letters in the group&rsquo;s name. You can still email about the problems you logged.</p>
       </main>
     );
   }
@@ -60,15 +60,15 @@ function GroupLetter() {
       </Link>
       <PageTitle sub="Choose the problems to put in one letter to the landlord.">One letter about several problems</PageTitle>
       <RequestBanner group={group} issueIds={open.map((i) => i.id)} />
-      <ul className="flex flex-col divide-y divide-line-subtle rounded-xl bg-concrete">
+      <ul className={panelList}>
         {open.map((i) => (
           <li key={i.id}>
             <label className="flex cursor-pointer items-start gap-3 px-4 py-3">
               <input type="checkbox" checked={picked.includes(i.id)} onChange={() => toggle(i.id)} className="mt-1 size-5 flex-none accent-[var(--ink)]" aria-label={`Select ${i.title}`} />
               <span className="flex flex-col">
-                <span className="text-[16px] leading-[22px] font-bold">{i.title}</span>
-                <span className="text-[14px] leading-[20px] text-ink-muted">
-                  <span className="font-mono text-[13px]">{issueRef(i)}</span> · {issueClock(group, i).words}
+                <span className="text-[1rem] leading-[1.375rem] font-bold">{i.title}</span>
+                <span className="text-[0.9375rem] leading-[1.25rem] text-ink-muted">
+                  <span className="font-mono text-[0.8125rem]">{issueRef(i)}</span> · {issueClock(group, i).words}
                 </span>
               </span>
             </label>

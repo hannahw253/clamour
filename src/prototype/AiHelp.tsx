@@ -98,17 +98,17 @@ export function AiHelp({
   };
 
   const off = enabled === false;
-  const chip = "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-line-subtle bg-paper px-4 text-[15px] font-bold disabled:opacity-45";
+  const chip = "inline-flex min-h-11 items-center gap-1.5 rounded-md border-2 border-line bg-paper px-3.5 text-[0.9375rem] leading-[1.375rem] font-bold disabled:opacity-45";
   const working = !!busy || !!againBusy;
 
   return (
-    <section aria-label="Adjust it" className="flex flex-col gap-3 rounded-xl border border-line-subtle p-4">
+    <section aria-label="Adjust it" className="flex flex-col gap-3 rounded-lg border border-line-subtle p-4">
       <div className="flex items-center gap-2">
         <Icon name="spark" size={18} />
         <h2 className={label}>Adjust it</h2>
       </div>
       {off ? (
-        <p className="text-[15px] leading-[22px] text-ink-muted">
+        <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
           AI help isn&rsquo;t switched on in this prototype yet. These buttons show what it will do.
         </p>
       ) : null}
@@ -126,12 +126,12 @@ export function AiHelp({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor="ai-lang" className="text-[15px] font-bold">
+        <label htmlFor="ai-lang" className="text-[0.9375rem] leading-[1.375rem] font-bold">
           Show it in
         </label>
         <select
           id="ai-lang"
-          className="min-h-11 rounded-md border-2 border-line-subtle bg-paper px-2 text-[15px] font-bold"
+          className="min-h-11 rounded-md border-2 border-line-subtle bg-paper px-2 text-[0.9375rem] leading-[1.375rem] font-bold"
           value={language}
           disabled={off}
           onChange={(e) => setLanguage(e.target.value)}
@@ -148,13 +148,13 @@ export function AiHelp({
 
       {translation ? (
         <div className="flex flex-col gap-1 rounded-lg bg-concrete p-3">
-          <p className="text-[13px] font-bold">In {language}, so you can check it. The English version is what gets sent.</p>
-          <p className="text-[15px] leading-[23px] whitespace-pre-wrap">{translation}</p>
+          <p className="text-[0.8125rem] leading-[1.125rem] font-bold">In {language}, so you can check it. The English version is what gets sent.</p>
+          <p className="text-[0.9375rem] leading-[1.375rem] whitespace-pre-wrap">{translation}</p>
         </div>
       ) : null}
 
       {message ? (
-        <p role="status" className="text-[15px] leading-[22px] font-bold">
+        <p role="status" className="text-[0.9375rem] leading-[1.375rem] font-bold">
           {message}
         </p>
       ) : null}
