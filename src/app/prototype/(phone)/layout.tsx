@@ -1,13 +1,9 @@
-import { PrototypeBar } from "@/prototype/PrototypeBar";
+import { PhoneShell } from "@/prototype/PhoneShell";
 
-/** A phone-width column on every screen size, so interviews look the same on a laptop. */
+/**
+ * The phone layout. On a wide screen the same screens sit in the desktop frame instead, unless
+ * "Phone view" is chosen, so interviews can still show the phone on a laptop.
+ */
 export default function PhoneLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-concrete">
-      <div className="mx-auto flex w-full max-w-[440px] flex-1 flex-col bg-paper sm:border-x-2 sm:border-line print:max-w-none print:border-0">
-        <PrototypeBar />
-        {children}
-      </div>
-    </div>
-  );
+  return <PhoneShell>{children}</PhoneShell>;
 }

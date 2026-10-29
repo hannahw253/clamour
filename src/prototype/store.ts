@@ -21,11 +21,12 @@ import {
   type UpdateRequest,
   type Prefs,
   type State,
+  DEFAULT_ACCESS,
   DEFAULT_PREFS,
 } from "./types";
 
-const KEY = "clamour-prototype-v4";
-const EMPTY: State = { version: 4, myName: null, viewAs: null, groups: [] };
+const KEY = "clamour-prototype-v5";
+const EMPTY: State = { version: 5, myName: null, viewAs: null, groups: [] };
 
 let state: State | null = null;
 let storageFull = false;
@@ -36,7 +37,7 @@ function load(): State {
     const raw = window.localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as State;
-      if (parsed.version === 4) return parsed;
+      if (parsed.version === 5) return parsed;
     }
   } catch {
     // Private windows and blocked storage fall back to memory.
@@ -150,8 +151,35 @@ export function memberName(group: Group, id: string): string {
 
 export function visibleIssues(s: State, group: Group): Issue[] {
   const role = effectiveRole(s, group);
-  if (role !== "submitter" || group.visibility === "all") return group.issues;
+  if (role !== "submitter" || group.access !== "own_only") return group.issues;
   return group.issues.filter((i) => i.createdBy === ME);
+}
+
+/**
+ * What you can do with a group, or with one problem in it (north star, document 3). The real app
+ * enforces the same rules with row-level security; the prototype uses them to show or hide actions.
+ */
+export function permissions(s: State, group: Group, issue?: Issue) {
+  const role = effectiveRole(s, group);
+  const admin = role !== "submitter";
+  const mine = issue ? issue.createdBy === ME : false;
+  const others = group.members.some((m) => m.id !== ME && m.status === "active");
+  return {
+    role,
+    admin,
+    mine,
+    /** Photos, emails, calls, readings and so on. */
+    addEvidence: admin || mine || group.access === "add_all",
+    /** Your household's own update, on any problem you can see. */
+    addUpdate: true,
+    /** Letters about this problem, logging contact, marking fixed or reopening. */
+    manage: admin || mine,
+    /** Anyone can report a problem nobody has reported yet. */
+    report: true,
+    askUpdates: admin && others,
+    groupLetter: admin,
+    settings: admin,
+  };
 }
 
 function updateGroup(groupId: string, fn: (g: Group) => Group) {
@@ -205,7 +233,7 @@ export function createGroup(input: { name: string; type: GroupType; nation: Nati
     type: input.type,
     nation: input.nation,
     approval: input.approval,
-    visibility: input.type === "branch" ? "own" : "all",
+    access: DEFAULT_ACCESS[input.type],
     createdAt: now,
     members: [{ id: ME, name: s.myName ?? "You", role: "owner", status: "active", joinedAt: now }],
     invites: { submitter: makeToken(input, "submitter"), admin: makeToken(input, "admin") },
@@ -217,7 +245,7 @@ export function createGroup(input: { name: string; type: GroupType; nation: Nati
   return group.id;
 }
 
-export function updateSettings(groupId: string, patch: Partial<Pick<Group, "approval" | "visibility">>) {
+export function updateSettings(groupId: string, patch: Partial<Pick<Group, "approval" | "access">>) {
   updateGroup(groupId, (g) => ({ ...g, ...patch }));
 }
 
@@ -280,7 +308,7 @@ export function joinFromInvite(token: string, name: string, flat: string): { gro
     type: payload.t,
     nation: payload.n,
     approval: payload.a,
-    visibility: payload.t === "branch" ? "own" : "all",
+    access: DEFAULT_ACCESS[payload.t],
     createdAt: now,
     members: [{ id: "owner", name: "Group owner", role: "owner", status: "active", joinedAt: now }, me],
     invites: {

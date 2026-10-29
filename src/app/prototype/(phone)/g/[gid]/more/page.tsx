@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { effectiveRole, findGroup, resetPrototype, updateSettings, useStore } from "@/prototype/store";
 import { GroupAddress } from "@/prototype/GroupAddress";
-import { NATION_LABEL, TYPE_LABEL } from "@/prototype/types";
+import { ACCESS_LABEL, NATION_LABEL, TYPE_LABEL, type Access } from "@/prototype/types";
 import { Button, ButtonLink, Icon, Loading, PageTitle, Sheet, label } from "@/prototype/ui";
 
 export default function More() {
@@ -31,6 +31,17 @@ export default function More() {
         </span>
         <Icon name="arrow" />
       </Link>
+
+      {isAdmin ? (
+        <Link href={`/prototype/g/${group.id}/letter`} className="flex min-h-14 items-center gap-3 rounded-xl bg-concrete px-4 py-3 font-bold no-underline">
+          <Icon name="letter" />
+          <span className="flex flex-1 flex-col">
+            One letter about several problems
+            <span className="text-[14px] font-normal text-ink-muted">A group letter to the landlord, and asking everyone for updates first</span>
+          </span>
+          <Icon name="arrow" />
+        </Link>
+      ) : null}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-[20px] leading-7 font-bold">Group settings</h2>
@@ -62,21 +73,35 @@ export default function More() {
           </span>
         </label>
 
-        <label className={`flex items-start gap-3 rounded-lg bg-concrete px-4 py-3 ${isAdmin ? "cursor-pointer" : "opacity-70"}`}>
-          <input
-            type="checkbox"
-            disabled={!isAdmin}
-            checked={group.visibility === "all"}
-            onChange={(e) => updateSettings(group.id, { visibility: e.target.checked ? "all" : "own" })}
-            className="mt-1 size-5 flex-none accent-[var(--ink)]"
-          />
-          <span className="flex flex-col">
-            <span className="text-[17px] leading-6 font-bold">Everyone can see every problem</span>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 flex flex-col">
+            <span className="text-[17px] leading-6 font-bold">What can submitters see and add?</span>
             <span className="text-[15px] leading-[22px] text-ink-muted">
-              Turn off for union branches, so submitters only see their own. Admins always see everything.
+              {isAdmin
+                ? "Admins always see everything. Nobody can change or delete what someone else added."
+                : "Only admins can change this. Nobody can change or delete what someone else added."}
             </span>
-          </span>
-        </label>
+          </legend>
+          {(Object.keys(ACCESS_LABEL) as Access[]).map((a) => (
+            <label
+              key={a}
+              className={`flex items-start gap-3 rounded-lg px-4 py-3 ${group.access === a ? "bg-signal-soft ring-2 ring-line" : "bg-concrete"} ${isAdmin ? "cursor-pointer" : "opacity-70"}`}
+            >
+              <input
+                type="radio"
+                name="access"
+                disabled={!isAdmin}
+                checked={group.access === a}
+                onChange={() => updateSettings(group.id, { access: a })}
+                className="mt-1 size-5 flex-none accent-[var(--ink)]"
+              />
+              <span className="flex flex-col">
+                <span className="text-[17px] leading-6 font-bold">{ACCESS_LABEL[a].title}</span>
+                <span className="text-[15px] leading-[22px] text-ink-muted">{ACCESS_LABEL[a].desc}</span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
       </section>
 
       <section className="flex flex-col gap-3">

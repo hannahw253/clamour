@@ -9,7 +9,7 @@ import type { Entry, Group, Issue, LetterKey } from "./types";
 
 export type NextAction =
   | { kind: "send"; letter: LetterKey; headline: string; why: string; button: string }
-  | { kind: "visit" | "evidence" | "case"; headline: string; why: string; button: string }
+  | { kind: "visit" | "evidence" | "case" | "update"; headline: string; why: string; button: string }
   | { kind: "done"; headline: string; why: string };
 
 function sentLetters(issue: Issue, key: LetterKey): Entry[] {

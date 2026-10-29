@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { findGroup, isStorageFull, myMember, setViewAs, useStore } from "./store";
+import { useParams, useRouter } from "next/navigation";
+import { useDesktop, useWide } from "./Frame";
+import { findGroup, isStorageFull, myMember, setPrefs, setViewAs, useStore } from "./store";
 import { ROLE_LABEL, type Role } from "./types";
 import { label } from "./ui";
 
@@ -15,10 +16,27 @@ export function PrototypeBar() {
   const group = s && gid ? findGroup(s, gid) : undefined;
   const realRole = group ? (myMember(group)?.role ?? "submitter") : null;
   const role = s?.viewAs ?? realRole;
+  const router = useRouter();
+  const wide = useWide();
+  const desktop = useDesktop();
   return (
     <div className="flex flex-col gap-1 bg-concrete px-4 py-1.5 print:hidden">
       <div className="flex min-h-9 items-center justify-between gap-2">
-        <p className={`${label} text-[12px]`}>Prototype</p>
+        <span className="flex items-center gap-3">
+          <p className={`${label} text-[12px]`}>Prototype</p>
+          {wide && !desktop ? (
+            <button
+              type="button"
+              className="min-h-9 text-[13px] font-bold underline underline-offset-2"
+              onClick={() => {
+                setPrefs({ layout: "auto" });
+                router.push("/prototype/desk");
+              }}
+            >
+              Desktop view
+            </button>
+          ) : null}
+        </span>
         {group && realRole && role ? (
           <label className="flex items-center gap-1.5 text-[13px] font-semibold">
             <span className="text-ink-muted">View as</span>

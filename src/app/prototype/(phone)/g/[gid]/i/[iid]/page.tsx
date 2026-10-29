@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { nextAction } from "@/prototype/actions";
 import { openRequests } from "@/prototype/context";
 import { SCOTLAND_PACK, issueClock, issueStatus, ruleLines, type ClockView } from "@/prototype/clocks";
 import { longDate } from "@/prototype/dates";
@@ -11,7 +10,8 @@ import { AddEvidenceSheet, ReportSheet, WhenSheet, type Save } from "@/prototype
 import { MESSAGE_TITLE } from "@/prototype/messages";
 import { RecentActivity } from "@/prototype/Record";
 import { RequestBanner, RequestSheet, UpdateSheet, UpdatesCard } from "@/prototype/Updates";
-import { addEntries, effectiveRole, findGroup, useStore } from "@/prototype/store";
+import { addEntries, findGroup, memberName, permissions, useStore } from "@/prototype/store";
+import { nextFor } from "@/prototype/nextFor";
 import { CATEGORY_LABEL, ME, issueRef, type LetterKey } from "@/prototype/types";
 import { Button, Chip, Icon, Loading, SafetyBanner, Sheet, buttonClass, label, safetyKind, type IconName } from "@/prototype/ui";
 
@@ -53,18 +53,15 @@ function IssueDetail() {
     );
   }
 
-  const role = effectiveRole(s, group);
-  const canManage = role !== "submitter" || issue.createdBy === ME;
-  const canAsk = role !== "submitter" && group.members.some((m) => m.id !== ME && m.status === "active");
+  const can = permissions(s, group, issue);
+  const canManage = can.manage;
+  const canAsk = can.askUpdates;
   const status = issueStatus(issue);
   const clock = issueClock(group, issue);
   const rules = ruleLines(group, issue);
   const safety = safetyKind(issue.category, issue.title);
   const base = `/prototype/g/${group.id}/i/${issue.id}`;
-  let next = nextAction(group, issue);
-  if (!canManage && next.kind === "send" && next.letter !== "repair_request") {
-    next = { kind: "evidence", headline: next.headline, why: `${next.why} Ask whoever logged it, or an admin, to send it.`, button: "Add evidence" };
-  }
+  const next = nextFor(can, group, issue);
 
   const save: Save = (entries) => {
     addEntries(group.id, issue.id, entries);
@@ -90,12 +87,18 @@ function IssueDetail() {
       <Button variant="primary" icon="plus" onClick={() => setSheet("evidence")}>
         {next.button}
       </Button>
+    ) : next.kind === "update" ? (
+      <Button variant="primary" icon="note" onClick={() => setSheet("update")}>
+        {next.button}
+      </Button>
     ) : null;
 
   const quick: { text: string; icon: IconName; onClick?: () => void; href?: string }[] = [
-    next.kind === "evidence"
-      ? { text: "Log contact", icon: "send", onClick: () => setSheet("report") }
-      : { text: "Add evidence", icon: "plus", onClick: () => setSheet("evidence") },
+    !can.addEvidence
+      ? { text: "Your update", icon: "note", onClick: () => setSheet("update") }
+      : next.kind === "evidence"
+        ? { text: "Log contact", icon: "send", onClick: () => setSheet("report") }
+        : { text: "Add evidence", icon: "plus", onClick: () => setSheet("evidence") },
     { text: "Case file", icon: "folder", href: `/prototype/case/${group.id}/${issue.id}` },
     { text: "More", icon: "more", onClick: () => setSheet("more") },
   ];
@@ -236,9 +239,9 @@ function IssueDetail() {
       />
       <Sheet open={sheet === "more"} onClose={() => setSheet(null)} title="More">
         <ul className="flex flex-col divide-y divide-line-subtle rounded-xl bg-concrete">
-          <MoreRow icon="send" text="Log contact you've already made" onClick={() => setSheet("report")} />
+          {can.addEvidence ? <MoreRow icon="send" text="Log contact you've already made" onClick={() => setSheet("report")} /> : null}
           {canAsk && status !== "fixed" ? <MoreRow icon="bell" text="Ask your group for updates" onClick={() => setSheet("request")} /> : null}
-          {status !== "open" ? <MoreRow icon="door" text="Record a landlord visit" onClick={() => setSheet("visit")} /> : null}
+          {status !== "open" && can.addEvidence ? <MoreRow icon="door" text="Record a landlord visit" onClick={() => setSheet("visit")} /> : null}
           {canManage
             ? (["repair_request", "reminder", "complaint"] as LetterKey[]).map((k) => (
                 <MoreRow key={k} icon="letter" text={MESSAGE_TITLE[k]} onClick={() => router.push(`${base}/send?letter=${k}`)} />
@@ -250,7 +253,10 @@ function IssueDetail() {
           ) : null}
         </ul>
         {!canManage ? (
-          <p className="text-[15px] leading-[22px] text-ink-muted">Only the person who logged this, or an admin, can send messages about it or mark it fixed.</p>
+          <p className="text-[15px] leading-[22px] text-ink-muted">
+            Only {memberName(group, issue.createdBy) === "You" ? "you" : memberName(group, issue.createdBy)}, who logged this, or an admin can send messages about it or mark it fixed
+            {can.addEvidence ? "." : ", or add evidence. You can add your household's update."}
+          </p>
         ) : null}
       </Sheet>
     </main>

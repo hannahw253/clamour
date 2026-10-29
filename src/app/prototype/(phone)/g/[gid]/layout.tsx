@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
+import { useDesktop } from "@/prototype/Frame";
 import { approveMember, findGroup, myMember, useStore } from "@/prototype/store";
 import { ME, NATION_LABEL, TYPE_LABEL } from "@/prototype/types";
 import { Button, ButtonLink, Icon, Loading, PageTitle, label, type IconName } from "@/prototype/ui";
@@ -10,6 +11,7 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
   const { gid } = useParams<{ gid: string }>();
   const pathname = usePathname();
   const s = useStore();
+  const desktop = useDesktop();
   if (!s) return <Loading />;
 
   const group = findGroup(s, gid);
@@ -54,6 +56,41 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
     { href: `${base}/more`, title: "More", icon: "more", match: (p) => p.startsWith(`${base}/more`) },
   ];
 
+  if (desktop) {
+    // On the desktop the group's problems are the dashboard; the other tabs sit along the top.
+    const deskTabs = [
+      { href: `/prototype/desk?g=${group.id}`, title: "Problems", active: pathname.startsWith(`${base}/i/`) },
+      { href: `${base}/add`, title: "Add a problem", active: pathname === `${base}/add` },
+      { href: `${base}/members`, title: "Members", active: pathname.startsWith(`${base}/members`) || pathname.startsWith(`${base}/invite`) },
+      { href: `${base}/more`, title: "Settings and more", active: pathname.startsWith(`${base}/more`) || pathname.startsWith(`${base}/letter`) },
+    ];
+    return (
+      <div className="flex flex-1 flex-col">
+        <header className="flex flex-col gap-2 border-b border-line-subtle px-6 pt-4 print:hidden">
+          <div>
+            <p className="text-[22px] leading-7 font-bold">{group.name}</p>
+            <p className="text-[14px] text-ink-muted">
+              {TYPE_LABEL[group.type]} · {NATION_LABEL[group.nation]}
+            </p>
+          </div>
+          <nav aria-label="Group" className="-mb-px flex gap-1">
+            {deskTabs.map((t) => (
+              <Link
+                key={t.title}
+                href={t.href}
+                aria-current={t.active ? "page" : undefined}
+                className={`inline-flex min-h-11 items-center border-b-[3px] px-3 text-[15px] font-bold no-underline ${t.active ? "border-line text-ink" : "border-transparent text-ink-muted"}`}
+              >
+                {t.title}
+              </Link>
+            ))}
+          </nav>
+        </header>
+        <div className="flex flex-1 flex-col">{children}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-1 flex-col">
       {pathname.startsWith(`${base}/i/`) ? null : (
@@ -72,7 +109,7 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
 
       <div className="flex flex-1 flex-col">{children}</div>
 
-      {/(\/send|\/case)$/.test(pathname) ? null : (
+      {/(\/send|\/case|\/letter)$/.test(pathname) ? null : (
       <nav aria-label="Group" className="sticky bottom-0 z-10 border-t-2 border-line bg-paper pb-[env(safe-area-inset-bottom)] print:hidden">
         <ul className="grid grid-cols-4">
           {tabs.map((t) => {

@@ -25,7 +25,7 @@ export default function Issues() {
     const att = Number(needsAttention(group, b)) - Number(needsAttention(group, a));
     return att || lastActivity(b).localeCompare(lastActivity(a));
   });
-  const ownOnly = effectiveRole(s, group) === "submitter" && group.visibility === "own";
+  const ownOnly = effectiveRole(s, group) === "submitter" && group.access === "own_only";
   const toFile = group.unsorted.filter((u) => effectiveRole(s, group) !== "submitter" || u.memberId === ME).length;
 
   return (

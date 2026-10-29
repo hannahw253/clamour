@@ -45,7 +45,7 @@ export function sampleGroups(now: Date): Group[] {
     type: "house",
     nation: "england",
     approval: false,
-    visibility: "all",
+    access: "add_all",
     createdAt: at(45, 19),
     members: [
       { id: ME, name: "Sam", role: "owner", status: "active", joinedAt: at(45, 19) },
@@ -136,7 +136,7 @@ export function sampleGroups(now: Date): Group[] {
     type: "building",
     nation: "scotland",
     approval: true,
-    visibility: "all",
+    access: "add_own",
     createdAt: at(30, 19),
     members: [
       { id: ME, name: "Sam", role: "owner", status: "active", flat: "Flat 3", joinedAt: at(30, 19) },

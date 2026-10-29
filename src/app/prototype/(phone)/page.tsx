@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lockup } from "@/components/brand/Lockup";
 import { issueStatus } from "@/prototype/clocks";
-import { loadSamples, myMember, useStore } from "@/prototype/store";
+import { useWide } from "@/prototype/Frame";
+import { loadSamples, myMember, setPrefs, useStore } from "@/prototype/store";
 import { NATION_LABEL, ROLE_LABEL, TYPE_LABEL } from "@/prototype/types";
 import { Button, ButtonLink, Chip, Icon, Loading, PageTitle, label } from "@/prototype/ui";
 
 export default function PrototypeHome() {
   const s = useStore();
+  const wide = useWide();
   const router = useRouter();
   if (!s) return <Loading />;
 
@@ -109,14 +111,22 @@ export default function PrototypeHome() {
           <Button onClick={trySample}>Add the sample groups</Button>
         ) : null}
       </div>
-      <Link href="/prototype/desk" className="flex items-center gap-3 rounded-xl bg-concrete px-4 py-3 no-underline">
-        <Icon name="list" />
-        <span className="flex flex-1 flex-col">
-          <span className="font-bold">Open the dashboard</span>
-          <span className="text-[15px] text-ink-muted">Every problem at once, for a computer</span>
-        </span>
-        <Icon name="arrow" />
-      </Link>
+      {wide ? (
+        <Link
+          href="/prototype/desk"
+          onClick={() => setPrefs({ layout: "auto" })}
+          className="flex items-center gap-3 rounded-xl bg-concrete px-4 py-3 no-underline"
+        >
+          <Icon name="list" />
+          <span className="flex flex-1 flex-col">
+            <span className="font-bold">Open the dashboard</span>
+            <span className="text-[15px] text-ink-muted">Every problem at once, for a computer</span>
+          </span>
+          <Icon name="arrow" />
+        </Link>
+      ) : (
+        <p className="text-[15px] leading-[22px] text-ink-muted">On a computer, this opens as a dashboard with every problem at once.</p>
+      )}
     </main>
   );
 }

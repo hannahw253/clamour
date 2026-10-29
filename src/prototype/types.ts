@@ -1,7 +1,11 @@
 export type Nation = "england" | "scotland" | "wales" | "northern_ireland";
 export type GroupType = "house" | "building" | "branch";
 export type Role = "owner" | "admin" | "submitter";
-export type Visibility = "all" | "own";
+/**
+ * What submitters can see and add (north star, document 3: Submitter access). Owners and admins
+ * always see and add to everything, and nobody edits another member's entries.
+ */
+export type Access = "add_all" | "add_own" | "own_only";
 
 export type Category =
   | "damp_mould"
@@ -134,7 +138,7 @@ export type Group = {
   type: GroupType;
   nation: Nation;
   approval: boolean;
-  visibility: Visibility;
+  access: Access;
   createdAt: string;
   members: Member[];
   invites: { submitter: string; admin: string };
@@ -177,6 +181,8 @@ export type Prefs = {
   ai: boolean;
   /** Language to show messages in, for understanding; what's sent stays in English. */
   language: string;
+  /** Prototype: "phone" keeps the phone layout on a big screen; "auto" follows the screen width. */
+  layout: "auto" | "phone";
 };
 
 export const DEFAULT_PREFS: Prefs = {
@@ -194,10 +200,11 @@ export const DEFAULT_PREFS: Prefs = {
   muted: [],
   ai: true,
   language: "",
+  layout: "auto",
 };
 
 export type State = {
-  version: 4;
+  version: 5;
   myName: string | null;
   prefs?: Prefs;
   /** Prototype only: see the app as another role. */
@@ -231,6 +238,14 @@ export const TYPE_LABEL: Record<GroupType, string> = {
   building: "Building",
   branch: "Union branch",
 };
+
+export const ACCESS_LABEL: Record<Access, { title: string; desc: string }> = {
+  add_all: { title: "Add to everyone's", desc: "Submitters see every problem and can add evidence to any of them." },
+  add_own: { title: "See everyone's, add to their own", desc: "Submitters see every problem, add evidence only to the ones they logged, and add their household's update to any." },
+  own_only: { title: "Only their own", desc: "Submitters see and add to only the problems they logged. Best for union branches." },
+};
+
+export const DEFAULT_ACCESS: Record<GroupType, Access> = { house: "add_all", building: "add_own", branch: "own_only" };
 
 export const ROLE_LABEL: Record<Role, string> = {
   owner: "Owner",
