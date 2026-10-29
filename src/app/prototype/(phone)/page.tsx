@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lockup } from "@/components/brand/Lockup";
+import { InkHeader, useWide } from "@/prototype/Frame";
 import { issueStatus } from "@/prototype/clocks";
-import { useWide } from "@/prototype/Frame";
 import { loadSamples, myMember, setPrefs, useStore } from "@/prototype/store";
 import { NATION_LABEL, ROLE_LABEL, TYPE_LABEL } from "@/prototype/types";
-import { Button, ButtonLink, Chip, Icon, Loading, PageTitle, label, panel } from "@/prototype/ui";
+import { Button, ButtonLink, Chip, Icon, Loading, label, panel } from "@/prototype/ui";
 
 export default function PrototypeHome() {
   const s = useStore();
@@ -23,8 +23,8 @@ export default function PrototypeHome() {
   if (s.groups.length === 0) {
     return (
       <main className="flex flex-1 flex-col gap-10 px-4 pt-10 pb-12">
-        <div className="pb-6">
-          <Lockup size={44} ground="paper" />
+        <div className="on-ink -mx-4 -mt-10 bg-brand-ink px-4 pt-10 pb-8">
+          <Lockup size={44} ground="ink" />
         </div>
         <div className="flex flex-col gap-4">
           <h1 className="font-display text-[2.75rem] leading-[1.02] tracking-[0.01em] uppercase">Fix it together</h1>
@@ -60,14 +60,18 @@ export default function PrototypeHome() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-6 px-4 pt-6 pb-12">
-      <div className="flex items-center justify-between">
-        <Lockup size={28} ground="paper" tagline={false} />
-        <Link href="/prototype/settings" className="flex size-11 items-center justify-center" aria-label="Settings">
-          <Icon name="settings" size={24} />
-        </Link>
-      </div>
-      <PageTitle>Your groups</PageTitle>
+    <main className="flex flex-1 flex-col gap-6 px-4 pb-12">
+      <InkHeader
+        title="Your groups"
+        display
+        right={
+          <Link href="/prototype/settings" className="flex size-11 items-center justify-center text-brand-paper" aria-label="Settings">
+            <Icon name="settings" size={24} />
+          </Link>
+        }
+        back={undefined}
+        mark
+      />
       <ul className="flex flex-col gap-3">
         {s.groups.map((g) => {
           const me = myMember(g);
@@ -77,7 +81,7 @@ export default function PrototypeHome() {
             <li key={g.id}>
               <Link
                 href={`/prototype/g/${g.id}`}
-                className="flex items-center gap-3 rounded-lg border-2 border-line bg-paper p-4 no-underline"
+                className={`flex items-center gap-3 p-4 no-underline ${panel}`}
               >
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className={`${label} text-ink-muted`}>

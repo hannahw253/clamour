@@ -12,9 +12,9 @@ import { RecentActivity } from "@/prototype/Record";
 import { RequestBanner, RequestSheet, UpdateSheet } from "@/prototype/Updates";
 import { addEntries, findGroup, memberName, permissions, useStore } from "@/prototype/store";
 import { nextFor } from "@/prototype/nextFor";
-import { useDesktop } from "@/prototype/Frame";
+import { InkHeader, useDesktop } from "@/prototype/Frame";
 import { CATEGORY_LABEL, ME, issueRef, type LetterKey } from "@/prototype/types";
-import { Button, Chip, Icon, Loading, SafetyBanner, Sheet, buttonClass, label, safetyKind, type IconName, panelList, toastClass } from "@/prototype/ui";
+import { Button, Chip, Icon, Loading, SafetyBanner, Sheet, buttonClass, label, safetyKind, type IconName, panelList, toastClass, panel } from "@/prototype/ui";
 
 type SheetKind = "report" | "evidence" | "visit" | "fixed" | "more" | "update" | "request" | null;
 
@@ -103,10 +103,12 @@ function IssueDetail() {
   ];
 
   return (
-    <main className="desk-issue flex flex-1 flex-col gap-6 px-4 pt-3 pb-10">
-      <Link href={`/prototype/g/${group.id}`} className="-ml-1 inline-flex min-h-11 items-center gap-1 self-start font-bold">
-        <Icon name="back" /> Problems
-      </Link>
+    <main className="desk-issue flex flex-1 flex-col gap-6 px-4 pb-10">
+      <InkHeader
+        back={{ href: `/prototype/g/${group.id}`, text: "Problems" }}
+        eyebrow={`${[issue.room, CATEGORY_LABEL[issue.category]].filter(Boolean).join(" · ")} · ${issueRef(issue)}`}
+        title={issue.title}
+      />
 
       {sent ? (
         <p role="status" className={toastClass}>
@@ -120,13 +122,6 @@ function IssueDetail() {
       ) : null}
       {safety && status !== "fixed" ? <SafetyBanner kind={safety} /> : null}
 
-      <header className="flex flex-col gap-1">
-        <p className={`${label} text-ink-muted`}>
-          {[issue.room, CATEGORY_LABEL[issue.category]].filter(Boolean).join(" · ")}
-        </p>
-        <h1 className="text-[1.375rem] leading-[1.75rem] font-bold">{issue.title}</h1>
-        <p className="font-mono text-[0.8125rem] leading-[1.125rem] text-ink-muted">{issueRef(issue)}</p>
-      </header>
       <RequestBanner group={group} issueIds={[issue.id]} onAdd={() => setSheet("update")} />
 
       <StatusCard clock={clock} hasRules={rules.length > 0} open={allDeadlines} onToggle={() => setAllDeadlines(!allDeadlines)} />
@@ -197,7 +192,9 @@ function IssueDetail() {
             </button>
           ) : null}
         </div>
-        <RecentActivity group={group} issue={issue} limit={showAll || desktop ? undefined : 3} />
+        <div className={`px-4 ${panel}`}>
+          <RecentActivity group={group} issue={issue} limit={showAll || desktop ? undefined : 3} />
+        </div>
       </section>
 
       <UpdateSheet open={sheet === "update"} onClose={() => setSheet(null)} group={group} issue={issue} />

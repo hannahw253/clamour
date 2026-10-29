@@ -77,15 +77,15 @@ export function useLayoutRedirect(desktop: boolean | null) {
 export function DeskHeader() {
   const router = useRouter();
   return (
-    <header className="flex h-14 flex-none items-center gap-4 border-b border-line-subtle px-6 print:hidden">
+    <header className="on-ink flex h-14 flex-none items-center gap-4 bg-brand-ink px-6 text-brand-paper print:hidden">
       <Link href="/prototype/desk" className="flex items-center gap-2 no-underline">
-        <SpannerC size={26} color="var(--ink)" />
-        <span className="font-display text-[1.375rem] leading-none tracking-[0.01em] uppercase">Clamour</span>
+        <SpannerC size={26} color="var(--signal)" />
+        <span className="font-display text-[1.375rem] leading-none tracking-[0.01em] text-signal uppercase">Clamour</span>
       </Link>
-      <Link href="/prototype/desk" className="text-[0.9375rem] font-semibold text-ink-muted no-underline">
+      <Link href="/prototype/desk" className="text-[0.9375rem] font-semibold text-brand-paper/75 no-underline">
         Dashboard
       </Link>
-      <span className="rounded-full bg-concrete px-2.5 py-0.5 text-[0.8125rem] font-bold tracking-[0.08em] uppercase">Prototype</span>
+      <span className="rounded-sm border border-brand-paper/40 px-2 py-0.5 text-[0.8125rem] font-bold tracking-[0.08em] text-brand-paper/75 uppercase">Prototype</span>
       <span className="flex-1" />
       <Link href="/prototype/settings" className="inline-flex min-h-11 items-center gap-2 font-bold">
         <Icon name="settings" size={18} /> Settings
@@ -106,10 +106,10 @@ export function DeskHeader() {
 
 export function GroupsSidebar({ s, active }: { s: State; active: string }) {
   const needs = (g: Group) => (myMember(g)?.status === "pending" ? 0 : visibleIssues(s, g).filter((i) => nextAction(g, i).kind === "send").length);
-  const item = (on: boolean) => `flex min-h-12 items-center gap-2 rounded-lg px-3 py-2 no-underline border-2 ${on ? "border-line bg-paper font-bold" : "border-transparent hover:bg-paper/60"}`;
+  const item = (on: boolean) => `flex min-h-12 items-center gap-2 rounded-md px-3 py-2 no-underline ${on ? "bg-brand-paper/10 font-bold shadow-[inset_3px_0_0_var(--signal)]" : "hover:bg-brand-paper/5"}`;
   return (
-    <nav aria-label="Groups" className="flex w-64 flex-none flex-col gap-1 border-r border-line-subtle bg-concrete p-3 print:hidden">
-      <p className={`${label} px-3 pt-2 pb-1 text-ink-muted`}>Groups</p>
+    <nav aria-label="Groups" className="on-ink flex w-64 flex-none flex-col gap-1 border-t border-brand-paper/10 bg-brand-ink p-3 text-brand-paper print:hidden">
+      <p className={`${label} px-3 pt-2 pb-1 text-brand-paper/75`}>Groups</p>
       <Link href="/prototype/desk" className={item(active === "all")}>
         <span className="flex-1">All groups</span>
         <Count n={s.groups.reduce((n, g) => n + needs(g), 0)} />
@@ -118,7 +118,7 @@ export function GroupsSidebar({ s, active }: { s: State; active: string }) {
         <Link key={g.id} href={`/prototype/desk?g=${g.id}`} className={item(active === g.id)}>
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate">{g.name}</span>
-            <span className="text-[0.8125rem] leading-[1.125rem] font-normal text-ink-muted">
+            <span className="text-[0.8125rem] leading-[1.125rem] font-normal text-brand-paper/75">
               {TYPE_LABEL[g.type]} · {NATION_LABEL[g.nation]}
             </span>
           </span>
@@ -135,7 +135,7 @@ export function GroupsSidebar({ s, active }: { s: State; active: string }) {
 function Count({ n }: { n: number }) {
   if (!n) return null;
   return (
-    <span className="min-w-6 rounded-full bg-ink px-2 text-center text-[0.8125rem] leading-[1.125rem] font-bold text-paper" aria-label={`${n} need action`}>
+    <span className="min-w-6 rounded-full bg-signal px-2 text-center text-[0.8125rem] leading-[1.125rem] font-bold text-on-signal" aria-label={`${n} need action`}>
       {n}
     </span>
   );
@@ -144,14 +144,62 @@ function Count({ n }: { n: number }) {
 /** The desktop frame around a screen that also exists on the phone: header, groups, and the full width for the screen (globals.css lays it out). */
 export function DeskFrame({ s, active, children }: { s: State; active: string; children: ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-paper">
+    <div className="flex min-h-dvh flex-1 flex-col bg-ground">
       <DeskHeader />
       <div className="flex min-h-0 flex-1">
         <GroupsSidebar s={s} active={active} />
-        <div data-layout="desk" className="flex min-w-0 flex-1 flex-col bg-paper">
+        <div data-layout="desk" className="flex min-w-0 flex-1 flex-col bg-ground">
           {children}
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The brand frame at the top of a phone screen: brand ink with the mark and the title (D-029). On the
+ * desktop the frame is the header and sidebar, so the same content sits on the ground instead.
+ */
+export function InkHeader({
+  back,
+  eyebrow,
+  title,
+  display = false,
+  sub,
+  right,
+  mark = false,
+}: {
+  back?: { href?: string; onClick?: () => void; text: string };
+  eyebrow?: ReactNode;
+  title: ReactNode;
+  /** Poster lettering (Anton, uppercase) for group and screen names; otherwise the title style. */
+  display?: boolean;
+  sub?: ReactNode;
+  right?: ReactNode;
+  mark?: boolean;
+}) {
+  const desktop = useDesktop();
+  const ink = !desktop;
+  const titleClass = display ? "font-display text-[1.75rem] leading-[1.1] tracking-[0.01em] uppercase" : "text-[1.375rem] leading-[1.75rem] font-bold";
+  return (
+    <header className={`${ink ? "on-ink -mx-4 bg-brand-ink px-4 pt-2 pb-5 text-brand-paper" : "pb-1"} flex flex-col gap-1.5 print:hidden`}>
+      <div className="flex min-h-11 items-center gap-2">
+        {mark && ink ? <SpannerC size={24} color="var(--signal)" /> : null}
+        {back?.href ? (
+          <Link href={back.href} className={`-ml-1 inline-flex min-h-11 items-center gap-1 font-bold ${ink ? "text-brand-paper" : ""}`}>
+            <Icon name="back" /> {back.text}
+          </Link>
+        ) : back ? (
+          <button type="button" onClick={back.onClick} className={`-ml-1 inline-flex min-h-11 items-center gap-1 font-bold ${ink ? "text-brand-paper" : ""}`}>
+            <Icon name="back" /> {back.text}
+          </button>
+        ) : null}
+        <span className="flex-1" />
+        {right}
+      </div>
+      {eyebrow ? <p className={`${label} ${ink ? "text-brand-paper/75" : "text-ink-muted"}`}>{eyebrow}</p> : null}
+      <h1 className={titleClass}>{title}</h1>
+      {sub ? <p className={`text-[0.9375rem] leading-[1.375rem] ${ink ? "text-brand-paper/75" : "text-ink-muted"}`}>{sub}</p> : null}
+    </header>
   );
 }

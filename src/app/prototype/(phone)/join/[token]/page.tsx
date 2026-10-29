@@ -56,7 +56,9 @@ export default function Join() {
 
   return (
     <main className="desk-narrow flex flex-1 flex-col gap-8 px-4 pt-8 pb-12">
-      <Lockup size={32} ground="paper" tagline={false} />
+      <div className="on-ink -mx-4 -mt-8 bg-brand-ink px-4 py-6">
+        <Lockup size={32} ground="ink" tagline={false} />
+      </div>
       <div className="flex flex-col gap-3">
         <p className={`${label} text-ink-muted`}>
           {TYPE_LABEL[invite.t]} · {NATION_LABEL[invite.n]}

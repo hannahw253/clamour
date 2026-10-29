@@ -118,7 +118,7 @@ function Desk() {
       <main className="flex min-w-0 flex-1 flex-col gap-6 px-8 py-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-[1.75rem] leading-[1.1] font-bold">{group ? group.name : "All groups"}</h1>
+            <h1 className="font-display text-[2rem] leading-[1.1] tracking-[0.01em] uppercase">{group ? group.name : "All groups"}</h1>
             <p className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
               {group
                 ? `${TYPE_LABEL[group.type]} · ${NATION_LABEL[group.nation]} · ${group.members.filter((m) => m.status === "active").length} members${group.landlord?.name ? ` · Landlord: ${group.landlord.name}` : ""}`
@@ -144,9 +144,9 @@ function Desk() {
         </div>
         {group ? <RequestBanner group={group} issueIds={rows.map((r) => r.issue.id)} /> : null}
 
-        <section aria-label="Summary" className="grid grid-cols-4 gap-3">
+        <section aria-label="Summary" className="grid grid-cols-[1.4fr_1fr_1fr_1fr] gap-3">
+          <Tile value={counts.action} text="Need action from you" tone="hero" onClick={() => setFilter("action")} active={filter === "action"} />
           <Tile value={counts.open} text="Open problems" onClick={() => setFilter("open")} active={filter === "open"} />
-          <Tile value={counts.action} text="Need action from you" onClick={() => setFilter("action")} active={filter === "action"} />
           <Tile value={counts.missed} text="Deadlines missed" tone={counts.missed ? "alarm" : undefined} onClick={() => setFilter("missed")} active={filter === "missed"} />
           {group ? (
             <Link href={`/prototype/g/${group.id}/unsorted`} className={`flex flex-col gap-1 px-5 py-4 no-underline ${panel}`}>
@@ -183,9 +183,9 @@ function Desk() {
           <BulkBar s={s} rows={selRows} onClear={() => setSelected([])} onAsk={(g, issues) => setAsking({ group: g, issues })} />
         ) : null}
 
-        <div className="overflow-hidden rounded-lg border-2 border-line">
+        <div className={`overflow-hidden ${panel}`}>
           <table className="w-full border-collapse text-left text-[0.9375rem] leading-[1.375rem]">
-            <thead className="border-b-2 border-line text-[0.8125rem] leading-[1.125rem] tracking-[0.04em] text-ink-muted uppercase">
+            <thead className="border-b border-line-subtle text-[0.8125rem] leading-[1.125rem] tracking-[0.04em] text-ink-muted uppercase">
               <tr>
                 <th className="w-10 px-3 py-2">
                   <span className="sr-only">Select</span>
@@ -208,7 +208,7 @@ function Desk() {
                   <tr
                     key={r.issue.id}
                     onClick={() => setFocus(isFocus ? null : r.issue.id)}
-                    className={`cursor-pointer border-t border-line-subtle align-top ${isFocus ? "bg-concrete" : "hover:bg-concrete/50"}`}
+                    className={`cursor-pointer border-t border-line-subtle align-top ${isFocus ? "bg-ground" : "hover:bg-ground"}`}
                   >
                     <td className="p-0" onClick={(e) => e.stopPropagation()}>
                       <label className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center">
@@ -261,8 +261,10 @@ function Desk() {
   );
 }
 
-function Tile({ value, text, tone, onClick, active }: { value: number; text: string; tone?: "alarm"; onClick?: () => void; active?: boolean }) {
-  const cls = `flex flex-col gap-1 px-5 py-4 text-left ${active ? selectedPanel : panel}`;
+function Tile({ value, text, tone, onClick, active }: { value: number; text: string; tone?: "alarm" | "hero"; onClick?: () => void; active?: boolean }) {
+  // The one number that matters most is the yellow tile (D-029); the rest are white cards.
+  const surface = tone === "hero" ? `rounded-lg border-2 border-line bg-signal text-on-signal ${active ? "ring-2 ring-line ring-offset-2 ring-offset-ground" : ""}` : active ? selectedPanel : panel;
+  const cls = `flex flex-col gap-1 px-5 py-4 text-left ${surface}`;
   const inner = (
     <>
       <span className={`font-display text-[1.75rem] leading-none ${tone === "alarm" && value ? "text-alarm" : ""}`}>{value}</span>
@@ -368,7 +370,7 @@ function Detail({ s, row, onClose }: { s: State; row: Row; onClose: () => void }
   const action = "flex min-h-11 w-full items-center gap-3 px-3 text-left text-[0.9375rem] font-bold";
 
   return (
-    <aside aria-label="Selected problem" className="flex w-[420px] flex-none flex-col gap-5 overflow-y-auto border-l border-line-subtle px-6 py-6">
+    <aside aria-label="Selected problem" className="flex w-[420px] flex-none flex-col gap-5 overflow-y-auto border-l border-line-subtle bg-paper px-6 py-6">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[0.8125rem] text-ink-muted">

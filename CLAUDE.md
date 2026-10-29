@@ -29,5 +29,5 @@ Read the relevant document before building a feature, and update it before chang
 
 - Colours come from the tokens in `src/app/globals.css` (from the design system's `tokens.json`); never hard-code a hex in a component.
 - `font-display` (Anton) is for uppercase headlines only; everything else is `font-sans` (Archivo); `font-mono` (IBM Plex Mono) only for timestamps, fingerprints and IDs.
-- One yellow (`signal`) primary action per screen. No warning tape or hazard stripes.
+- One yellow (`signal`) button per screen; yellow also marks "Your turn", the dashboard's top number and the brand-ink frame (decision D-029). Screens sit on `ground` with `paper` cards. No warning tape or hazard stripes.
 - Plain British English; talk to "you" and "your group"; status always has a word, never colour alone; touch targets at least 44px.

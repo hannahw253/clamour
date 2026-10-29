@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
+import { InkHeader } from "@/prototype/Frame";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { myEntries, prefsOf, resetPrototype, setMyName, setPrefs, useStore } from "@/prototype/store";
 import { LANGUAGES } from "@/prototype/AiHelp";
 import { ACCESS_SLOTS, accessText } from "@/prototype/context";
 import type { Prefs } from "@/prototype/types";
-import { Button, Icon, Loading, PageTitle, Sheet, inputClass, label, toggleClass, panelList } from "@/prototype/ui";
+import { Button, Icon, Loading, Sheet, inputClass, label, toggleClass, panelList } from "@/prototype/ui";
 
 /** Your account and settings (north star, document 8: Account). Changes save as you make them. */
 export default function Settings() {
@@ -37,16 +37,19 @@ export default function Settings() {
   };
 
   return (
-    <main className="desk-flow flex flex-1 flex-col gap-7 px-4 pt-3 pb-12">
-      <div className="desk-span flex items-center justify-between">
-        <Link href="/prototype" className="-ml-1 inline-flex min-h-11 items-center gap-1 font-bold">
-          <Icon name="back" /> Your groups
-        </Link>
-        <span role="status" className="text-[0.9375rem] leading-[1.375rem] text-ink-muted">
-          {saved ? "Saved" : ""}
-        </span>
+    <main className="desk-flow flex flex-1 flex-col gap-7 px-4 pb-12">
+      <div className="desk-span">
+        <InkHeader
+          back={{ href: "/prototype", text: "Your groups" }}
+          title="Settings"
+          display
+          right={
+            <span role="status" className="text-[0.9375rem] leading-[1.375rem] font-bold">
+              {saved ? "Saved" : ""}
+            </span>
+          }
+        />
       </div>
-      <PageTitle>Settings</PageTitle>
 
       <Section title="You">
         <TextRow id="name" title="Your name" value={s.myName ?? ""} onChange={(v) => (setMyName(v), setSaved(true))} help="What your groups see." />

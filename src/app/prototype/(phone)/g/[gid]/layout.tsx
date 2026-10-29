@@ -94,17 +94,17 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
   return (
     <div className="flex flex-1 flex-col">
       {pathname.startsWith(`${base}/i/`) ? null : (
-        <header className="flex items-center gap-2 border-b border-line-subtle px-2 py-2 print:hidden">
-          <Link href="/prototype" className="flex size-11 flex-none items-center justify-center" aria-label="Your groups">
+        <header className="on-ink flex items-center gap-2 bg-brand-ink px-2 pt-1 pb-4 text-brand-paper print:hidden">
+          <Link href="/prototype" className="flex size-11 flex-none items-center justify-center self-start" aria-label="Your groups">
             <Icon name="back" />
           </Link>
-          <div className="min-w-0">
+          <div className="min-w-0 pt-1.5">
             {pathname === base ? (
-              <h1 className="truncate text-[1.125rem] leading-[1.5rem] font-bold">{group.name}</h1>
+              <h1 className="truncate font-display text-[1.75rem] leading-[1.1] tracking-[0.01em] uppercase">{group.name}</h1>
             ) : (
-              <p className="truncate text-[1.125rem] leading-[1.5rem] font-bold">{group.name}</p>
+              <p className="truncate font-display text-[1.375rem] leading-[1.1] tracking-[0.01em] uppercase">{group.name}</p>
             )}
-            <p className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">
+            <p className="mt-1 text-[0.9375rem] leading-[1.375rem] text-brand-paper/75">
               {TYPE_LABEL[group.type]} · {NATION_LABEL[group.nation]}
             </p>
           </div>

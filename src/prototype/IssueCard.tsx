@@ -5,7 +5,7 @@ import { nextAction } from "./actions";
 import { issueClock, issueStatus, lastActivity } from "./clocks";
 import { stamp } from "./dates";
 import { CATEGORY_LABEL, type Group, type Issue } from "./types";
-import { Chip, Icon, label } from "./ui";
+import { Chip, Icon, label, panel, selectedPanel } from "./ui";
 
 export function StatusChips({ group, issue }: { group: Group; issue: Issue }) {
   const status = issueStatus(issue);
@@ -36,7 +36,7 @@ export function needsAttention(group: Group, issue: Issue) {
 
 /**
  * One problem in the list, as the brand kit's IssueCard: where it is, the title, where it stands,
- * and the last dated entry. Pale yellow only when it's your turn (document 8: calm screens).
+ * and the last dated entry. A bold ink edge and a "Your turn" tag when it needs you (D-029).
  */
 export function IssueCard({ group, issue }: { group: Group; issue: Issue }) {
   const clock = issueClock(group, issue);
@@ -47,7 +47,7 @@ export function IssueCard({ group, issue }: { group: Group; issue: Issue }) {
   return (
     <Link
       href={`/prototype/g/${group.id}/i/${issue.id}`}
-      className={`flex items-center gap-3 rounded-lg border-2 border-line px-4 py-4 no-underline ${yours ? "bg-signal-soft" : "bg-paper"}`}
+      className={`flex items-center gap-3 px-4 py-4 no-underline ${yours ? selectedPanel : panel}`}
     >
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
         <span className={`${label} text-ink-muted`}>{meta}</span>

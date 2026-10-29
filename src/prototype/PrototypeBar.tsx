@@ -20,10 +20,10 @@ export function PrototypeBar() {
   const wide = useWide();
   const desktop = useDesktop();
   return (
-    <aside aria-label="Prototype controls" className="flex flex-col gap-1 border-b border-line-subtle bg-paper px-4 print:hidden">
+    <aside aria-label="Prototype controls" className="on-ink flex flex-col gap-1 border-b border-brand-paper/10 bg-brand-ink px-4 text-brand-paper print:hidden">
       <div className="flex min-h-11 items-center justify-between gap-2">
         <span className="flex items-center gap-3">
-          <p className={`${label} text-ink-muted`}>Prototype</p>
+          <p className={`${label} text-brand-paper/75`}>Prototype</p>
           {wide && !desktop ? (
             <button
               type="button"
@@ -39,14 +39,14 @@ export function PrototypeBar() {
         </span>
         {group && realRole && role ? (
           <label className="flex items-center gap-1.5 text-[0.8125rem] leading-[1.125rem] font-semibold">
-            <span className="text-ink-muted">View as</span>
+            <span className="text-brand-paper/75">View as</span>
             <select
               value={role}
               onChange={(e) => {
                 const r = e.target.value as Role;
                 setViewAs(r === realRole ? null : r);
               }}
-              className="min-h-11 bg-transparent px-1 text-[0.8125rem] leading-[1.125rem] font-bold text-ink underline underline-offset-2"
+              className="min-h-11 bg-brand-ink px-1 text-[0.8125rem] leading-[1.125rem] font-bold text-brand-paper underline underline-offset-2"
             >
               {(["owner", "admin", "submitter"] as Role[]).map((r) => (
                 <option key={r} value={r}>
@@ -57,7 +57,7 @@ export function PrototypeBar() {
             </select>
           </label>
         ) : (
-          <p className="text-[0.8125rem] leading-[1.125rem] text-ink-muted">Saved on this device only</p>
+          <p className="text-[0.8125rem] leading-[1.125rem] text-brand-paper/75">Saved on this device only</p>
         )}
       </div>
       {s && isStorageFull() ? (

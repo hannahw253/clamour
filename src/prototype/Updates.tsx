@@ -49,7 +49,7 @@ function RequestNote({ group, request, onAdd }: { group: Group; request: UpdateR
   const listInside = !mine && !onAdd && problems.length > 1;
   const hasDetails = !!request.note || listInside || mine;
   return (
-    <section aria-label="Request for updates" className="rounded-lg border-2 border-line bg-paper">
+    <section aria-label="Request for updates" className="rounded-lg bg-signal-soft">
       <div className="flex items-center gap-3 px-4 py-2">
         <Icon name="bell" className="flex-none" />
         <p className="flex-1 py-1.5 text-[0.9375rem] leading-[1.375rem]">
@@ -77,7 +77,7 @@ function RequestNote({ group, request, onAdd }: { group: Group; request: UpdateR
         ) : null}
       </div>
       {hasDetails ? (
-        <details className="group border-t border-line-subtle px-4">
+        <details className="group border-t border-ink/15 px-4">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1 text-[0.9375rem] font-bold [&::-webkit-details-marker]:hidden">
             <Icon name="arrow" size={16} className="transition-transform group-open:rotate-90" />
             {listInside ? "Add your update" : mine ? "Details" : "What they asked"}
@@ -157,7 +157,7 @@ export function UpdateForm({ group, issue, onDone }: { group: Group; issue: Issu
   return (
     <div className="flex flex-col gap-5">
       {request ? (
-        <p className="flex items-start gap-2 rounded-lg bg-concrete px-3 py-2 text-[0.9375rem] leading-[1.375rem]">
+        <p className="flex items-start gap-2 rounded-lg bg-signal-soft px-3 py-2 text-[0.9375rem] leading-[1.375rem]">
           <Icon name="bell" size={18} className="mt-0.5 flex-none" />
           <span>
             {memberName(group, request.by)} is writing to the landlord on {shortDate(request.writeOn)}. Anything you add now can go in.

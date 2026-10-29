@@ -10,7 +10,7 @@ export function DeskShell({ children }: { children: ReactNode }) {
   useLayoutRedirect(desktop);
   if (desktop === false) return <Loading />;
   return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-paper">
+    <div className="flex min-h-dvh flex-1 flex-col bg-ground">
       <DeskHeader />
       {children}
     </div>

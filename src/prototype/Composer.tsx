@@ -15,6 +15,7 @@ import { DEFAULT_STYLE, NEW_PROMPT, accessText, affectedFacts, openRequests, rec
 import { londonParts, shortDate } from "./dates";
 import { MESSAGE_TITLE, aiFacts, buildGroupMessage, buildMessage, type Answers } from "./messages";
 import { addEntries, closeRequests, myMember, prefsOf, setGroupAddress, setLandlord, setMyFlat, useStore } from "./store";
+import { InkHeader } from "./Frame";
 import { UpdateSheet } from "./Updates";
 import { LETTER_LABEL, ME, issueRef, type Group, type Issue, type LetterKey } from "./types";
 import { Button, Icon, Sheet, buttonClass, inputClass, label, panel, panelList, selectedPanel, toggleClass } from "./ui";
@@ -468,21 +469,12 @@ export function Composer({
   );
 
   return (
-    <main className={`flex flex-1 flex-col gap-6 ${aside ? "px-8 pt-6 pb-6" : "px-4 pt-4 pb-6"}`}>
-      {written ? (
-        <button type="button" onClick={() => setWritten(null)} className="-ml-1 inline-flex min-h-11 items-center gap-1 self-start font-bold">
-          <Icon name="back" /> What to include
-        </button>
-      ) : (
-        <Link href={back} className="-ml-1 inline-flex min-h-11 items-center gap-1 self-start font-bold">
-          <Icon name="back" /> Back
-        </Link>
-      )}
-      <h1 className="font-display text-[1.75rem] leading-[1.05] tracking-[0.01em] uppercase">{MESSAGE_TITLE[key]}</h1>
+    <main className={`flex flex-1 flex-col gap-6 ${aside ? "px-8 pt-6 pb-6" : "px-4 pb-6"}`}>
+      <InkHeader back={written ? { onClick: () => setWritten(null), text: "What to include" } : { href: back, text: "Back" }} title={MESSAGE_TITLE[key]} display />
       {aside ? (
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-8">
           {composer}
-          <aside className="sticky top-6 flex max-h-[calc(100dvh-48px)] flex-col gap-3 overflow-y-auto rounded-lg border border-line-subtle p-5">{aside}</aside>
+          <aside className="sticky top-6 flex max-h-[calc(100dvh-48px)] flex-col gap-3 overflow-y-auto rounded-lg border border-line-subtle bg-paper p-5">{aside}</aside>
         </div>
       ) : (
         composer

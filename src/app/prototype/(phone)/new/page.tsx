@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { InkHeader } from "@/prototype/Frame";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createGroup, setMyName, useStore } from "@/prototype/store";
 import { NATION_LABEL, type GroupType, type Nation } from "@/prototype/types";
-import { Button, ChoiceCard, Field, Icon, Loading, PageTitle, inputClass, label, panel } from "@/prototype/ui";
+import { Button, ChoiceCard, Field, Loading, inputClass, label, panel } from "@/prototype/ui";
 
 const TYPES: { value: GroupType; title: string; desc: string }[] = [
   { value: "house", title: "Shared house or flat", desc: "You and the people you live with" },
@@ -41,11 +41,8 @@ export default function NewGroup() {
   };
 
   return (
-    <main className="desk-narrow flex flex-1 flex-col gap-6 px-4 pt-4 pb-12">
-      <Link href="/prototype" className="inline-flex min-h-11 items-center gap-1 self-start font-bold">
-        <Icon name="back" /> Your groups
-      </Link>
-      <PageTitle sub="It takes under a minute. You can change the name later.">Start a group</PageTitle>
+    <main className="desk-narrow flex flex-1 flex-col gap-6 px-4 pb-12">
+      <InkHeader back={{ href: "/prototype", text: "Your groups" }} title="Start a group" display sub="It takes under a minute. You can change the name later." />
 
       <form onSubmit={submit} noValidate className="flex flex-col gap-7">
         {needsName ? (

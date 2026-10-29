@@ -36,12 +36,15 @@ import {
 import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
 import type { ClockView } from "./clocks";
 
-/** The brand's card surface: paper with a bold ink line (brand kit: "Draw edges with line at stroke-bold"). */
-export const panel = "rounded-lg border-2 border-line bg-paper";
+/**
+ * A card: white on the warm ground, with a hairline edge (brand kit, D-029). Depth comes from the
+ * two surfaces; bold ink edges are kept for controls and for cards where it's your turn.
+ */
+export const panel = "rounded-lg border border-line-subtle bg-paper";
 /** A list inside a card, with hairline dividers. */
-export const panelList = "flex flex-col divide-y divide-line-subtle overflow-hidden rounded-lg border-2 border-line bg-paper";
-/** A selected card: the heavy stroke, no colour wash. */
-export const selectedPanel = "rounded-lg border-[3px] border-line bg-paper";
+export const panelList = "flex flex-col divide-y divide-line-subtle overflow-hidden rounded-lg border border-line-subtle bg-paper";
+/** A selected or "your turn" card: the bold ink edge. */
+export const selectedPanel = "rounded-lg border-2 border-line bg-paper";
 /** Square toggle buttons with an ink edge; filled ink when on. Pills are for status chips only. */
 export function toggleClass(on: boolean) {
   return `inline-flex min-h-11 items-center gap-1.5 rounded-md border-2 border-line px-3.5 text-[0.9375rem] leading-[1.375rem] font-bold ${on ? "bg-ink text-paper" : "bg-paper text-ink"}`;
@@ -51,7 +54,7 @@ export function tabClass(on: boolean) {
   return `inline-flex min-h-11 items-center justify-center border-b-[3px] px-3 text-[1rem] leading-[1.25rem] font-bold ${on ? "border-line text-ink" : "border-transparent text-ink-muted"}`;
 }
 /** A confirmation after something worked: calm, black and white, with a tick. Blue is kept for "fixed". */
-export const toastClass = "flex items-start gap-2 rounded-lg border-2 border-line bg-paper px-4 py-3 text-[1rem] leading-[1.375rem] font-bold";
+export const toastClass = "flex items-start gap-2 rounded-lg border border-line-subtle bg-paper px-4 py-3 text-[1rem] leading-[1.375rem] font-bold";
 
 export const label = "text-[0.8125rem] leading-[1.125rem] font-bold tracking-[0.08em] uppercase";
 
@@ -149,14 +152,14 @@ export type ChipTone = "neutral" | "signal" | "alarm" | "done";
 const CHIP_TONE: Record<ChipTone, string> = {
   neutral: "bg-concrete text-ink",
   signal: "bg-signal text-on-signal",
-  alarm: "bg-alarm text-on-alarm",
-  done: "bg-done text-on-done",
+  alarm: "bg-alarm-soft text-alarm-ink",
+  done: "bg-done-soft text-done-ink",
 };
 
 export function Chip({ tone = "neutral", icon, children }: { tone?: ChipTone; icon?: IconName; children: ReactNode }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.8125rem] leading-[1.125rem] font-bold tracking-[0.04em] whitespace-nowrap ${CHIP_TONE[tone]}`}
+      className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[0.8125rem] leading-[1.125rem] font-bold whitespace-nowrap ${CHIP_TONE[tone]}`}
     >
       {icon ? <Icon name={icon} size={14} /> : null}
       {children}

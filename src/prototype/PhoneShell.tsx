@@ -26,7 +26,7 @@ export function PhoneShell({ children }: { children: ReactNode }) {
   }
   return (
     <div className="flex min-h-dvh flex-1 flex-col bg-concrete">
-      <div className="mx-auto flex w-full max-w-[440px] flex-1 flex-col bg-paper sm:border-x-2 sm:border-line print:max-w-none print:border-0">
+      <div className="mx-auto flex w-full max-w-[440px] flex-1 flex-col bg-ground sm:border-x-2 sm:border-line print:max-w-none print:border-0">
         <PrototypeBar />
         {children}
       </div>
