@@ -70,6 +70,8 @@ export type Entry =
       subject: string;
       via: EmailVia;
       auth: EmailAuth;
+      /** Set when the email was prepared by Clamour from a letter template. */
+      letter?: LetterKey;
     })
   | (EntryBase & { kind: "messages"; photo: Photo; with: string })
   | (EntryBase & {
@@ -125,11 +127,13 @@ export type Group = {
   /** The group's email address for copying in or forwarding evidence. */
   inbox: string;
   unsorted: UnsortedEmail[];
+  /** Who the group writes to about repairs. Asked for the first time someone sends a prepared email. */
+  landlord?: { name?: string; email?: string };
   issues: Issue[];
 };
 
 export type State = {
-  version: 2;
+  version: 3;
   myName: string | null;
   /** Prototype only: see the app as another role. */
   viewAs: Role | null;

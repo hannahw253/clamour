@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { issueClock, issueStatus, lastActivity, nextStep } from "./clocks";
-import { stamp } from "./dates";
-import { memberName } from "./store";
-import { CATEGORY_LABEL, type Group, type Issue } from "./types";
-import { Chip, Icon, label } from "./ui";
+import { nextAction } from "./actions";
+import { issueClock, issueStatus } from "./clocks";
+import type { Group, Issue } from "./types";
+import { Chip, Icon } from "./ui";
 
 export function StatusChips({ group, issue }: { group: Group; issue: Issue }) {
   const status = issueStatus(issue);
@@ -31,40 +30,32 @@ export function StatusChips({ group, issue }: { group: Group; issue: Issue }) {
 }
 
 export function needsAttention(group: Group, issue: Issue) {
-  const step = nextStep(group, issue);
-  return step === "Tell your landlord" || step === "Send a reminder" || step === "Confirm the conversation in writing";
+  return nextAction(group, issue).kind === "send";
 }
 
+/** One problem in the list: its title, where it stands, and what it needs from you. Nothing more (document 8: calm screens). */
 export function IssueCard({ group, issue }: { group: Group; issue: Issue }) {
   const clock = issueClock(group, issue);
-  const step = nextStep(group, issue);
-  const attention = needsAttention(group, issue);
+  const next = nextAction(group, issue);
+  const yours = next.kind === "send";
   return (
     <Link
       href={`/prototype/g/${group.id}/i/${issue.id}`}
-      className={`flex flex-col gap-3 rounded-lg border-2 border-line p-5 no-underline ${attention ? "bg-signal-soft" : "bg-paper"}`}
+      className={`flex items-center gap-3 rounded-xl px-4 py-4 no-underline ${yours ? "bg-signal-soft" : "border border-line-subtle bg-paper"}`}
     >
-      <p className={`${label} text-ink-muted`}>
-        {issue.room ? `${issue.room} · ` : ""}
-        {CATEGORY_LABEL[issue.category]}
-      </p>
-      <p className="line-clamp-2 text-[20px] leading-7 font-bold">{issue.title}</p>
-      <div className="flex flex-wrap items-center gap-2 text-[15px] leading-[22px]">
-        <StatusChips group={group} issue={issue} />
-        <span className="inline-flex items-center gap-1">
-          <Icon name="clock" size={16} />
-          {clock.words}
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="line-clamp-2 text-[18px] leading-6 font-bold">{issue.title}</span>
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] leading-[22px] text-ink-muted">
+          {clock.tone === "missed" ? (
+            <Chip tone="alarm" icon="warning">
+              Deadline missed
+            </Chip>
+          ) : null}
+          <span>{clock.tone === "missed" ? clock.words.replace(/^Deadline missed: (.)/, (_, c: string) => c.toUpperCase()) : clock.words}</span>
         </span>
-      </div>
-      {step ? (
-        <p className="flex items-center gap-1 text-[15px] leading-[22px] font-bold">
-          Next: {step}
-          <Icon name="arrow" size={16} />
-        </p>
-      ) : null}
-      <p className="font-mono text-[13px] leading-[18px] text-ink-muted">
-        Logged by {memberName(group, issue.createdBy)} · last entry {stamp(lastActivity(issue))}
-      </p>
+        {yours ? <span className="text-[15px] leading-[22px] font-bold">{next.headline}</span> : null}
+      </span>
+      <Icon name="arrow" className="text-ink-muted" />
     </Link>
   );
 }

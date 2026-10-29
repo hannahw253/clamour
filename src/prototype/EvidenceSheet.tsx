@@ -18,16 +18,16 @@ export type Save = (entries: NewEntry[]) => void;
 
 type Kind = "photo" | "messages" | "email" | "call" | "post" | "reading" | "receipt" | "chat" | "note";
 
-const KINDS: { kind: Kind; icon: IconName; title: string; desc: string }[] = [
-  { kind: "photo", icon: "camera", title: "Photo or video", desc: "Of the problem itself" },
-  { kind: "messages", icon: "image", title: "Screenshot of messages", desc: "WhatsApp, texts or the landlord's app" },
-  { kind: "email", icon: "letter", title: "Email", desc: "Copy your group in, or forward it" },
-  { kind: "call", icon: "phone", title: "Phone call or conversation", desc: "Then confirm it in writing" },
-  { kind: "post", icon: "send", title: "Posted letter", desc: "The letter and proof of postage" },
-  { kind: "reading", icon: "gauge", title: "Damp or temperature reading", desc: "A series shows the trend" },
-  { kind: "receipt", icon: "receipt", title: "Receipt", desc: "Costs the problem caused you" },
-  { kind: "chat", icon: "chat", title: "Whole chat export", desc: "WhatsApp's “Export chat” file" },
-  { kind: "note", icon: "note", title: "Note", desc: "Anything else, in your words" },
+const KINDS: { kind: Kind; icon: IconName; title: string; short: string }[] = [
+  { kind: "photo", icon: "camera", title: "Photo or video", short: "Photo or video" },
+  { kind: "messages", icon: "image", title: "Screenshot of messages", short: "Message screenshot" },
+  { kind: "email", icon: "letter", title: "Email", short: "Email" },
+  { kind: "call", icon: "phone", title: "Phone call or conversation", short: "Call or chat" },
+  { kind: "post", icon: "send", title: "Posted letter", short: "Posted letter" },
+  { kind: "reading", icon: "gauge", title: "Damp or temperature reading", short: "Reading" },
+  { kind: "receipt", icon: "receipt", title: "Receipt", short: "Receipt" },
+  { kind: "chat", icon: "chat", title: "Whole chat export", short: "Chat export" },
+  { kind: "note", icon: "note", title: "Note", short: "Note" },
 ];
 
 const textareaClass = `${inputClass} min-h-24 py-3 leading-[26px]`;
@@ -59,24 +59,17 @@ export function AddEvidenceSheet({
     <Sheet open={open} onClose={close} title={current ? current.title : "Add evidence"}>
       {!kind ? (
         <>
-          <p className="text-[17px] leading-[26px]">
-            Add it as soon as it happens. Originals are kept exactly as they are, with a fingerprint and the time they
-            reached the record.
-          </p>
-          <ul className="flex flex-col gap-2">
+          <p className="text-[16px] leading-[24px] text-ink-muted">Originals are kept exactly as they are, with the time they reached the record.</p>
+          <ul className="grid grid-cols-3 gap-2">
             {KINDS.map((k) => (
               <li key={k.kind}>
                 <button
                   type="button"
                   onClick={() => setKind(k.kind)}
-                  className="flex min-h-14 w-full items-center gap-3 rounded-lg border-2 border-line-subtle bg-paper px-4 py-3 text-left"
+                  className="flex min-h-[92px] w-full flex-col items-center justify-center gap-1.5 rounded-xl bg-concrete px-2 py-3 text-center text-[14px] leading-[18px] font-bold"
                 >
-                  <Icon name={k.icon} size={22} />
-                  <span className="flex flex-1 flex-col">
-                    <span className="text-[17px] leading-6 font-bold">{k.title}</span>
-                    <span className="text-[15px] leading-[22px] text-ink-muted">{k.desc}</span>
-                  </span>
-                  <Icon name="arrow" />
+                  <Icon name={k.icon} size={24} />
+                  {k.short}
                 </button>
               </li>
             ))}

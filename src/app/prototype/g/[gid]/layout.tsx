@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { approveMember, findGroup, myMember, setViewAs, useStore } from "@/prototype/store";
-import { ME, NATION_LABEL, ROLE_LABEL, TYPE_LABEL, type Role } from "@/prototype/types";
+import { approveMember, findGroup, myMember, useStore } from "@/prototype/store";
+import { ME, NATION_LABEL, TYPE_LABEL } from "@/prototype/types";
 import { Button, ButtonLink, Icon, Loading, PageTitle, label, type IconName } from "@/prototype/ui";
 
 export default function GroupLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -47,8 +47,6 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
   }
 
   const base = `/prototype/g/${group.id}`;
-  const realRole = me?.role ?? "submitter";
-  const role = s.viewAs ?? realRole;
   const tabs: { href: string; title: string; icon: IconName; match: (p: string) => boolean }[] = [
     { href: base, title: "Problems", icon: "list", match: (p) => p === base || p.startsWith(`${base}/i/`) },
     { href: `${base}/add`, title: "Add", icon: "plus", match: (p) => p === `${base}/add` },
@@ -58,40 +56,23 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex flex-col gap-3 border-b-2 border-line-subtle px-4 pt-3 pb-3 print:hidden">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/prototype" className="inline-flex min-h-11 items-center gap-1 font-bold" aria-label="Your groups">
-            <Icon name="back" /> Groups
+      {pathname.startsWith(`${base}/i/`) ? null : (
+        <header className="flex items-center gap-2 border-b border-line-subtle px-2 py-2 print:hidden">
+          <Link href="/prototype" className="flex size-11 flex-none items-center justify-center" aria-label="Your groups">
+            <Icon name="back" />
           </Link>
-          <label className="flex items-center gap-2 text-[15px] font-semibold">
-            <span className="text-ink-muted">Viewing as</span>
-            <select
-              value={role}
-              onChange={(e) => {
-                const r = e.target.value as Role;
-                setViewAs(r === realRole ? null : r);
-              }}
-              className="min-h-11 rounded-md border-2 border-line bg-paper px-2 font-bold text-ink"
-            >
-              {(["owner", "admin", "submitter"] as Role[]).map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABEL[r]}
-                  {r === realRole ? " (you)" : ""}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <div>
-          <p className={`${label} text-ink-muted`}>
-            {TYPE_LABEL[group.type]} · {NATION_LABEL[group.nation]}
-          </p>
-          <p className="truncate text-[22px] leading-7 font-bold">{group.name}</p>
-        </div>
-      </header>
+          <div className="min-w-0">
+            <p className="truncate text-[18px] leading-6 font-bold">{group.name}</p>
+            <p className="text-[13px] leading-[18px] text-ink-muted">
+              {TYPE_LABEL[group.type]} · {NATION_LABEL[group.nation]}
+            </p>
+          </div>
+        </header>
+      )}
 
       <div className="flex flex-1 flex-col">{children}</div>
 
+      {/(\/send|\/case)$/.test(pathname) ? null : (
       <nav aria-label="Group" className="sticky bottom-0 z-10 border-t-2 border-line bg-paper pb-[env(safe-area-inset-bottom)] print:hidden">
         <ul className="grid grid-cols-4">
           {tabs.map((t) => {
@@ -122,6 +103,7 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
           })}
         </ul>
       </nav>
+      )}
     </div>
   );
 }

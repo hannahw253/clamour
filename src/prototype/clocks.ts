@@ -223,10 +223,10 @@ export function issueClock(group: Group, issue: Issue, now = new Date()): ClockV
     const missed = current.state === "missed";
     return {
       tone: missed ? "missed" : "statutory",
-      lead: missed ? `Deadline missed. ${current.past} by` : `${current.label} by`,
+      lead: missed ? `${current.past} by` : `${current.label} by`,
       value: shortDate(current.due),
       unit: current.condition ? `${current.detail}, ${current.condition}` : current.detail,
-      note: "Legal deadline · Awaab's Law, Scotland",
+      note: missed ? "Deadline missed · Awaab's Law" : "Legal deadline · Awaab's Law",
       source: SCOTLAND_PACK.source,
       words: missed
         ? `Deadline missed: ${current.past.toLowerCase()} by ${shortDate(current.due)}`

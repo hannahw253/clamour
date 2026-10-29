@@ -2,6 +2,8 @@
 
 /** An issue's dated record, used on the issue page and in the case file. */
 
+import { useState } from "react";
+
 import { stamp } from "./dates";
 import { fileSize, shortHash } from "./photos";
 import { memberName } from "./store";
@@ -199,5 +201,68 @@ export function Record({ group, issue, exhibits }: { group: Group; issue: Issue;
         );
       })}
     </ol>
+  );
+}
+
+function thumb(e: Entry): string | null {
+  if (e.kind === "photo" || e.kind === "messages") return e.photo.src;
+  if ((e.kind === "post" || e.kind === "receipt") && e.photo) return e.photo.src;
+  return null;
+}
+
+/** The latest entries as quiet one-line rows; tap one to see everything about it. */
+export function RecentActivity({ group, issue, limit }: { group: Group; issue: Issue; limit?: number }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const entries = sortedEntries(issue).reverse();
+  const shown = limit ? entries.slice(0, limit) : entries;
+  return (
+    <ul className="flex flex-col divide-y divide-line-subtle">
+      {shown.map((e) => {
+        const meta = entrySummary(e);
+        const img = thumb(e);
+        const expanded = open === e.id;
+        const verified = e.kind === "email" && e.auth === "passed";
+        return (
+          <li key={e.id}>
+            <button
+              type="button"
+              aria-expanded={expanded}
+              onClick={() => setOpen(expanded ? null : e.id)}
+              className="flex min-h-16 w-full items-center gap-3 py-3 text-left"
+            >
+              <span className="flex size-9 flex-none items-center justify-center rounded-full bg-concrete">
+                <Icon name={meta.icon} size={18} />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className={`text-[16px] leading-[22px] ${expanded ? "" : "line-clamp-2"}`}>
+                  <span className="font-bold">{memberName(group, e.by)}</span> {meta.text.charAt(0).toLowerCase() + meta.text.slice(1)}
+                </span>
+                <span className="flex items-center gap-1.5 text-[13px] leading-[18px] text-ink-muted">
+                  {verified ? (
+                    <>
+                      <Icon name="shield" size={14} /> Sender verified ·
+                    </>
+                  ) : null}
+                  <span className="font-mono">{stamp(e.at)}</span>
+                </span>
+              </span>
+              {img && !expanded ? (
+                // eslint-disable-next-line @next/next/no-img-element -- local data URL
+                <img src={img} alt="" className="size-12 flex-none rounded-md object-cover" />
+              ) : null}
+            </button>
+            {expanded ? (
+              <div className="flex flex-col gap-2 pb-4 pl-12">
+                <EntryBody e={e} issue={issue} />
+                {fingerprint(e) ? <p className={mono}>SHA-256 {shortHash(fingerprint(e)!)}</p> : null}
+                {Math.abs(new Date(e.recordedAt).getTime() - new Date(e.at).getTime()) > 10 * 60_000 ? (
+                  <p className={mono}>Recorded {stamp(e.recordedAt)}</p>
+                ) : null}
+              </div>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
   );
 }

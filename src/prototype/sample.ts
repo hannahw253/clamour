@@ -55,6 +55,7 @@ export function sampleGroups(now: Date): Group[] {
     invites: { submitter: "", admin: "" },
     inbox: "",
     unsorted: [],
+    landlord: { name: "Dan", email: "lettings@agent.example" },
     issues: [
       issue(
         { id: "boiler", ref: 1, title: "Boiler keeps cutting out, no hot water", category: "heating", room: "Kitchen", createdBy: "priya", createdAt: at(20, 7, 40) },
@@ -128,6 +129,7 @@ export function sampleGroups(now: Date): Group[] {
     ],
     invites: { submitter: "", admin: "" },
     inbox: "",
+    landlord: { name: "Greenhill Property Factors", email: "repairs@factor.example" },
     unsorted: [
       {
         id: "u1",

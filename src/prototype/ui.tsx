@@ -297,7 +297,10 @@ export function Sheet({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Only report a close the person made (Esc or Cancel); closing because another sheet opened isn't one.
+  const openRef = useRef(open);
   useEffect(() => {
+    openRef.current = open;
     const d = ref.current;
     if (!d) return;
     if (open && !d.open) d.showModal();
@@ -306,7 +309,9 @@ export function Sheet({
   return (
     <dialog
       ref={ref}
-      onClose={onClose}
+      onClose={() => {
+        if (openRef.current) onClose();
+      }}
       aria-labelledby="sheet-title"
       className="m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-xl border-2 border-b-0 border-line bg-paper p-0 text-ink backdrop:bg-brand-ink/60 sm:mx-auto sm:max-w-[440px]"
     >

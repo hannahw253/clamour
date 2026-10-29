@@ -29,7 +29,7 @@ export default function Issues() {
 
   return (
     <main className="flex flex-1 flex-col gap-5 px-4 pt-5 pb-8">
-      <div role="tablist" aria-label="Show" className="grid grid-cols-2 rounded-md border-2 border-line p-1">
+      <div role="tablist" aria-label="Show" className="grid grid-cols-2 rounded-xl bg-concrete p-1">
         {(
           [
             ["open", `Open (${open.length})`],
@@ -42,7 +42,7 @@ export default function Issues() {
             type="button"
             aria-selected={tab === key}
             onClick={() => setTab(key)}
-            className={`min-h-11 rounded-sm text-[16px] font-bold ${tab === key ? "bg-ink text-paper" : "text-ink"}`}
+            className={`min-h-11 rounded-lg text-[16px] font-bold ${tab === key ? "bg-paper text-ink shadow-sm" : "text-ink-muted"}`}
           >
             {text}
           </button>
@@ -52,7 +52,7 @@ export default function Issues() {
       {toFile ? (
         <Link
           href={`/prototype/g/${group.id}/unsorted`}
-          className="flex min-h-14 items-center gap-3 rounded-lg border-2 border-line bg-paper px-4 py-3 font-bold no-underline"
+          className="flex min-h-14 items-center gap-3 rounded-xl bg-concrete px-4 py-3 font-bold no-underline"
         >
           <Icon name="letter" />
           <span className="flex-1">

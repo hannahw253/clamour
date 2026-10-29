@@ -20,8 +20,8 @@ import {
   type State,
 } from "./types";
 
-const KEY = "clamour-prototype-v2";
-const EMPTY: State = { version: 2, myName: null, viewAs: null, groups: [] };
+const KEY = "clamour-prototype-v3";
+const EMPTY: State = { version: 3, myName: null, viewAs: null, groups: [] };
 
 let state: State | null = null;
 let storageFull = false;
@@ -32,7 +32,7 @@ function load(): State {
     const raw = window.localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as State;
-      if (parsed.version === 2) return parsed;
+      if (parsed.version === 3) return parsed;
     }
   } catch {
     // Private windows and blocked storage fall back to memory.
@@ -352,4 +352,8 @@ export function fileUnsorted(groupId: string, unsortedId: string, issueId: strin
 
 export function rejectUnsorted(groupId: string, unsortedId: string) {
   updateGroup(groupId, (g) => ({ ...g, unsorted: g.unsorted.filter((u) => u.id !== unsortedId) }));
+}
+
+export function setLandlord(groupId: string, landlord: { name?: string; email?: string }) {
+  updateGroup(groupId, (g) => ({ ...g, landlord: { ...g.landlord, ...landlord } }));
 }

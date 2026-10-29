@@ -93,7 +93,7 @@ export default function CaseFile() {
               ) : (
                 <>
                   <span>Not made yet. Ombudsmen usually expect you to use the landlord&rsquo;s complaints process first.</span>
-                  <ButtonLink href={`${back}/letter?letter=complaint`} className="self-start print:hidden">
+                  <ButtonLink href={`${back}/send?letter=complaint`} className="self-start print:hidden">
                     Write a formal complaint
                   </ButtonLink>
                 </>
