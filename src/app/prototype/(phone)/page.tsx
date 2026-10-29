@@ -64,13 +64,7 @@ export default function PrototypeHome() {
       <InkHeader
         title="Your groups"
         display
-        right={
-          <Link href="/prototype/settings" className="flex size-11 items-center justify-center text-brand-paper" aria-label="Settings">
-            <Icon name="settings" size={24} />
-          </Link>
-        }
         back={undefined}
-        mark
       />
       <ul className="flex flex-col gap-3">
         {s.groups.map((g) => {

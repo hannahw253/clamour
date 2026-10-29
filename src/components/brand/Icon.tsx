@@ -3,7 +3,7 @@
  * same idea always looks the same wherever it appears.
  *
  * Drawing rules, applied to every glyph here:
- * - Lucide outlines on a 24px grid, plus two glyphs drawn from the spanner C (`fix`, `home`).
+ * - Lucide outlines on a 24px grid, plus `fix`, the spanner drawn from the spanner C.
  * - Three sizes: 16 (status tags and small print), 20 (beside text: buttons, rows), 24 (on their own:
  *   navigation, evidence tiles, safety banners).
  * - The stroke stays the same on screen whatever the size, matching the 2px edges of controls: 2px at
@@ -27,6 +27,7 @@ import {
   Download,
   Ellipsis,
   FileText,
+  House,
   Flag,
   Folder,
   Gauge,
@@ -61,8 +62,6 @@ import {
 /** The spanner, head up and to the right with its jaw open, handle ending in the mark's 120° point. */
 const FIX_PATH =
   "M10.45 10.02L3.19 17.27L3.94 20.06L6.73 20.81L13.98 13.55A5.5 5.5 0 0 0 20.98 6.87L17.95 9.91L14.89 9.11L14.09 6.05L17.13 3.02A5.5 5.5 0 0 0 10.45 10.02Z";
-/** The spanner C on its side, jaw down, so the throat stands up as a house. */
-const HOME_PATH = "M7.44 19.59A9.2 9.2 0 1 1 16.56 19.59L16.56 12.42L12 9.74L7.44 12.42Z";
 
 type BrandGlyph = { path: string };
 
@@ -73,7 +72,7 @@ const ICONS = {
   expand: ChevronDown,
   close: X,
   more: Ellipsis,
-  home: { path: HOME_PATH },
+  home: House,
   problems: ClipboardList,
   members: Users,
   settings: Settings,

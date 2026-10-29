@@ -118,26 +118,18 @@ export default function GroupLayout({ children }: Readonly<{ children: React.Rea
         <ul className="grid grid-cols-4">
           {tabs.map((t) => {
             const active = t.match(pathname);
-            const isAdd = t.title === "Add";
             return (
               <li key={t.href}>
                 <Link
                   href={t.href}
                   aria-current={active ? "page" : undefined}
+                  aria-label={t.title === "Add" ? "Add a problem" : undefined}
                   className={`flex min-h-16 flex-col items-center justify-center gap-0.5 text-[0.8125rem] font-bold no-underline ${
                     active ? "text-ink" : "text-ink-muted"
                   }`}
                 >
-                  {isAdd ? (
-                    <span className="flex size-11 items-center justify-center rounded-md bg-ink text-paper">
-                      <Icon name="add" size={24} />
-                    </span>
-                  ) : (
-                    <Icon name={t.icon} size={24} />
-                  )}
-                  <span className={isAdd ? "sr-only" : active ? "underline underline-offset-4 decoration-2" : ""}>
-                    {isAdd ? "Add a problem" : t.title}
-                  </span>
+                  <Icon name={t.icon} size={24} />
+                  <span className={active ? "underline underline-offset-4 decoration-2" : ""}>{t.title}</span>
                 </Link>
               </li>
             );

@@ -185,7 +185,8 @@ export function InkHeader({
   const titleClass = display ? "font-display text-[1.75rem] leading-[1.1] tracking-[0.01em] uppercase" : "text-[1.375rem] leading-[1.75rem] font-bold";
   return (
     <header className={`${ink ? "on-ink -mx-4 bg-brand-ink px-4 pt-2 pb-5 text-brand-paper" : "pb-1"} flex flex-col gap-1.5 print:hidden`}>
-      <div className="flex min-h-11 items-center gap-2">
+      {back || right || (mark && ink) ? (
+        <div className="flex min-h-11 items-center gap-2">
         {mark && ink ? <SpannerC size={24} color="var(--signal)" /> : null}
         {back?.href ? (
           <Link href={back.href} className={`-ml-1 inline-flex min-h-11 items-center gap-1 font-bold ${ink ? "text-brand-paper" : ""}`}>
@@ -198,7 +199,8 @@ export function InkHeader({
         ) : null}
         <span className="flex-1" />
         {right}
-      </div>
+        </div>
+      ) : null}
       {eyebrow ? <p className={`${label} ${ink ? "text-brand-paper/75" : "text-ink-muted"}`}>{eyebrow}</p> : null}
       <h1 className={titleClass}>{title}</h1>
       {sub ? <p className={`text-[0.9375rem] leading-[1.375rem] ${ink ? "text-brand-paper/75" : "text-ink-muted"}`}>{sub}</p> : null}
